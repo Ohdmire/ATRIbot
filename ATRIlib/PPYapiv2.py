@@ -69,7 +69,7 @@ class PPYdata:
         return document
 
   
-                
+    #获取ba
     def get_user_best_all_info(self,userid):
         doucument_list=[]
         token = self.token
@@ -80,6 +80,7 @@ class PPYdata:
 
         data = response.json()
 
+        # 可能需要更改 我觉得应该只保留bid，其他的数据再调用api然后储存在score表
         count=1
         for i in data:
             id=i['user']['id']

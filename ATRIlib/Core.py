@@ -1,5 +1,5 @@
-from ppyapiv2 import PPYdata
-from mongodb import MongoDB
+from ATRIlib.PPYapiv2 import PPYdata
+from ATRIlib.Mongodb import MongoDB
 
 import asyncio
 
@@ -24,7 +24,7 @@ class ATRICore:
             {"$set": userdata},  # 插入的数据
             upsert=True  # 如果不存在则插入
             ) 
-        
+    # 更新玩家bp信息
     def update_bplist_info(self,osuname):
         userdata=self.ppy.get_user_info(osuname)
 
