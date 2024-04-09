@@ -8,7 +8,7 @@ class MongoDB:
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
 
-        self.collection.create_index('id', unique=True)
+        # self.collection.create_index('userid', unique=True)
 
         
 

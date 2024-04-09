@@ -17,3 +17,11 @@
 - [ ] draw绘图
 - [ ] FASTAPI包装
 - [ ] Onebotv11对接
+
+## MongoDB储存的数据
+
+- user表
+储存基本信息和bp1-100的bid
+
+- beatmap表
+储存用户在谱面上的最好记录
