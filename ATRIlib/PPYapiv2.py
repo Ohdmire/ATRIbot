@@ -33,6 +33,7 @@ class PPYdata:
         response = requests.get(url, headers=headers)
 
         data = response.json()
+
         
         return data
 
