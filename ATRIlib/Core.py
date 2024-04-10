@@ -26,17 +26,43 @@ class ATRICore:
             ) 
     # 更新玩家bp信息
     def update_bplist_info(self,osuname):
+        #获取玩家ID
         userdata=self.ppy.get_user_info(osuname)
-
         id=userdata['id']
-        data=self.ppy.get_user_best_all_info(id)
+        
 
-        for i in data:
-            self.db_user.update(
-                {"id": i["id"]},  # 查询条件
-                {"$set": i},  # 插入的数据
+        bps=self.ppy.get_user_best_all_info(id)
+
+        bpscoreid_list=[]
+        #只要成score id，其他格式化导入score表
+        for bp in bps:
+            scoreid=bp['id']
+            bpscoreid_list.append(scoreid)
+
+        self.db_user.update(
+            {"id": id},  # 查询条件
+            {"$set":{'bps':bpscoreid_list}},  # 插入的数据
+            upsert=True  # 如果不存在则插入
+            )
+        
+        #格式化bp 然后导入score表
+        for bp in bps:
+
+            bp.pop("beatmap", None)
+            bp.pop("user", None)
+            bp.pop("beatmapset", None)
+            bp.pop("weight", None)
+
+
+
+            self.db_score.update(
+                {"id": bp["id"]},  # 查询条件
+                {"$set": bp},  # 插入的数据
                 upsert=True  # 如果不存在则插入
                 )
+            
+
+            
     def update_scores_info(self,user_id,beatmap_id):
         socresdata=self.ppy.get_user_socres_info(user_id,beatmap_id)
 
@@ -46,25 +72,22 @@ class ATRICore:
                 {"$set": score},  # 插入的数据
                 upsert=True  # 如果不存在则插入
                 )
+    
+    # def update_scores_info_all()
 
 
 #score combo acc mods time 
-
-
 
 
 a=ATRICore()
 
 a.update_user_info('ATRI1024')
 
-
 a.update_bplist_info('ATRI1024')
-b=a.db_user.find({'username':'ATRI1024'})
-for i in b:
-    print(i)
 
-# a.update_scores_info("8664033","86324")
-# b=a.db_score.find({'id':'86324'})
-
+# b=a.db_user.find({'id':8664033})
 # for i in b:
 #     print(i)
+
+
+a.update_scores_info("8664033","86324")

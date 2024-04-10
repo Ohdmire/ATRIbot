@@ -39,7 +39,7 @@ class PPYdata:
   
     #获取ba的bid
     def get_user_best_all_info(self,user_id):
-        doucument_list=[]
+
         token = self.token
         url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/best?mode=osu&limit=100'
         headers = {'Authorization': f'Bearer {token}'}
@@ -48,17 +48,8 @@ class PPYdata:
 
         data = response.json()
 
+        return data
 
-        count=1
-        for i in data:
-            id=i['user']['id']
-            beatmap_id=i['beatmap']['id']
-            bp_index=str(f'bp{count}_bid')
-            count+=1
-
-            doucument_list.append({'id':id,bp_index:beatmap_id})
-
-        return doucument_list
     
     def get_user_socres_info(self,user_id,beatmap_id):
         token = self.token
