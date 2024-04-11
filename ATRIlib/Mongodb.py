@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-class MongoDB:
+class Mongodb:
     def __init__(self,host,port,db_name,collection_name):
 
 
@@ -11,7 +11,6 @@ class MongoDB:
         # self.collection.create_index('userid', unique=True)
 
         
-
     def insert(self, data):
         self.collection.insert_one(data)
 
