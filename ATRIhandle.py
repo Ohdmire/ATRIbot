@@ -21,20 +21,21 @@ class ATRI:
             osuid=await self.get_user(osuname)
             await self.get_bplists(osuname)
 
-            fixed_pp_sum,origin_pp_sum,total_lost_pp,chokeid_list,choke_num=await self.core.calculate_choke_pp(osuid)
+            fixed_pp_sum,origin_pp_sum,total_lost_pp,chokeid_list,choke_num,weight_total_lost_pp=await self.core.calculate_choke_pp(osuid)
 
             choke=""
 
             for i in chokeid_list:
                 for key,value in i.items():
                     value=round(value,2)
-                    choke+=f'bp{key}: {value}\n'
+                    choke+=f'\nbp{key}: {value}'
 
             origin_pp_sum=round(origin_pp_sum,2)
             fixed_pp_sum=round(fixed_pp_sum,2)
             total_lost_pp=round(total_lost_pp,2)
+            weight_total_lost_pp=round(weight_total_lost_pp,2)
 
-            data=f'{osuname}\'s choke\n总pp: {origin_pp_sum}pp\n如果不choke: {fixed_pp_sum}pp\n丢失的pp: {total_lost_pp}pp\n共choke:{choke_num}张\nchoke排行:\n{choke}'[:-2]
+            data=f'{osuname}\'s choke\n总pp: {origin_pp_sum}pp({weight_total_lost_pp})\n如果不choke: {fixed_pp_sum}pp\n累加丢失的pp: {total_lost_pp}pp\n共choke:{choke_num}张\nchoke排行:{choke}'
 
             return data
         

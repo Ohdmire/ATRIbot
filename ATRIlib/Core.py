@@ -198,12 +198,19 @@ class ATRICore:
         scorecombo=score['max_combo']
         rate=(maxcombo-scorecombo)/maxcombo
 
-        if score['statistics']['count_miss']<=1 and rate>0.1:
+        if score['statistics']['count_miss']==0 and rate>0.1:
             self.db_score.update(
                 {"id": score_id},  # 查询条件
                 {"$set": {'choke':True}},  # 插入的数据
                 upsert=True  # 如果不存在则插入
                 )
+        elif score['statistics']['count_miss']==1:
+            self.db_score.update(
+                {"id": score_id},  # 查询条件
+                {"$set": {'choke':True}},  # 插入的数据
+                upsert=True  # 如果不存在则插入
+                )
+            
         else:
             self.db_score.update(
                 {"id": score_id},  # 查询条件
@@ -277,12 +284,15 @@ class ATRICore:
         #加上bonuspp
         fixed_pp_sum=fixed_pp_origin_sum+bonuspp
         origin_pp_sum=self.calculate_origin_pp(user_id)+bonuspp
+
+        #计算差值
+        weight_total_lost_pp=origin_pp_sum-fixed_pp_sum
         #按照choke程度排序
         chokeid_list=self.sort_by_firstkey(chokeid_list)
 
         choke_num=len(chokeid_list)
 
 
-        return fixed_pp_sum,origin_pp_sum,total_lost_pp,chokeid_list,choke_num
+        return fixed_pp_sum,origin_pp_sum,total_lost_pp,chokeid_list,choke_num,weight_total_lost_pp
 
 
