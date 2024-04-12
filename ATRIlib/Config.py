@@ -6,5 +6,5 @@ class Config:
         self.config = configparser.ConfigParser()
         self.config.read('config.ini')
 
-        self.osuclientid=self.config['OSUAPI']['client_id']
-        self.osuclientsecret=self.config['OSUAPI']['client_secret']
+        self.osuclientid = self.config['OSUAPI']['client_id']
+        self.osuclientsecret = self.config['OSUAPI']['client_secret']

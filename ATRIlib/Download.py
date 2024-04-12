@@ -2,8 +2,9 @@ import aiohttp
 import asyncio
 from pathlib import Path
 
+
 class Downloader:
-    
+
     def __init__(self):
         self.beatmaps_path = Path('./data/beatmaps/')
         self.semaphore = asyncio.Semaphore(5)
@@ -22,6 +23,6 @@ class Downloader:
 
     async def download_files(self, beatmap_ids):
         async with aiohttp.ClientSession() as session:
-            tasks = [self.get_beatmap_file(session, beatmap_id) for beatmap_id in beatmap_ids]
+            tasks = [self.get_beatmap_file(session, beatmap_id)
+                     for beatmap_id in beatmap_ids]
             await asyncio.gather(*tasks)
-

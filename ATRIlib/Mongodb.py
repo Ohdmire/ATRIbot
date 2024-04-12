@@ -1,8 +1,8 @@
 from pymongo import MongoClient
 
-class Mongodb:
-    def __init__(self,host,port,db_name,collection_name):
 
+class Mongodb:
+    def __init__(self, host, port, db_name, collection_name):
 
         self.client = MongoClient(host, port)
         self.db = self.client[db_name]
@@ -10,7 +10,6 @@ class Mongodb:
 
         # self.collection.create_index('userid', unique=True)
 
-        
     def insert(self, data):
         self.collection.insert_one(data)
 
@@ -20,7 +19,7 @@ class Mongodb:
     def find_one(self, query):
         return self.collection.find_one(query)
 
-    def update(self, query, data ,upsert=True):
+    def update(self, query, data, upsert=True):
         self.collection.update_one(query, data, upsert)
 
     def delete(self, query):
@@ -36,7 +35,6 @@ class Mongodb:
         self.client.close()
 
 # a=MongoDB('localhost',27017,'osu','username')
-
 
 
 # documents = [
