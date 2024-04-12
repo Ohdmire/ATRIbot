@@ -7,19 +7,20 @@ class Downloader:
 
     def __init__(self):
         self.beatmaps_path = Path('./data/beatmaps/')
-        self.semaphore = asyncio.Semaphore(5)
+        self.semaphore = asyncio.Semaphore(16)
 
     async def get_beatmap_file(self, session, beatmap_id):
         file_path = self.beatmaps_path / f'{beatmap_id}.osu'
         url = f'https://osu.ppy.sh/osu/{beatmap_id}'
         async with self.semaphore:
             async with session.get(url) as response:
-                with open(file_path, 'wb') as file:
-                    while True:
-                        chunk = await response.content.read(1024)
-                        if not chunk:
-                            break
-                        file.write(chunk)
+                if response.status == 200:  # 检查状态码是否为200
+                    with open(file_path, 'wb') as file:
+                        while True:
+                            chunk = await response.content.read(1024)
+                            if not chunk:
+                                break
+                            file.write(chunk)
 
     async def download_files(self, beatmap_ids):
         async with aiohttp.ClientSession() as session:
