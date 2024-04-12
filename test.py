@@ -1,9 +1,9 @@
 # post请求
 import requests
 
-url = "http://127.0.0.1:8008/choke"
+url = "http://127.0.0.1:8007/choke"
 data = {
-    "osuname": "ChocolateCR",
+    "osuname": "ATRI1024",
 }
 
 response = requests.post(url, json=data)

@@ -21,6 +21,8 @@ class Downloader:
                             if not chunk:
                                 break
                             file.write(chunk)
+                else:
+                    print(f'Error: {response.status} {response.reason} - {url}')
 
     async def download_files(self, beatmap_ids):
         async with aiohttp.ClientSession() as session:

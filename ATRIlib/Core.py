@@ -189,16 +189,31 @@ class ATRICore:
             upsert=True  # 如果不存在则插入
         )
 
+    # 功能模块-计算rate
+    def calculate_rate_maxcombo_factor(self, maxcombo):
+        if maxcombo < 700:
+            rate = 0.96
+        elif maxcombo < 1500:
+            rate = 0.97
+        elif maxcombo < 2000:
+            rate = 0.98
+        elif maxcombo >= 2000:
+            rate = 0.99
+
+        return rate
+
     # 功能模块-计算choke pp
+
     def update_choke(self, score_id, beatmap_maxcombo):
 
         score = self.db_score.find_one({'id': score_id})
 
         maxcombo = beatmap_maxcombo
         scorecombo = score['max_combo']
-        rate = (maxcombo - scorecombo) / maxcombo
+        rate = scorecombo / maxcombo  # rate越大，连击越多，可能越不用算choke
+        standard_rate = self.calculate_rate_maxcombo_factor(maxcombo)
 
-        if score['statistics']['count_miss'] == 0 and rate > 0.1:
+        if score['statistics']['count_miss'] == 0 and rate < standard_rate and rate > 0.4:
             self.db_score.update(
                 {"id": score_id},  # 查询条件
                 {"$set": {'choke': True}},  # 插入的数据
@@ -207,7 +222,7 @@ class ATRICore:
         elif score['statistics']['count_miss'] == 1:
             self.db_score.update(
                 {"id": score_id},  # 查询条件
-                {"$set": {'choke': True}},  # 插入的数据
+                {"$set": {'choke': True}},  # 插入的数据l
                 upsert=True  # 如果不存在则插入
             )
 
