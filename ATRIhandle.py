@@ -25,11 +25,15 @@ class ATRI:
             fixed_pp_sum, origin_pp_sum, total_lost_pp, chokeid_list, choke_num, weight_total_lost_pp = await self.core.calculate_choke_pp(osuid)
 
             choke = ""
-
+            count = 0
             for i in chokeid_list:
                 for key, value in i.items():
                     value = round(value, 2)
-                    choke += f'\nbp{key}: {value}'
+                    if count % 2 == 0:
+                        choke += f'\nbp{key}: {value}'
+                    else:
+                        choke += f'  bp{key}: {value}'
+                    count += 1
 
             origin_pp_sum = round(origin_pp_sum, 2)
             fixed_pp_sum = round(fixed_pp_sum, 2)

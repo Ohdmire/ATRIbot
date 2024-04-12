@@ -213,7 +213,7 @@ class ATRICore:
         rate = scorecombo / maxcombo  # rate越大，连击越多，可能越不用算choke
         standard_rate = self.calculate_rate_maxcombo_factor(maxcombo)
 
-        if score['statistics']['count_miss'] == 0 and rate < standard_rate and rate > 0.4:
+        if score['statistics']['count_miss'] == 0 and rate < standard_rate and rate > 0.5:
             self.db_score.update(
                 {"id": score_id},  # 查询条件
                 {"$set": {'choke': True}},  # 插入的数据
