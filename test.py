@@ -1,9 +1,13 @@
 # post请求
 import requests
 
-url = "http://127.0.0.1:8007/choke"
+pp_list = [200]
+
+
+url = "http://127.0.0.1:8008/addpp"
 data = {
     "osuname": "ATRI1024",
+    "pp_list": pp_list
 }
 
 response = requests.post(url, json=data)

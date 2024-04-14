@@ -47,7 +47,19 @@ class ATRI:
         except Exception as e:
             return f'error: {e}'
 
-    async def test(self):
-        await self.get_user('ATRI1024')
-        await self.get_bplists('ATRI1024')
-        await self.core.get_bps_osu(user_id=8664033)
+    async def get_if_add_pp(self, osuname, pp_list):
+
+        osuid = await self.get_user(osuname)
+        await self.get_bplists(osuname)
+
+        now_pp, new_pp_sum = self.core.calculate_if_get_pp(
+            osuid, pp_list)
+
+        now_pp = round(now_pp, 2)
+        new_pp_sum = round(new_pp_sum, 2)
+
+        diff = round(new_pp_sum - now_pp, 2)
+
+        data = f'{osuname}现在的pp: {now_pp}pp\n如果加入这些pp: {new_pp_sum}pp\n增加了: {diff}pp'
+
+        return data
