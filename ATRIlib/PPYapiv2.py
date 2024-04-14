@@ -24,7 +24,7 @@ class PPYapiv2:
     # 获取玩家信息id
     async def get_user_info(self, osu_name):
         token = self.token
-        url = f'https://osu.ppy.sh/api/v2/users/{osu_name}?key=username'
+        url = f'https://osu.ppy.sh/api/v2/users/{osu_name}/osu?key=username'
         headers = {'Authorization': f'Bearer {token}'}
 
         async with aiohttp.ClientSession() as session:
@@ -54,3 +54,5 @@ class PPYapiv2:
                 data = await response.json()
                 data = response.json()['scores']
                 return data
+            
+

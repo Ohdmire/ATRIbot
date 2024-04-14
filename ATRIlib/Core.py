@@ -169,8 +169,17 @@ class ATRICore:
             )
 
     # 功能模块-排序
-    def sort_by_firstkey(self, list_of_dicts):
+    def sort_by_firstvalue(self, list_of_dicts):
         sorted_list = sorted(list_of_dicts, key=lambda x: list(x.values())[0])
+        return sorted_list
+
+    def sorted_by_firstvalue_reverse(self, list_of_dicts):
+        sorted_list = sorted(list_of_dicts, key=lambda x: list(
+            x.values())[0], reverse=True)
+        return sorted_list
+
+    def sort_by_firstkey(self, list_of_dicts):
+        sorted_list = sorted(list_of_dicts, key=lambda x: list(x.keys())[0])
         return sorted_list
 
     # 功能模块-计算bonus pp
@@ -234,7 +243,7 @@ class ATRICore:
         # 计算差值
         weight_total_lost_pp = origin_pp_sum - fixed_pp_sum
         # 按照choke程度排序
-        chokeid_list = self.sort_by_firstkey(chokeid_list)
+        chokeid_list = self.sort_by_firstvalue(chokeid_list)
 
         choke_num = len(chokeid_list)
 
@@ -268,15 +277,32 @@ class ATRICore:
         return now_pp, new_pp_sum
 
     # 功能模块-更新绑定
+    # 返回值：True-绑定成功 False-已经绑定
     async def update_bind(self, osuname, qq_id):
-        user_id = await self.update_user_info(osuname)['id']
+        # 先判断是否已经绑定
+        bind_info = self.db_bind.find_one({'id': qq_id})
+        if bind_info is not None:
+            return "已经绑定过了" + bind_info['username']
+        else:
+            # 先获取user_id,user_name
+            await self.update_user_info(osuname)
+            user_id = self.db_user.find_one({'username': osuname})['id']
+            user_name = self.db_user.find_one({'id': user_id})['username']
+            bind_info = self.db_bind.find_one({'user_id': user_id})
+            if bind_info is not None:
+                return "用户" + bind_info['username'] + "已被绑定"
+            if user_id is not None:  # 检查user插入的合法性
+                self.db_bind.update(
+                    {"id": qq_id},  # 查询条件
+                    {"$set": {"id": qq_id, "username": user_name,
+                              "user_id": user_id}},  # 插入的数据
+                    upsert=True  # 如果不存在则插入
+                )
+                return f'{user_name}绑定成功'
 
-        if user_id is not None:  # 检查user插入的合法性
-            self.db_bind.update(
-                {"id": qq_id},  # 查询条件
-                {"$set": {"id": qq_id, "username": osuname, "user_id": user_id}},  # 插入的数据
-                upsert=True  # 如果不存在则插入
-            )
+    # 功能模块-解绑
+    def delete_bind(self, qq_id):
+        self.db_bind.delete({"id": qq_id})
 
     # 功能模块-获取绑定
     def get_bind(self, qq_id):
@@ -291,3 +317,121 @@ class ATRICore:
             {"$set": {"id": group_id, "user_id_list": member_list}},  # 插入的数据
             upsert=True  # 如果不存在则插入
         )
+
+    # 数据模块-avgpp
+
+    def calculate_avg_pp(self, user_id, pp_range):
+
+        # 处理一下pp_range
+        now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
+        start_pp = now_pp - pp_range
+        end_pp = now_pp + pp_range
+
+        range_users = self.db_user.find(
+            {'statistics.pp': {'$gt': start_pp, '$lt': end_pp}})
+
+        bp1_pps_list = []
+        bp2_pps_list = []
+        bp3_pps_list = []
+        bp4_pps_list = []
+        bp5_pps_list = []
+        bp100_pps_list = []
+
+        for range_user in range_users:
+
+            try:
+                bp1_pps_list.append(range_user['bps_pp'][0])
+                bp2_pps_list.append(range_user['bps_pp'][1])
+                bp3_pps_list.append(range_user['bps_pp'][2])
+                bp4_pps_list.append(range_user['bps_pp'][3])
+                bp5_pps_list.append(range_user['bps_pp'][4])
+                bp100_pps_list.append(range_user['bps_pp'][99])
+            except:
+                try:
+                    print(f'{range_user}没有bp100')
+                    self.update_bplist_info(range_user['username'])
+                except:
+                    print(f'{range_user}没有bp100且无法更新bp100')
+
+        # 随便找个list计数
+        users_amount = len(bp1_pps_list)
+
+        avgbp1 = np.mean(bp1_pps_list)
+        avgbp2 = np.mean(bp2_pps_list)
+        avgbp3 = np.mean(bp3_pps_list)
+        avgbp4 = np.mean(bp4_pps_list)
+        avgbp5 = np.mean(bp5_pps_list)
+        avgbp100 = np.mean(bp100_pps_list)
+
+        user_origin_bps_pp = self.db_user.find_one({'id': user_id})['bps_pp']
+
+        user_origin_bp1 = user_origin_bps_pp[0]
+        user_origin_bp2 = user_origin_bps_pp[1]
+        user_origin_bp3 = user_origin_bps_pp[2]
+        user_origin_bp4 = user_origin_bps_pp[3]
+        user_origin_bp5 = user_origin_bps_pp[4]
+        user_origin_bp100 = user_origin_bps_pp[99]
+
+        diffbp1 = user_origin_bp1 - avgbp1
+        diffbp2 = user_origin_bp2 - avgbp2
+        diffbp3 = user_origin_bp3 - avgbp3
+        diffbp4 = user_origin_bp4 - avgbp4
+        diffbp5 = user_origin_bp5 - avgbp5
+        diffbp100 = user_origin_bp100 - avgbp100
+
+        total_diff = diffbp1 + diffbp2 + diffbp3 + diffbp4 + diffbp5
+
+        return avgbp1, avgbp2, avgbp3, avgbp4, avgbp5, avgbp100, diffbp1, diffbp2, diffbp3, diffbp4, diffbp5, diffbp100, users_amount, start_pp, end_pp, user_origin_bp1, user_origin_bp2, user_origin_bp3, user_origin_bp4, user_origin_bp5, user_origin_bp100, total_diff
+
+    # 数据模块-bp相似度寻找
+    def calculate_bpsim(self, user_id, pp_range):
+
+        # 处理一下pp_range
+        now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
+        start_pp = now_pp - pp_range
+        end_pp = now_pp + pp_range
+
+        user1_bps = self.db_user.find_one({'id': user_id})['bps_beatmapid']
+
+        range_users = self.db_user.find(
+            {'statistics.pp': {'$gt': start_pp, '$lt': end_pp}})
+
+        sim_list = []
+
+        for range_user in range_users:
+            try:
+                user2_bps = range_user['bps_beatmapid']
+
+                sim = len(set(user1_bps).intersection(set(user2_bps)))
+
+                sim_list.append({range_user['username']: sim})
+            except:
+                try:
+                    print(f'{range_user}没有bps_beatmapid')
+                    self.update_bplist_info(range_user['username'])
+                except:
+                    print(f'{range_user}没有bps_beatmapid且无法更新bps_beatmapid')
+
+        sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
+        sorted_sim_list = sorted_sim_list[1:6]
+
+        return sorted_sim_list, start_pp, end_pp
+
+    def calculate_bpsim_vs(self, user_id, vsuser_id):
+        user1_bps = self.db_user.find_one({'id': user_id})['bps_beatmapid']
+        user2_bps = self.db_user.find_one({'id': vsuser_id})['bps_beatmapid']
+
+        sim_list = set(user1_bps).intersection(set(user2_bps))
+
+        user12_index_list = []
+
+        user1_bps_pp_list = self.db_user.find_one({'id': user_id})['bps_pp']
+        user2_bps_pp_list = self.db_user.find_one({'id': vsuser_id})['bps_pp']
+
+        for i in sim_list:
+            user12_index_list.append(
+                {user1_bps.index(i) + 1: user2_bps.index(i) + 1})
+
+        index_dict = self.sort_by_firstkey(user12_index_list)
+
+        return index_dict, user1_bps_pp_list, user2_bps_pp_list

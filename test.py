@@ -4,10 +4,10 @@ import requests
 pp_list = [200]
 
 
-url = "http://127.0.0.1:8008/addpp"
+url = "http://127.0.0.1:8008/bpsimvs"
 data = {
     "osuname": "ATRI1024",
-    "pp_list": pp_list
+    "vs_name": "4001"
 }
 
 response = requests.post(url, json=data)
