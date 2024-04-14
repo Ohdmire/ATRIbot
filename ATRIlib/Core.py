@@ -48,14 +48,22 @@ class ATRICore:
         bps = await self.ppy.get_user_best_all_info(id)
 
         bpscoreid_list = []
-        # 只要成score id，其他格式化导入score表
+        bpspp_list = []
+        bpsbeatmapid_list = []
+        # 只要成score id，其他格式化导入score表 还要pp，beatmap_id
         for bp in bps:
             scoreid = bp['id']
+            scorepp = bp['pp']
+            scorebeatmapid = bp['beatmap']['id']
             bpscoreid_list.append(scoreid)
+            bpspp_list.append(scorepp)
+            bpsbeatmapid_list.append(scorebeatmapid)
 
+        # 更新bp的scoreid列表
         self.db_user.update(
             {"id": id},  # 查询条件
-            {"$set": {'bps': bpscoreid_list}},  # 插入的数据
+            {"$set": {'bps': bpscoreid_list, 'bps_pp': bpspp_list,
+                      'bps_beatmapid': bpsbeatmapid_list}},  # 插入的数据
             upsert=True  # 如果不存在则插入
         )
 
@@ -92,15 +100,11 @@ class ATRICore:
 
     # 功能模块-计算原始pp
     def calculate_origin_pp(self, user_id):
-        bplist = self.db_user.find_one({'id': user_id})['bps']
-        origin_pp_list = []
-        for bp in bplist:
-            score = self.db_score.find_one({'id': bp})
-            origin_pp = score['pp']
-            origin_pp_list.append(origin_pp)
-        list1 = np.array(origin_pp_list)
-        list2 = np.array(self.weight_list)
 
+        bps_pplist = self.db_user.find_one({'id': user_id})['bps_pp']
+
+        list1 = np.array(bps_pplist)
+        list2 = np.array(self.weight_list)
         list3 = list1 * list2
 
         origin_pp_sum = np.sum(list3)
@@ -179,19 +183,15 @@ class ATRICore:
 
     # 功能模块-异步批量下载bp的.osu文件
     async def get_bps_osu(self, user_id):
-        bplist = self.db_user.find_one({'id': user_id})['bps']
-        beatmap_id_list = []
-        for bp in bplist:
-            score = self.db_score.find_one({'id': bp})
-            beatmap_id = score['beatmap_id']
-            beatmap_id_list.append(beatmap_id)
-        await self.rosu.get_beatmap_file_async_all(beatmap_id_list)
+        bps_beatmapid_list = self.db_user.find_one({'id': user_id})[
+            'bps_beatmapid']
+        await self.rosu.get_beatmap_file_async_all(bps_beatmapid_list)
 
     # 数据模块-计算choke pp
     async def calculate_choke_pp(self, user_id):
         # 获取bp的scoreid
         bplists = self.db_user.find_one({'id': user_id})['bps']
-        # 优化，先提前下载osu文件
+        # 优化，先提前下载osu文件 方便后续update_if_fc_pp的时候不需要再去一个一个下载
         await self.get_bps_osu(user_id)
         # 判断choke
         fixed_list = []  # choke后的pp
@@ -200,7 +200,7 @@ class ATRICore:
         count = 1
         for bp in bplists:
             # 更新pp_if_fc
-            await self.update_if_fc_pp(bp)
+            await self.update_if_fc_pp(bp)  # 省了这一步的时间
             score = self.db_score.find_one({'id': bp})
             # 更新choke
             beatmap_id = score['beatmap_id']
@@ -243,7 +243,6 @@ class ATRICore:
     # 数据模块-if刷pp
     def calculate_if_get_pp(self, user_id, pp_lists):
         # 获取bp的scoreid
-        bplists = self.db_user.find_one({'id': user_id})['bps']
 
         now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
 
@@ -251,9 +250,9 @@ class ATRICore:
 
         new_pp_list = []
 
-        for bp in bplists:
-            score = self.db_score.find_one({'id': bp})
-            new_pp_list.append(score['pp'])
+        bp_pp_list = self.db_user.find_one({'id': user_id})['bps_pp']
+
+        new_pp_list = bp_pp_list.copy()
 
         for i in pp_lists:
             new_pp_list.append(i)
@@ -268,17 +267,21 @@ class ATRICore:
 
         return now_pp, new_pp_sum
 
-        # 功能模块-更新绑定
-
+    # 功能模块-更新绑定
     async def update_bind(self, osuname, qq_id):
         user_id = await self.update_user_info(osuname)['id']
 
-        if user_id is not None:
+        if user_id is not None:  # 检查user插入的合法性
             self.db_bind.update(
                 {"id": qq_id},  # 查询条件
                 {"$set": {"id": qq_id, "username": osuname, "user_id": user_id}},  # 插入的数据
                 upsert=True  # 如果不存在则插入
             )
+
+    # 功能模块-获取绑定
+    def get_bind(self, qq_id):
+        bind = self.db_bind.find_one({'id': qq_id})
+        return bind
 
     # 功能模块-gruop获取
     def update_gruop(self, group_id, member_list):
