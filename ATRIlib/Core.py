@@ -413,7 +413,7 @@ class ATRICore:
                     print(f'{range_user}没有bps_beatmapid且无法更新bps_beatmapid')
 
         sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
-        sorted_sim_list = sorted_sim_list[1:6]
+        sorted_sim_list = sorted_sim_list[1:11]
 
         return sorted_sim_list, start_pp, end_pp
 

@@ -60,66 +60,74 @@ class ATRI:
     async def get_if_add_pp(self, osuname, pp_list, qq_id=None):
 
         try:
-            osuname = self.core.get_bind(qq_id)['username']
-        except:
-            pass
-        osuid = await self.get_user(osuname)
-        await self.get_bplists(osuname)
 
-        now_pp, new_pp_sum = self.core.calculate_if_get_pp(
-            osuid, pp_list)
+            try:
+                osuname = self.core.get_bind(qq_id)['username']
+            except:
+                pass
+            osuid = await self.get_user(osuname)
+            await self.get_bplists(osuname)
 
-        now_pp = round(now_pp, 2)
-        new_pp_sum = round(new_pp_sum, 2)
+            now_pp, new_pp_sum = self.core.calculate_if_get_pp(
+                osuid, pp_list)
 
-        diff = round(new_pp_sum - now_pp, 2)
+            now_pp = round(now_pp, 2)
+            new_pp_sum = round(new_pp_sum, 2)
 
-        data = f'{osuname}现在的pp: {now_pp}pp\n如果加入这些pp: {new_pp_sum}pp\n增加了: {diff}pp'
+            diff = round(new_pp_sum - now_pp, 2)
 
-        return data
+            data = f'{osuname}现在的pp: {now_pp}pp\n如果加入这些pp: {new_pp_sum}pp\n增加了: {diff}pp'
+
+            return data
+        except Exception as e:
+            return f'error: {e}'
 
     async def get_avg_pp(self, osuname, pp_range, qq_id=None):
 
         try:
 
-            osuname = self.core.get_bind(qq_id)['username']
-        except:
-            pass
-        osuid = await self.get_user(osuname)
-        await self.get_bplists(osuname)
+            try:
 
-        avgbp1, avgbp2, avgbp3, avgbp4, avgbp5, avgbp100, diffbp1, diffbp2, diffbp3, diffbp4, diffbp5, diffbp100, users_amount, start_pp, end_pp, user_origin_bp1, user_origin_bp2, user_origin_bp3, user_origin_bp4, user_origin_bp5, user_origin_bp100, total_diff = self.core.calculate_avg_pp(
-            osuid, pp_range)
+                osuname = self.core.get_bind(qq_id)['username']
+            except:
+                pass
+            osuid = await self.get_user(osuname)
+            await self.get_bplists(osuname)
 
-        avgbp1 = round(avgbp1)
-        avgbp2 = round(avgbp2)
-        avgbp3 = round(avgbp3)
-        avgbp4 = round(avgbp4)
-        avgbp5 = round(avgbp5)
-        avgbp100 = round(avgbp100)
+            avgbp1, avgbp2, avgbp3, avgbp4, avgbp5, avgbp100, diffbp1, diffbp2, diffbp3, diffbp4, diffbp5, diffbp100, users_amount, start_pp, end_pp, user_origin_bp1, user_origin_bp2, user_origin_bp3, user_origin_bp4, user_origin_bp5, user_origin_bp100, total_diff = self.core.calculate_avg_pp(
+                osuid, pp_range)
 
-        user_origin_bp1 = round(user_origin_bp1)
-        user_origin_bp2 = round(user_origin_bp2)
-        user_origin_bp3 = round(user_origin_bp3)
-        user_origin_bp4 = round(user_origin_bp4)
-        user_origin_bp5 = round(user_origin_bp5)
-        user_origin_bp100 = round(user_origin_bp100)
+            avgbp1 = round(avgbp1)
+            avgbp2 = round(avgbp2)
+            avgbp3 = round(avgbp3)
+            avgbp4 = round(avgbp4)
+            avgbp5 = round(avgbp5)
+            avgbp100 = round(avgbp100)
 
-        diffbp1 = round(diffbp1)
-        diffbp2 = round(diffbp2)
-        diffbp3 = round(diffbp3)
-        diffbp4 = round(diffbp4)
-        diffbp5 = round(diffbp5)
-        diffbp100 = round(diffbp100)
+            user_origin_bp1 = round(user_origin_bp1)
+            user_origin_bp2 = round(user_origin_bp2)
+            user_origin_bp3 = round(user_origin_bp3)
+            user_origin_bp4 = round(user_origin_bp4)
+            user_origin_bp5 = round(user_origin_bp5)
+            user_origin_bp100 = round(user_origin_bp100)
 
-        total_diff = round(total_diff)
+            diffbp1 = round(diffbp1)
+            diffbp2 = round(diffbp2)
+            diffbp3 = round(diffbp3)
+            diffbp4 = round(diffbp4)
+            diffbp5 = round(diffbp5)
+            diffbp100 = round(diffbp100)
 
-        start_pp = round(start_pp, 2)
-        end_pp = round(end_pp, 2)
+            total_diff = round(total_diff)
 
-        data = f'根据亚托莉的数据库(#{users_amount})\n当前pp段{start_pp} ~ {end_pp}\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
+            start_pp = round(start_pp, 2)
+            end_pp = round(end_pp, 2)
 
-        return data
+            data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}的avgpp\n当前pp段{start_pp} ~ {end_pp}\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
+
+            return data
+        except Exception as e:
+            return f'error: {e}'
 
     async def get_bpsim(self, osuname, pp_range, qq_id=None):
 
@@ -132,7 +140,8 @@ class ATRI:
             osuid = await self.get_user(osuname)
             await self.get_bplists(osuname)
 
-            sim_list, start_pp, end_pp = self.core.calculate_bpsim(osuid, pp_range)
+            sim_list, start_pp, end_pp = self.core.calculate_bpsim(
+                osuid, pp_range)
 
             sim = ""
 
@@ -146,7 +155,7 @@ class ATRI:
             data = f'{osuname}的bp相似度\n当前pp段{start_pp} ~ {end_pp}{sim}'
 
             return data
-        
+
         except Exception as e:
             return f'error: {e}'
 
@@ -164,6 +173,9 @@ class ATRI:
             vs_osuid = await self.get_user(vs_name)
             await self.get_bplists(vs_name)
 
+            if osuid == vs_osuid:
+                return '干什么！'
+
             index_dict, user1_bps_pp_list, user2_bps_pp_list = self.core.calculate_bpsim_vs(
                 osuid, vs_osuid)
 
@@ -180,7 +192,10 @@ class ATRI:
                     total_diff += diff
                     simvs += f'\nbp{key}: {user1_pp_value}pp -- {user2_pp_value}pp ->bp{value}({diff})'
             data = f'{simvs}\n总计偏差:{total_diff}pp'
+
+            if index_dict == []:
+                data = f'{osuname}和{vs_name}没有一样的bp'
             return data
-        
+
         except Exception as e:
             return f'error: {e}'
