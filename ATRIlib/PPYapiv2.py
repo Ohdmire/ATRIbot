@@ -54,5 +54,3 @@ class PPYapiv2:
                 data = await response.json()
                 data = response.json()['scores']
                 return data
-            
-

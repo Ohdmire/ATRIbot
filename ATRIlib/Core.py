@@ -41,7 +41,7 @@ class ATRICore:
 
     # 数据模块-更新玩家bp信息
     async def update_bplist_info(self, osuname):
-        # 获取玩家ID
+
         userdata = await self.ppy.get_user_info(osuname)
         id = userdata['id']
 
@@ -305,11 +305,11 @@ class ATRICore:
         self.db_bind.delete({"id": qq_id})
 
     # 功能模块-获取绑定
-    def get_bind(self, qq_id):
+    def find_bind(self, qq_id):
         bind = self.db_bind.find_one({'id': qq_id})
         return bind
 
-    # 功能模块-gruop获取
+    # 数据模块-gruop获取
     def update_gruop(self, group_id, member_list):
 
         self.db_group.update(
@@ -348,10 +348,10 @@ class ATRICore:
                 bp100_pps_list.append(range_user['bps_pp'][99])
             except:
                 try:
-                    print(f'{range_user}没有bp100')
+                    print(f'{range_user["username"]}没有bp100')
                     self.update_bplist_info(range_user['username'])
                 except:
-                    print(f'{range_user}没有bp100且无法更新bp100')
+                    print(f'{range_user["username"]}没有bp100且无法更新bp100')
 
         # 随便找个list计数
         users_amount = len(bp1_pps_list)
@@ -407,16 +407,61 @@ class ATRICore:
                 sim_list.append({range_user['username']: sim})
             except:
                 try:
-                    print(f'{range_user}没有bps_beatmapid')
+                    print(f'{range_user["username"]}没有bps_beatmapid')
                     self.update_bplist_info(range_user['username'])
                 except:
-                    print(f'{range_user}没有bps_beatmapid且无法更新bps_beatmapid')
+                    print(f'{range_user["username"]}没有bps_beatmapid且无法更新bps_beatmapid')
 
         sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
         sorted_sim_list = sorted_sim_list[1:11]
 
         return sorted_sim_list, start_pp, end_pp
 
+    # 数据模块-bp相似度寻找
+    def calculate_bpsim_group(self, group_id, user_id, pp_range):
+
+        # 处理一下pp_range
+        now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
+        start_pp = now_pp - pp_range
+        end_pp = now_pp + pp_range
+
+        user1_bps = self.db_user.find_one({'id': user_id})['bps_beatmapid']
+
+        range_users = self.db_user.find(
+            {'statistics.pp': {'$gt': start_pp, '$lt': end_pp}})
+
+        sim_list = []
+
+        for range_user in range_users:
+
+            # 排除掉未绑定的 取group内的
+            id = range_user['id']
+            qqid = self.db_bind.find_one({'user_id': id})
+            if qqid is not None:
+                qqid = qqid['id']
+            members = self.db_group.find_one({'id': group_id})['user_id_list']
+            if qqid is None or qqid not in members:
+                continue
+
+            try:
+                user2_bps = range_user['bps_beatmapid']
+
+                sim = len(set(user1_bps).intersection(set(user2_bps)))
+
+                sim_list.append({range_user['username']: sim})
+            except:
+                try:
+                    print(f'{range_user["username"]}没有bps_beatmapid')
+                    self.update_bplist_info(range_user['username'])
+                except:
+                    print(f'{range_user["username"]}没有bps_beatmapid且无法更新bps_beatmapid')
+
+        sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
+        sorted_sim_list = sorted_sim_list[1:11]
+
+        return sorted_sim_list, start_pp, end_pp
+
+    # 数据模块-bp相似度vs
     def calculate_bpsim_vs(self, user_id, vsuser_id):
         user1_bps = self.db_user.find_one({'id': user_id})['bps_beatmapid']
         user2_bps = self.db_user.find_one({'id': vsuser_id})['bps_beatmapid']
