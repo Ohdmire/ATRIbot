@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 import QQAdapter
+import ATRIproxy
 
 import uvicorn
 
@@ -12,6 +13,7 @@ import uvicorn
 app = FastAPI()
 
 atri_qq = QQAdapter.QQ()
+atri_proxy = ATRIproxy.ATRI()
 
 
 class Item(BaseModel):
@@ -49,6 +51,27 @@ class Item6(BaseModel):
     osuname: Optional[str] = None
 
 
+class Item7(BaseModel):
+    qq_id: int
+    osuname: str
+
+
+class Item8(BaseModel):
+    qq_id: int
+    tth_range: int
+    osuname: Optional[str] = None
+
+
+class Item9(BaseModel):
+    qq_id: int
+    pt_range: int
+    osuname: Optional[str] = None
+
+
+class Item10(BaseModel):
+    user_lists: list
+
+
 @app.api_route("/qq/info", methods=["GET", "POST"])
 async def get_user_info(item: Item):
     result = await atri_qq.qq_get_user_id(item.qq_id, item.osuname)
@@ -83,8 +106,22 @@ async def get_avg_pp(item: Item3):
     return result
 
 
+@app.api_route("/qq/avgtth", methods=["GET", "POST"])
+async def get_avg_tth(item: Item8):
+    result = await atri_qq.qq_get_avg_tth(item.qq_id, item.tth_range, item.osuname)
+    print(result)
+    return result
+
+
+@app.api_route("/qq/avgpt", methods=["GET", "POST"])
+async def get_avg_pt(item: Item9):
+    result = await atri_qq.qq_get_avg_pt(item.qq_id, item.pt_range, item.osuname)
+    print(result)
+    return result
+
+
 @app.api_route("/qq/getbind", methods=["GET", "POST"])
-async def get_bind(item: Item):
+async def get_bind(item: Item7):
     result = await atri_qq.qq_get_bind(item.qq_id, item.osuname)
     print(result)
     return result
@@ -115,6 +152,42 @@ def get_group_bind(item: Item5):
 async def get_bpsim_group(item: Item6):
     result = await atri_qq.qq_get_bpsim_group(
         item.group_id, item.qq_id, item.pp_range, item.osuname)
+    print(result)
+    return result
+
+
+@app.api_route("/qq/joindategroup", methods=["GET", "POST"])
+async def get_joindate(item: Item6):
+    result = await atri_qq.qq_get_join_date(
+        item.group_id, item.qq_id, item.pp_range, item.osuname)
+    print(result)
+    return result
+
+
+@app.api_route("/updateusers", methods=["GET", "POST"])
+async def get_updateusers(item: Item10):
+    result = await atri_proxy.get_update_users(item.user_lists)
+    print(result)
+    return result
+
+
+@app.api_route("/fetchusers", methods=["GET", "POST"])
+def get_all_userids():
+    result = atri_proxy.return_all_userids()
+    print(result)
+    return result
+
+
+@app.api_route("/jobupdateusers", methods=["GET", "POST"])
+async def job_update_users():
+    result = await atri_proxy.jobs_update_users()
+    print(result)
+    return result
+
+
+@app.api_route("/jobupdateusersbps", methods=["GET", "POST"])
+async def job_update_users_bps():
+    result = await atri_proxy.jobs_update_users_bps()
     print(result)
     return result
 

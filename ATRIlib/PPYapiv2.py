@@ -32,7 +32,19 @@ class PPYapiv2:
                 data = await response.json()
                 return data
 
+    # 获取玩家信息id
+    async def get_user_info_fromid(self, osuid):
+        token = self.token
+        url = f'https://osu.ppy.sh/api/v2/users/{osuid}/osu?key=id'
+        headers = {'Authorization': f'Bearer {token}'}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                data = await response.json()
+                return data
+
     # 获取ba的bid
+
     async def get_user_best_all_info(self, user_id):
 
         token = self.token
