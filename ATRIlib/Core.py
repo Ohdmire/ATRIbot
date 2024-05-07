@@ -6,12 +6,17 @@ from ATRIlib.PPYapiv2 import PPYapiv2
 from ATRIlib.Mongodb import Mongodb
 from ATRIlib.Rosu import Rosu
 from ATRIlib.Jobs import Jobs
+from ATRIlib.Mtools import Tools
 
 import numpy as np
+
+import operator
 
 
 class ATRICore:
     def __init__(self):
+
+        self.mtools = Tools()
 
         self.jobs = Jobs()
 
@@ -52,7 +57,10 @@ class ATRICore:
     async def update_bplist_info(self, osuname):
 
         userdata = await self.ppy.get_user_info(osuname)
-        id = userdata['id']
+        try:
+            id = userdata['id']
+        except:
+            return None
 
         bps = await self.ppy.get_user_best_all_info(id)
 
@@ -117,6 +125,8 @@ class ATRICore:
         list3 = list1 * list2
 
         origin_pp_sum = np.sum(list3)
+
+        print(origin_pp_sum)
 
         return origin_pp_sum
 
@@ -190,6 +200,11 @@ class ATRICore:
     def sort_by_firstkey(self, list_of_dicts):
         sorted_list = sorted(list_of_dicts, key=lambda x: list(x.keys())[0])
         return sorted_list
+
+    def sort_by_value_reverse(self, mydict):
+        sorted_dict = dict(sorted(mydict.items(), reverse=True,
+                           key=operator.itemgetter(1)))
+        return sorted_dict
 
     # 功能模块-计算bonus pp
     def calculate_bonus_pp(self, user_id):
@@ -700,3 +715,96 @@ class ATRICore:
         result = await self.jobs.update_users_bps_async(user_lists)
 
         return result
+
+    def calculate_group_ppmap(self, group_id, user_id, pp_range):
+
+        # 处理一下pp_range
+        now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
+        start_pp = now_pp - pp_range
+        end_pp = now_pp + pp_range
+
+        range_users = self.db_user.find(
+            {'statistics.pp': {'$gt': start_pp, '$lt': end_pp}})
+
+        count_dict = {}
+        pp_dict = {}
+        amount_user = 0
+
+        user_bps_beatmapid = self.db_user.find_one({'id': user_id})[
+            'bps_beatmapid']
+        user_bps_pp = self.db_user.find_one({'id': user_id})['bps_pp']
+
+        for range_user in range_users:
+            # 排除掉未绑定的 取group内的
+            id = range_user['id']
+            qqid = self.db_bind.find_one({'user_id': id})
+            if qqid is not None:
+                qqid = qqid['id']
+            members = self.db_group.find_one({'id': group_id})['user_id_list']
+            if qqid is None or qqid not in members:
+                continue
+
+            try:
+                users_bps = range_user['bps_beatmapid']
+
+                for i in users_bps:
+                    if i in count_dict:
+                        count_dict[i] += 1
+                    else:
+                        count_dict[i] = 1
+
+                amount_user += 1
+
+            except:
+                print(f'{range_user["username"]}没有bps_beatmapid')
+
+        # 查找已经刷过的
+        for key in count_dict:
+            if key in user_bps_beatmapid:
+                # 查找index
+                index = user_bps_beatmapid.index(key)
+                scorepp = user_bps_pp[index]
+                pp_dict[key] = scorepp
+            else:
+                pp_dict[key] = 0
+
+        sorted_count_dict = self.sort_by_value_reverse(count_dict)
+
+        return sorted_count_dict, pp_dict, amount_user, start_pp, end_pp
+
+    def calculate_ptt_pp(self, user_id):
+
+        now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
+        # now_bp1 = self.db_user.find_one({'id': user_id})['bps_pp'][0]
+        now_bp1to13avg = sum(self.db_user.find_one(
+            {'id': user_id})['bps_pp'][0:12]) / 13
+
+        start_pp = now_pp - 1000
+        end_pp = now_pp + 1000
+
+        range_users = self.db_user.find(
+            {'statistics.pp': {'$gt': start_pp, '$lt': end_pp}})
+
+        # k1_bp1_list = []
+        # k1_pp_list = []
+
+        k2_bp1to13avg_list = []
+        k2_pp_list = []
+
+        for range_user in range_users:
+            try:
+                # k1_bp1_list.append(range_user['bps_pp'][0])
+                # k1_pp_list.append(range_user['statistics']['pp'])
+                k2_bp1to13avg_list.append(sum(range_user['bps_pp'][0:12]) / 13)
+                k2_pp_list.append(range_user['statistics']['pp'])
+            except:
+                print(f'{range_user["username"]}没有bplist')
+
+        # k1, b1 = self.mtools.leastsquares(k1_bp1_list, k1_pp_list)
+
+        k2, b2 = self.mtools.leastsquares(k2_bp1to13avg_list, k2_pp_list)
+
+        # avg_ptt_pp = k1 * now_bp1 + b1
+        bps_ptt_pp = k2 * now_bp1to13avg + b2
+
+        return bps_ptt_pp, now_pp

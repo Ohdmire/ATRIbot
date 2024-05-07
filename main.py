@@ -72,6 +72,12 @@ class Item10(BaseModel):
     user_lists: list
 
 
+class Item11(BaseModel):
+    qq_id: int
+    target_pp: int
+    osuname: Optional[str] = None
+
+
 @app.api_route("/qq/info", methods=["GET", "POST"])
 async def get_user_info(item: Item):
     result = await atri_qq.qq_get_user_id(item.qq_id, item.osuname)
@@ -156,10 +162,25 @@ async def get_bpsim_group(item: Item6):
     return result
 
 
+@app.api_route("/qq/ppmapgroup", methods=["GET", "POST"])
+async def get_ppmap_group(item: Item6):
+    result = await atri_qq.qq_get_group_ppmap(
+        item.group_id, item.qq_id, item.pp_range, item.osuname)
+    print(result)
+    return result
+
+
 @app.api_route("/qq/joindategroup", methods=["GET", "POST"])
 async def get_joindate(item: Item6):
     result = await atri_qq.qq_get_join_date(
         item.group_id, item.qq_id, item.pp_range, item.osuname)
+    print(result)
+    return result
+
+
+@app.api_route("/qq/pttpp", methods=["GET", "POST"])
+async def get_ptt_pp(item: Item):
+    result = await atri_qq.qq_get_ptt_pp(item.qq_id, item.osuname)
     print(result)
     return result
 

@@ -1,6 +1,7 @@
 from ATRIlib.Config import Config
 import requests
 import aiohttp
+import json
 
 
 class PPYapiv2:
@@ -54,6 +55,9 @@ class PPYapiv2:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
                 data = await response.json()
+                # result = json.dumps(data, indent=4)
+                # with open('ba.json', 'w') as f:
+                #     f.write(result)
                 return data
 
     async def get_user_socres_info(self, user_id, beatmap_id):

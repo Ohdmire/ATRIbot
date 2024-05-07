@@ -54,7 +54,7 @@ class ATRI:
         total_lost_pp = round(total_lost_pp, 2)
         weight_total_lost_pp = round(weight_total_lost_pp, 2)
 
-        data = f'{osuname}\'s choke\n总pp: {origin_pp_sum}pp({weight_total_lost_pp})\n如果不choke: {fixed_pp_sum}pp\n累加丢失的pp: {total_lost_pp}pp\n共choke:{choke_num}张\nchoke排行:{choke}'
+        data = f'{osuname}\'s ≤1miss choke\n总pp: {origin_pp_sum}pp({weight_total_lost_pp})\n如果不choke: {fixed_pp_sum}pp\n累加丢失的pp: {total_lost_pp}pp\n共choke:{choke_num}张\nchoke排行:{choke}'
 
         return data
 
@@ -71,7 +71,7 @@ class ATRI:
 
         diff = round(new_pp_sum - now_pp, 2)
 
-        data = f'{osuname}现在的pp: {now_pp}pp\n如果加入这些pp: {new_pp_sum}pp\n增加了: {diff}pp'
+        data = f'{osuname}\n现在的pp: {now_pp}pp\n如果加入这些pp: {new_pp_sum}pp\n增加了: {diff}pp'
 
         return data
 
@@ -106,10 +106,10 @@ class ATRI:
 
         total_diff = round(total_diff)
 
-        start_pp = round(start_pp, 2)
-        end_pp = round(end_pp, 2)
+        start_pp = round(start_pp)
+        end_pp = round(end_pp)
 
-        data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}的avgpp\n当前pp段{start_pp} ~ {end_pp}\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
+        data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}对比平均bp\n当前pp段{start_pp}pp ~ {end_pp}pp\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
 
         return data
 
@@ -154,7 +154,7 @@ class ATRI:
 
         total_diff_total_pp = round(total_diff_total_pp)
 
-        data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}的avgtth\n当前tth段{start_tth}w ~ {end_tth}w\npp: {user_now_pp}pp -- {avgtotalpp}pp({total_diff_total_pp})\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
+        data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}对比平均总打击数\n当前tth段{start_tth}w ~ {end_tth}w\npp: {user_now_pp}pp -- {avgtotalpp}pp({total_diff_total_pp})\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
 
         return data
 
@@ -199,9 +199,14 @@ class ATRI:
 
         total_diff_total_pp = round(total_diff_total_pp)
 
-        data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}的avgpt\n当前pt段{start_pt}h ~ {end_pt}h\npp: {user_now_pp}pp -- {avgtotalpp}pp({total_diff_total_pp})\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
+        data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}对比平均游玩时间\n当前pt段{start_pt}h ~ {end_pt}h\npp: {user_now_pp}pp -- {avgtotalpp}pp({total_diff_total_pp})\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
 
         return data
+
+    # async def get_avg_all(self, osuname, pp_range):
+
+    #     osuid = await self.get_user(osuname)
+    #     await self.get_bplists(osuname)
 
     async def get_bpsim(self, osuname, pp_range):
 
@@ -217,10 +222,10 @@ class ATRI:
             for key, value in i.items():
                 sim += f'\n{value}张 -> {key}'
 
-        start_pp = round(start_pp, 2)
-        end_pp = round(end_pp, 2)
+        start_pp = round(start_pp)
+        end_pp = round(end_pp)
 
-        data = f'{osuname}的bp相似度\n当前pp段{start_pp} ~ {end_pp}{sim}'
+        data = f'{osuname}的bp相似度\n当前pp段{start_pp}pp ~ {end_pp}pp{sim}'
 
         return data
 
@@ -238,10 +243,10 @@ class ATRI:
             for key, value in i.items():
                 sim += f'\n{key}: {value}张'
 
-        start_pp = round(start_pp, 2)
-        end_pp = round(end_pp, 2)
+        start_pp = round(start_pp)
+        end_pp = round(end_pp)
 
-        data = f'{osuname}的bp相似度\n当前pp段{start_pp} ~ {end_pp}{sim}'
+        data = f'{osuname}在本群的bp相似度\n当前pp段{start_pp}pp ~ {end_pp}pp{sim}'
 
         return data
 
@@ -291,12 +296,12 @@ class ATRI:
         calculate_join_date, index, start_pp, end_pp = self.core.calculate_join_date_group(
             group_id, osuid, pp_range)
 
-        start_pp = round(start_pp, 2)
-        end_pp = round(end_pp, 2)
+        start_pp = round(start_pp)
+        end_pp = round(end_pp)
 
         rank = ""
 
-        rank += f'{osuname}注册日期在本群{index}/{len(calculate_join_date)}\n当前pp段{start_pp} ~ {end_pp}'
+        rank += f'{osuname}注册日期在本群{index}/{len(calculate_join_date)}\n当前pp段{start_pp}pp ~ {end_pp}pp'
 
         count = 1
         start_count = index - 5
@@ -311,6 +316,50 @@ class ATRI:
                 count += 1
 
         return rank
+
+    async def get_group_ppmap(self, group_id, osuname, pp_range):
+
+        osuid = await self.get_user(osuname)
+        await self.get_bplists(osuname)
+
+        sorted_count_dict, pp_dict, amount_user, start_pp, end_pp = self.core.calculate_group_ppmap(
+            group_id, osuid, pp_range)
+
+        ppmap = ''
+        count = 0
+
+        for key, value in sorted_count_dict.items():
+            if count < 10:
+                percent = round((value / amount_user) * 100)
+                ppmap += f'\n{percent}%的人 -- m{key}'
+                pp = pp_dict[key]
+                pp = round(pp)
+                if pp != 0:
+                    ppmap += f'你已刷{pp}pp'
+                count += 1
+            else:
+                break
+
+        start_pp = round(start_pp)
+        end_pp = round(end_pp)
+
+        result = f'根据亚托莉的数据库(#{amount_user})\n{osuname}\n在本群的最多人刷进bp的图中\n当前pp段{start_pp}pp ~ {end_pp}pp{ppmap}'
+        return result
+
+    async def get_ptt_pp(self, osuname):
+
+        osuid = await self.get_user(osuname)
+        await self.get_bplists(osuname)
+
+        bps_ptt_pp, now_pp = self.core.calculate_ptt_pp(osuid)
+
+        bps_ptt_pp = round(bps_ptt_pp, 2)
+
+        data = f'{osuname}\n现在的pp: {now_pp}pp\n预测pp: {bps_ptt_pp}pp'
+
+        return data
+    
+    
 
     async def get_update_users(self, user_lists):
         return await self.core.update_users_async(user_lists)

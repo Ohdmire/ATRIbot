@@ -115,3 +115,23 @@ class QQ:
             return "请先绑定输入 !getbind"
 
         return await self.proxy.get_join_date(group_id, osuname, pp_range)
+
+    async def qq_get_group_ppmap(self, group_id, qq_id, pp_range, osuname=None):
+
+        if osuname is None:
+            osuname = self.proxy.find_bind_name_qq(qq_id)
+
+        if osuname is None:
+            return "请先绑定输入 !getbind"
+
+        return await self.proxy.get_group_ppmap(group_id, osuname, pp_range)
+
+    async def qq_get_ptt_pp(self, qq_id, osuname=None):
+
+        if osuname is None:
+            osuname = self.proxy.find_bind_name_qq(qq_id)
+
+        if osuname is None:
+            return "请先绑定输入 !getbind"
+
+        return await self.proxy.get_ptt_pp(osuname)
