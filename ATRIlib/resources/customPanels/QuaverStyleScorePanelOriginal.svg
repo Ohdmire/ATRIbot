@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1950 1080">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#_未命名的渐变_5);
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8, .cls-9, .cls-10, .cls-11, .cls-12, .cls-13, .cls-14, .cls-15, .cls-16, .cls-17, .cls-18, .cls-19, .cls-20, .cls-21 {
+        stroke-width: 0px;
+      }
+
+      .cls-1, .cls-2, .cls-6, .cls-8, .cls-13, .cls-17 {
+        opacity: .25;
+      }
+
+      .cls-22 {
+        letter-spacing: -.04em;
+      }
+
+      .cls-23 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-24 {
+        letter-spacing: .01em;
+      }
+
+      .cls-25 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-26 {
+        letter-spacing: 0em;
+      }
+
+      .cls-27, .cls-28, .cls-29, .cls-30, .cls-31, .cls-32, .cls-33, .cls-34, .cls-35, .cls-36, .cls-37, .cls-38, .cls-39, .cls-40, .cls-41, .cls-42, .cls-43, .cls-44 {
+        font-family: Gilroy-Bold, Gilroy;
+        font-weight: 700;
+      }
+
+      .cls-27, .cls-45, .cls-32, .cls-46, .cls-35, .cls-47, .cls-38, .cls-40, .cls-41, .cls-48, .cls-49, .cls-50 {
+        font-size: 18px;
+      }
+
+      .cls-27, .cls-45, .cls-10, .cls-44 {
+        fill: #fb61ff;
+      }
+
+      .cls-51 {
+        letter-spacing: 0em;
+      }
+
+      .cls-28, .cls-29, .cls-30, .cls-33, .cls-34, .cls-42, .cls-43, .cls-44 {
+        font-size: 30px;
+      }
+
+      .cls-28, .cls-9, .cls-35, .cls-49 {
+        fill: #fff7a9;
+      }
+
+      .cls-2 {
+        fill: url(#_未命名的渐变_12);
+      }
+
+      .cls-52 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-53 {
+        filter: url(#drop-shadow-3);
+        stroke: #fff7a9;
+      }
+
+      .cls-53, .cls-7, .cls-54, .cls-55, .cls-56, .cls-57, .cls-58 {
+        fill: #1a1a1a;
+      }
+
+      .cls-53, .cls-54, .cls-55, .cls-56, .cls-57, .cls-59, .cls-60, .cls-61, .cls-58 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-3, .cls-34, .cls-40, .cls-50 {
+        fill: #c1272d;
+      }
+
+      .cls-62 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-4, .cls-33, .cls-47, .cls-38 {
+        fill: #0071bc;
+      }
+
+      .cls-63 {
+        letter-spacing: 0em;
+      }
+
+      .cls-5 {
+        fill: url(#_未命名的渐变_3-2);
+      }
+
+      .cls-64 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-65 {
+        letter-spacing: 0em;
+      }
+
+      .cls-66 {
+        letter-spacing: 0em;
+      }
+
+      .cls-6 {
+        fill: url(#_未命名的渐变_18);
+      }
+
+      .cls-29, .cls-31, .cls-36, .cls-19 {
+        fill: #fff;
+      }
+
+      .cls-67 {
+        letter-spacing: 0em;
+      }
+
+      .cls-30, .cls-32, .cls-46, .cls-20 {
+        fill: #ffe000;
+      }
+
+      .cls-54 {
+        filter: url(#drop-shadow-6);
+        stroke: #0071bc;
+      }
+
+      .cls-68 {
+        letter-spacing: -.05em;
+      }
+
+      .cls-55 {
+        filter: url(#drop-shadow-4);
+        stroke: #ffe000;
+      }
+
+      .cls-69 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-31 {
+        font-size: 15px;
+      }
+
+      .cls-70 {
+        letter-spacing: 0em;
+      }
+
+      .cls-8 {
+        fill: url(#_未命名的渐变_15);
+      }
+
+      .cls-71 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-72 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-73 {
+        letter-spacing: 0em;
+      }
+
+      .cls-74 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-45, .cls-46, .cls-47, .cls-48, .cls-49, .cls-50 {
+        font-family: Gilroy-Regular, Gilroy;
+      }
+
+      .cls-75 {
+        letter-spacing: 0em;
+      }
+
+      .cls-76 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-77 {
+        letter-spacing: -.09em;
+      }
+
+      .cls-78 {
+        letter-spacing: .02em;
+      }
+
+      .cls-79 {
+        letter-spacing: -.05em;
+      }
+
+      .cls-80 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-81 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-82 {
+        letter-spacing: 0em;
+      }
+
+      .cls-83 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-84 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-85 {
+        letter-spacing: 0em;
+      }
+
+      .cls-86 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-87 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-88 {
+        letter-spacing: .01em;
+      }
+
+      .cls-56 {
+        filter: url(#drop-shadow-8);
+        stroke: #c1272d;
+      }
+
+      .cls-89 {
+        letter-spacing: 0em;
+      }
+
+      .cls-90 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-36, .cls-37, .cls-39 {
+        font-size: 20px;
+      }
+
+      .cls-91 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-92 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-11 {
+        fill: url(#_未命名的渐变_3);
+      }
+
+      .cls-37 {
+        fill: #fbb03b;
+      }
+
+      .cls-57 {
+        filter: url(#drop-shadow-5);
+        stroke: #22b573;
+      }
+
+      .cls-93 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-12 {
+        filter: url(#drop-shadow-1);
+      }
+
+      .cls-12, .cls-18 {
+        fill: #5294a3;
+      }
+
+      .cls-94 {
+        letter-spacing: 0em;
+      }
+
+      .cls-95 {
+        letter-spacing: -.05em;
+      }
+
+      .cls-59 {
+        stroke: #333;
+        stroke-width: 4px;
+      }
+
+      .cls-59, .cls-60, .cls-61 {
+        fill: none;
+      }
+
+      .cls-13 {
+        fill: url(#_未命名的渐变_24);
+      }
+
+      .cls-14 {
+        fill: #262626;
+      }
+
+      .cls-39 {
+        fill: #29abe2;
+      }
+
+      .cls-60 {
+        stroke: #29abe2;
+      }
+
+      .cls-60, .cls-61 {
+        stroke-width: 2px;
+      }
+
+      .cls-96 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-15, .cls-41, .cls-48, .cls-43 {
+        fill: #22b573;
+      }
+
+      .cls-16 {
+        fill: #333;
+      }
+
+      .cls-97 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-17 {
+        fill: url(#_未命名的渐变_21);
+      }
+
+      .cls-98 {
+        letter-spacing: 0em;
+      }
+
+      .cls-99 {
+        letter-spacing: -.05em;
+      }
+
+      .cls-18 {
+        filter: url(#drop-shadow-2);
+      }
+
+      .cls-100 {
+        letter-spacing: -.04em;
+      }
+
+      .cls-101 {
+        letter-spacing: 0em;
+      }
+
+      .cls-102 {
+        letter-spacing: 0em;
+      }
+
+      .cls-103 {
+        letter-spacing: 0em;
+      }
+
+      .cls-42 {
+        fill: #ff4dff;
+      }
+
+      .cls-61 {
+        stroke: #fff;
+      }
+
+      .cls-58 {
+        filter: url(#drop-shadow-7);
+        stroke: #fb61ff;
+      }
+
+      .cls-104 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-105 {
+        letter-spacing: 0em;
+      }
+
+      .cls-106 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-107 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-108 {
+        letter-spacing: -.09em;
+      }
+
+      .cls-109 {
+        letter-spacing: -.04em;
+      }
+
+      .cls-110 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-21 {
+        fill: #4d4d4d;
+      }
+    </style>
+    <linearGradient id="_未命名的渐变_3" data-name="未命名的渐变 3" x1="975" y1="60" x2="975" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="1" stop-color="#262626"/>
+    </linearGradient>
+    <filter id="drop-shadow-1" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="2"/>
+      <feGaussianBlur result="blur" stdDeviation="5"/>
+      <feFlood flood-color="#5294a3" flood-opacity=".5"/>
+      <feComposite in2="blur" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <linearGradient id="_未命名的渐变_3-2" data-name="未命名的渐变 3" x1="-663.19" y1="-328.22" x2="-663.19" y2="-388.22" gradientTransform="translate(1638.19 691.78) scale(1 -1)" xlink:href="#_未命名的渐变_3"/>
+    <filter id="drop-shadow-2" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="2"/>
+      <feGaussianBlur result="blur-2" stdDeviation="5"/>
+      <feFlood flood-color="#5294a3" flood-opacity=".5"/>
+      <feComposite in2="blur-2" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <linearGradient id="_未命名的渐变_5" data-name="未命名的渐变 5" x1="165" y1="560" x2="435" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff7a9"/>
+      <stop offset="1" stop-color="#fff7a9" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_12" data-name="未命名的渐变 12" x1="165" y1="630" x2="435" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe000"/>
+      <stop offset="1" stop-color="#ffe000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_15" data-name="未命名的渐变 15" x1="165" y1="700" x2="435" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22b573"/>
+      <stop offset="1" stop-color="#22b573" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_18" data-name="未命名的渐变 18" x1="165" y1="770" x2="435" y2="770" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0071bc"/>
+      <stop offset="1" stop-color="#0071bc" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_21" data-name="未命名的渐变 21" x1="165" y1="840" x2="435" y2="840" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fb61ff"/>
+      <stop offset="1" stop-color="#fb61ff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_24" data-name="未命名的渐变 24" x1="165" y1="910" x2="435" y2="910" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c1272d"/>
+      <stop offset="1" stop-color="#c1272d" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="drop-shadow-3" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="0"/>
+      <feGaussianBlur result="blur-3" stdDeviation="5"/>
+      <feFlood flood-color="#fff7a9" flood-opacity=".5"/>
+      <feComposite in2="blur-3" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-4" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="0"/>
+      <feGaussianBlur result="blur-4" stdDeviation="5"/>
+      <feFlood flood-color="#ffe000" flood-opacity=".5"/>
+      <feComposite in2="blur-4" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-5" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="0"/>
+      <feGaussianBlur result="blur-5" stdDeviation="5"/>
+      <feFlood flood-color="#22b573" flood-opacity=".5"/>
+      <feComposite in2="blur-5" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-6" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="0"/>
+      <feGaussianBlur result="blur-6" stdDeviation="5"/>
+      <feFlood flood-color="#0071bc" flood-opacity=".5"/>
+      <feComposite in2="blur-6" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-7" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="0"/>
+      <feGaussianBlur result="blur-7" stdDeviation="5"/>
+      <feFlood flood-color="#fb61ff" flood-opacity=".5"/>
+      <feComposite in2="blur-7" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-8" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy="0"/>
+      <feGaussianBlur result="blur-8" stdDeviation="5"/>
+      <feFlood flood-color="#c1272d" flood-opacity=".5"/>
+      <feComposite in2="blur-8" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Background">
+    <rect class="cls-21" x="15" width="1920" height="1080"/>
+    <rect class="cls-11" x="15" width="1920" height="60"/>
+    <rect class="cls-12" x="15" y="57.5" width="1920" height="2.5"/>
+    <rect class="cls-5" x="15" y="1020" width="1920" height="60" transform="translate(1950 2100) rotate(180)"/>
+    <rect class="cls-18" x="15" y="1020" width="1920" height="2.5" transform="translate(1950 2042.5) rotate(180)"/>
+    <rect class="cls-7" x="135" y="260" width="1680" height="60"/>
+    <polyline class="cls-61" points="1820 27.5 1825 32.5 1830 27.5"/>
+    <rect class="cls-14" x="135" y="320" width="1680" height="60"/>
+    <rect class="cls-7" x="135" y="380" width="1680" height="140"/>
+    <rect class="cls-14" x="135" y="520" width="850" height="430"/>
+    <rect class="cls-7" x="985" y="520" width="830" height="70"/>
+    <rect class="cls-1" x="165" y="540" width="270" height="40"/>
+    <rect class="cls-2" x="165" y="610" width="270" height="40"/>
+    <rect class="cls-8" x="165" y="680" width="270" height="40"/>
+    <rect class="cls-6" x="165" y="750" width="270" height="40"/>
+    <rect class="cls-17" x="165" y="820" width="270" height="40"/>
+    <rect class="cls-13" x="165" y="890" width="270" height="40"/>
+    <rect class="cls-9" x="165" y="540" width="2.5" height="40"/>
+    <rect class="cls-20" x="165" y="610" width="2.5" height="40"/>
+    <rect class="cls-15" x="165" y="680" width="2.5" height="40"/>
+    <rect class="cls-4" x="165" y="750" width="2.5" height="40"/>
+    <rect class="cls-10" x="165" y="820" width="2.5" height="40"/>
+    <rect class="cls-3" x="165" y="890" width="2.5" height="40"/>
+    <rect class="cls-16" x="135" y="950" width="1680" height="50"/>
+    <line class="cls-59" x1="135" y1="520" x2="1815" y2="520"/>
+  </g>
+  <g id="Text">
+    <text class="cls-31" transform="translate(225 35)">HOME</text>
+    <text class="cls-31" transform="translate(367 35)">MAPS</text>
+    <text class="cls-31" transform="translate(509 35)">JUKEBOX</text>
+    <text class="cls-31" transform="translate(651 35)">THEATER</text>
+    <text class="cls-31" transform="translate(793 35)">SKINS</text>
+    <text class="cls-31" transform="translate(935 35)">DONATE</text>
+    <rect class="cls-21" x="1595" y="20" width="90" height="20" rx="2" ry="2"/>
+    <text class="cls-31" id="achiveTime" transform="translate(1607.63 34.4)">00:00:00</text>
+    <text class="cls-31" id="username" transform="translate(1765 35)">User</text>
+    <path class="cls-19" id="headerMore" d="M1905,20h-30v-2.5h30v2.5ZM1905,27.5h-30v2.5h30v-2.5ZM1905,37.5h-30v2.5h30v-2.5Z"/>
+    <polyline id="headerDownArrow" class="cls-61" points="1820 27.5 1825 32.5 1830 27.5"/>
+    <polyline id="footerLeftArrow" class="cls-61" points="40 1050 35 1055 40 1060"/>
+    <text class="cls-31" transform="translate(55 1060)">BACK</text>
+    <text class="cls-31" transform="translate(185 1060)">OPTIONS</text>
+    <text class="cls-31" transform="translate(345 1060)">CONVERT SCORE</text>
+    <text class="cls-31" transform="translate(1627.84 1060)">WATCH REPLAY</text>
+    <text class="cls-31" transform="translate(1826.67 1060)">RETRY MAP</text>
+    <text class="cls-31" transform="translate(1414.89 1060)">EXPORT REPLAY</text>
+    <text class="cls-29" id="songTitle" transform="translate(355 180)">Song Title</text>
+    <text class="cls-42" id="version" transform="translate(355 220)">diff name</text>
+    <text class="cls-36" transform="translate(355 250)">Mappd by:</text>
+    <text class="cls-39" id="mapper" transform="translate(475 250)">Mapper</text>
+    <text class="cls-36" transform="translate(475 300)">Multiplayer</text>
+    <text class="cls-39" transform="translate(355 300)">Overview</text>
+    <text class="cls-36" transform="translate(145 370)">Played by</text>
+    <text class="cls-39" id="playerName" transform="translate(245 370)">Player</text>
+    <text class="cls-36" transform="translate(315 370)">on</text>
+    <text class="cls-36" id="roughTime" transform="translate(345 370)">00/00/0000</text>
+    <text class="cls-36" id="preciseTime" transform="translate(475 370)">00:00:00 AM/PM</text>
+    <text class="cls-29" id="maxCombo" transform="translate(289.33 430)">4000x</text>
+    <text class="cls-29" id="accuracy" transform="translate(605.41 430)">100.0%</text>
+    <text class="cls-29" id="performance" transform="translate(934.33 430)">10.00</text>
+    <text class="cls-29" id="rankedAccuracy" transform="translate(1250.41 430)">100.0%</text>
+    <text class="cls-29" id="totalScore" transform="translate(1568.3 430)">000000</text>
+    <g>
+      <rect class="cls-21" x="205" y="450" width="260" height="30" rx="5" ry="5"/>
+      <text class="cls-36" transform="translate(274.42 470.87)">MAX COMBO</text>
+    </g>
+    <g>
+      <rect class="cls-21" x="527.5" y="450" width="260" height="30" rx="5" ry="5"/>
+      <text class="cls-36" transform="translate(604.44 470.87)">ACCURACY</text>
+    </g>
+    <g>
+      <rect class="cls-21" x="850" y="450" width="260" height="30" rx="5" ry="5"/>
+      <text class="cls-37" transform="translate(871.9 470.87)"><tspan x="0" y="0">PERFORMANCE RATING</tspan></text>
+    </g>
+    <g>
+      <rect class="cls-21" x="1172.5" y="450" width="260" height="30" rx="5" ry="5"/>
+      <text class="cls-36" transform="translate(1208.81 470.87)">RANKED ACCURACY</text>
+    </g>
+    <g>
+      <rect class="cls-21" x="1495" y="450" width="260" height="30" rx="5" ry="5"/>
+      <text class="cls-36" transform="translate(1561.33 470.87)">TOTAL SCORE</text>
+    </g>
+    <rect class="cls-16" x="125" y="140" width="200" height="200" rx="10" ry="10"/>
+    <rect class="cls-19" x="135" y="150" width="180" height="180" rx="5" ry="5"/>
+    <g>
+      <path class="cls-19" d="M35,15v25h1.22v-13.13h2.59v10.65h5.01v2.47h4.91c-1.08-.3-2.04-.87-2.88-1.71-1.31-1.34-1.97-2.96-1.97-4.86s.66-3.53,1.97-4.84,2.94-1.99,4.84-1.99,3.51.66,4.84,1.99c1.32,1.31,1.99,2.93,1.99,4.84s-.66,3.53-1.99,4.86c-.84.84-1.8,1.4-2.88,1.71h11.05c-1.13-.3-2.12-.87-2.97-1.71-1.33-1.32-1.99-2.94-1.99-4.84s.66-3.53,1.97-4.86c1.32-1.32,2.96-1.99,4.91-1.99,1.21,0,2.33.27,3.34.82,1.01.55,1.81,1.29,2.38,2.23l-2.21,1.27c-.31-.54-.79-.97-1.42-1.31s-1.34-.51-2.1-.51c-1.26,0-2.29.41-3.09,1.24-.8.8-1.2,1.83-1.2,3.09s.41,2.26,1.22,3.08c.81.8,1.9,1.2,3.26,1.2.99,0,1.81-.22,2.47-.66.66-.44,1.11-1.05,1.35-1.84h-3.98v-2.29h6.58v1.01c0,1.88-.6,3.39-1.8,4.56-.74.71-1.61,1.21-2.61,1.48h10.49c-1.08-.3-2.04-.87-2.88-1.71-1.31-1.34-1.97-2.96-1.97-4.86s.66-3.53,1.97-4.84,2.94-1.99,4.84-1.99,3.51.66,4.84,1.99c1.32,1.31,1.99,2.93,1.99,4.84s-.66,3.53-1.99,4.86c-.84.84-1.8,1.4-2.88,1.71h34.05V15H35Z"/>
+      <path class="cls-19" d="M53.69,30.34c-.81-.81-1.82-1.22-3.02-1.22s-2.21.41-3.02,1.22-1.22,1.84-1.22,3.09.41,2.28,1.22,3.09c.8.8,1.81,1.2,3.02,1.2s2.22-.4,3.02-1.2c.81-.81,1.22-1.84,1.22-3.09s-.41-2.28-1.22-3.09Z"/>
+      <path class="cls-19" d="M83.26,30.34c-.81-.81-1.82-1.22-3.02-1.22s-2.21.41-3.02,1.22-1.22,1.84-1.22,3.09.41,2.28,1.22,3.09c.8.8,1.81,1.2,3.02,1.2s2.22-.4,3.02-1.2c.81-.81,1.22-1.84,1.22-3.09s-.41-2.28-1.22-3.09Z"/>
+    </g>
+    <rect class="cls-19" x="1725" y="15" width="30" height="30" rx="5" ry="5"/>
+    <text class="cls-36" transform="translate(1535 370)">Judgment Preset:</text>
+    <text class="cls-37" id="Judgment" transform="translate(1705 370)">Standard*</text>
+    <rect class="cls-19" x="1710" y="275" width="70" height="30" rx="15" ry="15"/>
+    <g>
+      <rect class="cls-53" x="185" y="550" width="100" height="20" rx="10" ry="10"/>
+      <text class="cls-49" transform="translate(211.26 565.44)">MARV</text>
+    </g>
+    <g>
+      <rect class="cls-55" x="185" y="620" width="100" height="20" rx="10" ry="10"/>
+      <text class="cls-46" transform="translate(214.8 635.44)">PERF</text>
+    </g>
+    <g>
+      <rect class="cls-57" x="185" y="690" width="100" height="20" rx="10" ry="10"/>
+      <text class="cls-48" transform="translate(207.47 705.44)">GREAT</text>
+    </g>
+    <g>
+      <rect class="cls-54" x="185" y="760" width="100" height="20" rx="10" ry="10"/>
+      <text class="cls-47" transform="translate(206.95 775.44)">GOOD</text>
+    </g>
+    <g>
+      <rect class="cls-58" x="185" y="830" width="100" height="20" rx="10" ry="10"/>
+      <text class="cls-45" transform="translate(212.24 845.44)">OKAY</text>
+    </g>
+    <g>
+      <rect class="cls-56" x="185" y="900" width="100" height="20" rx="10" ry="10"/>
+      <text class="cls-50" transform="translate(215.68 915.44)">MISS</text>
+    </g>
+    <text class="cls-35" transform="translate(315 565)">(100.0%)</text>
+    <text class="cls-32" transform="translate(315 635)">(100.0%)</text>
+    <text class="cls-41" transform="translate(315 705)">(100.0%)</text>
+    <text class="cls-38" transform="translate(315 775)">(100.0%)</text>
+    <text class="cls-27" transform="translate(315 845)">(100.0%)</text>
+    <text class="cls-40" transform="translate(315 915)">(100.0%)</text>
+    <text class="cls-28" transform="translate(898.3 565)">999</text>
+    <text class="cls-30" transform="translate(898.3 635)">999</text>
+    <text class="cls-43" transform="translate(898.3 705)">999</text>
+    <text class="cls-33" transform="translate(898.3 775)">999</text>
+    <text class="cls-44" transform="translate(898.3 845)">999</text>
+    <text class="cls-34" transform="translate(898.3 915)">999</text>
+    <g>
+      <text class="cls-36" transform="translate(1005 560)">Mean:</text>
+      <text id="mean" class="cls-39" transform="translate(1065 560)">00.00ms</text>
+    </g>
+    <g>
+      <text class="cls-36" transform="translate(1188.33 560)">Std.Dev:</text>
+      <text id="stdDev" class="cls-39" transform="translate(1268.33 560)">50.11ms</text>
+    </g>
+    <g>
+      <text class="cls-36" transform="translate(1408.46 560)">Ratio:</text>
+      <text id="ratio" class="cls-39" transform="translate(1468.46 560)">1.0:1</text>
+    </g>
+    <rect class="cls-16" x="1645" y="532.5" width="140" height="40" rx="5" ry="5"/>
+    <g>
+      <text class="cls-36" transform="translate(1565 560)">GRAPH:</text>
+      <text id="graph" class="cls-39" transform="translate(1665 560)">00.00ms</text>
+    </g>
+    <polyline id="graphDownArrow" class="cls-60" points="1760 550 1765 555 1770 550"/>
+    <g>
+      <polygon class="cls-19" points="1703.01 228.22 1699.08 240 1733.02 240 1729.1 228.22 1703.01 228.22"/>
+      <polygon class="cls-19" points="1707.12 216.16 1725.07 216.16 1716.1 189.41 1707.12 216.16"/>
+      <polygon class="cls-19" points="1685 150 1685 240 1685.15 240 1708.06 174.55 1724.05 174.55 1747.05 240 1775 240 1775 150 1685 150"/>
+    </g>
+    <rect class="cls-19" x="985" y="590" width="830" height="360"/>
+  </g>
+</svg>
