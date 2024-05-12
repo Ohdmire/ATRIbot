@@ -113,8 +113,10 @@ class QQ:
 
         if osuname is None:
             return "请先绑定输入 !getbind"
-
-        return await self.proxy.get_join_date(group_id, osuname, pp_range)
+        try:
+            return await self.proxy.get_join_date(group_id, osuname, pp_range)
+        except Exception as e:
+            return f'失败,尝试输入 !getgroups更新群员列表\n{e}'
 
     async def qq_get_group_ppmap(self, group_id, qq_id, pp_range, osuname=None):
 
