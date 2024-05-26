@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 
 from pydantic import BaseModel
 
@@ -8,6 +9,8 @@ import QQAdapter
 import ATRIproxy
 
 import uvicorn
+
+import os
 
 
 app = FastAPI()
@@ -76,6 +79,23 @@ class Item11(BaseModel):
     qq_id: int
     target_pp: int
     osuname: Optional[str] = None
+
+
+@app.api_route("/qq/re", methods=["GET", "POST"])
+async def get_re(item: Item):
+    result = await atri_qq.qq_get_re(item.qq_id, item.osuname)
+    print(result)
+    return result
+
+
+@app.api_route("/qq/tdba", methods=["GET", "POST"])
+async def get_tdbp(item: Item):
+    result = await atri_qq.qq_get_tdba(item.qq_id, item.osuname)
+    if os.path.exists('data/tmp/' + result):
+        return FileResponse(path='data/tmp/' + result)
+    else:
+        print('File not found')
+        return result
 
 
 @app.api_route("/qq/info", methods=["GET", "POST"])

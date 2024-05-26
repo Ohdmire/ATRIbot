@@ -358,8 +358,23 @@ class ATRI:
         data = f'{osuname}\n现在的pp: {now_pp}pp\n预测pp: {bps_ptt_pp}pp'
 
         return data
+
+    async def get_re(self, osuname):
+
+        osuid = await self.get_user(osuname)
+
+        data = await self.core.calculate_re_score(osuid)
+
+        return data
     
-    
+    async def get_tdba(self, osuname):
+
+        osuid = await self.get_user(osuname)
+        await self.get_bplists(osuname)
+
+        data = self.core.calculate_tdba(osuid)
+
+        return data
 
     async def get_update_users(self, user_lists):
         return await self.core.update_users_async(user_lists)

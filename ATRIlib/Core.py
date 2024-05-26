@@ -7,10 +7,13 @@ from ATRIlib.Mongodb import Mongodb
 from ATRIlib.Rosu import Rosu
 from ATRIlib.Jobs import Jobs
 from ATRIlib.Mtools import Tools
+from ATRIlib.Dtools import ResultScreen
+from ATRIlib.Dtools import TDBA
 
 import numpy as np
 
 import operator
+import datetime
 
 
 class ATRICore:
@@ -36,6 +39,9 @@ class ATRICore:
 
         self.weight_list = [1.0, 0.95, 0.9025, 0.8573749999999998, 0.8145062499999999, 0.7737809374999998, 0.7350918906249998, 0.6983372960937497, 0.6634204312890623, 0.6302494097246091, 0.5987369392383787, 0.5688000922764597, 0.5403600876626367, 0.5133420832795048, 0.4876749791155295, 0.46329123015975304, 0.44012666865176536, 0.4181203352191771, 0.3972143184582182, 0.3773536025353073, 0.3584859224085419, 0.34056162628811476, 0.323533544973709, 0.3073568677250236, 0.2919890243387724, 0.27738957312183377, 0.26352009446574204, 0.2503440897424549, 0.23782688525533216, 0.22593554099256555, 0.21463876394293727, 0.2039068257457904, 0.19371148445850087, 0.18402591023557582, 0.174824614723797, 0.16608338398760714, 0.1577792147882268, 0.14989025404881545, 0.14239574134637467, 0.13527595427905592, 0.12851215656510312, 0.12208654873684796, 0.11598222130000556, 0.11018311023500528, 0.10467395472325501, 0.09944025698709226, 0.09446824413773763, 0.08974483193085075, 0.0852575903343082, 0.0809947108175928, 0.07694497527671315, 0.07309772651287749,
                             0.06944284018723361, 0.06597069817787193, 0.06267216326897833, 0.05953855510552941, 0.056561627350252934, 0.053733545982740286, 0.051046868683603266, 0.048494525249423104, 0.046069798986951946, 0.043766309037604346, 0.041577993585724136, 0.03949909390643792, 0.03752413921111602, 0.03564793225056022, 0.033865535638032206, 0.03217225885613059, 0.030563645913324066, 0.029035463617657863, 0.027583690436774964, 0.026204505914936217, 0.024894280619189402, 0.023649566588229934, 0.02246708825881844, 0.02134373384587751, 0.020276547153583634, 0.01926271979590445, 0.01829958380610923, 0.017384604615803767, 0.01651537438501358, 0.0156896056657629, 0.014905125382474753, 0.014159869113351013, 0.013451875657683464, 0.012779281874799289, 0.012140317781059324, 0.011533301892006359, 0.01095663679740604, 0.010408804957535737, 0.00988836470965895, 0.009393946474176, 0.008924249150467202, 0.00847803669294384, 0.008054134858296648, 0.007651428115381815, 0.007268856709612724, 0.006905413874132088, 0.006560143180425483, 0.006232136021404208]
+
+        self.result = ResultScreen()
+        self.tdba = TDBA()
 
     # 数据模块-更新玩家信息
     async def update_user_info(self, osuname):
@@ -67,20 +73,23 @@ class ATRICore:
         bpscoreid_list = []
         bpspp_list = []
         bpsbeatmapid_list = []
-        # 只要成score id，其他格式化导入score表 还要pp，beatmap_id
+        bpcreatedat_list = []
+        # 只要成score id，其他格式化导入score表 还要pp，beatmap_id,created_at
         for bp in bps:
             scoreid = bp['id']
             scorepp = bp['pp']
             scorebeatmapid = bp['beatmap']['id']
+            createdat = bp['created_at']
             bpscoreid_list.append(scoreid)
             bpspp_list.append(scorepp)
             bpsbeatmapid_list.append(scorebeatmapid)
+            bpcreatedat_list.append(createdat)
 
         # 更新bp的scoreid列表
         self.db_user.update(
             {"id": id},  # 查询条件
             {"$set": {'bps': bpscoreid_list, 'bps_pp': bpspp_list,
-                      'bps_beatmapid': bpsbeatmapid_list}},  # 插入的数据
+                      'bps_beatmapid': bpsbeatmapid_list, 'bps_createdat': bpcreatedat_list}},  # 插入的数据
             upsert=True  # 如果不存在则插入
         )
 
@@ -125,8 +134,6 @@ class ATRICore:
         list3 = list1 * list2
 
         origin_pp_sum = np.sum(list3)
-
-        print(origin_pp_sum)
 
         return origin_pp_sum
 
@@ -808,3 +815,56 @@ class ATRICore:
         bps_ptt_pp = k2 * now_bp1to13avg + b2
 
         return bps_ptt_pp, now_pp
+
+    def calculate_tdba(self, user_id):
+
+        osuname = self.db_user.find_one({'id': user_id})['username']
+
+        per_time = []  # 每个时间段0-23
+        sum_pp_per_hour = []  # 每个时间段的累计pp
+
+        pp_list = self.db_user.find_one({'id': user_id})['bps_pp']
+        list1 = np.array(pp_list)
+        list2 = np.array(self.weight_list)
+        list3 = list1 * list2
+        time_list = self.db_user.find_one({'id': user_id})['bps_createdat']
+
+        for i in range(24):
+            per_time.append(i)
+            sum_pp_per_hour.append(0)
+
+        for i in range(len(list3)):
+            formated_time = datetime.datetime.strptime(
+                time_list[i], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)
+            hours = formated_time.hour
+            sum_pp_per_hour[hours] += list3[i]
+
+        # 散点图
+        x_list = []
+        y_list = []
+
+        # 获取坐标
+        for i in range(len(list1)):
+            formated_time = datetime.datetime.strptime(
+                time_list[i], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)
+            hours = formated_time.hour
+            x_list.append(hours)
+            y_list.append(list1[i])
+
+        data = self.tdba.draw(sum_pp_per_hour, per_time,
+                              x_list, y_list, osuname)
+
+        return data
+
+    async def calculate_re_score(self, user_id):
+        # 计算pr分数
+        data = await self.ppy.get_user_recent_info(user_id)
+        data = data[0]
+        
+        result = self.result.draw(data)
+
+        print(result)
+
+        return result

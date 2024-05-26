@@ -29,5 +29,4 @@ class Tools:
 
         # 读取结果
         k, b = Para[0]
-        print("k=", k, "b=", b)
         return k, b
