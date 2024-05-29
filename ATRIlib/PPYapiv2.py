@@ -44,8 +44,7 @@ class PPYapiv2:
                 data = await response.json()
                 return data
 
-    # 获取ba的bid
-
+    # 获取ba的bestall
     async def get_user_best_all_info(self, user_id):
 
         token = self.token
@@ -60,6 +59,7 @@ class PPYapiv2:
                 #     f.write(result)
                 return data
 
+    # 获取socres
     async def get_user_socres_info(self, user_id, beatmap_id):
         token = self.token
         url = f'https://osu.ppy.sh/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all?mode=osu'
@@ -71,6 +71,7 @@ class PPYapiv2:
                 data = response.json()['scores']
                 return data
 
+    # 获取recent
     async def get_user_recent_info(self, user_id):
         token = self.token
         url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?mode=osu'

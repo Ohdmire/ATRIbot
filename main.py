@@ -89,8 +89,18 @@ async def get_re(item: Item):
 
 
 @app.api_route("/qq/tdba", methods=["GET", "POST"])
-async def get_tdbp(item: Item):
+async def get_tdba(item: Item):
     result = await atri_qq.qq_get_tdba(item.qq_id, item.osuname)
+    if os.path.exists('data/tmp/' + result):
+        return FileResponse(path='data/tmp/' + result)
+    else:
+        print('File not found')
+        return result
+
+
+@app.api_route("/qq/tdbavs", methods=["GET", "POST"])
+async def get_tdbavs(item: Item4):
+    result = await atri_qq.qq_get_tdbavs(item.qq_id, item.vs_name, item.osuname)
     if os.path.exists('data/tmp/' + result):
         return FileResponse(path='data/tmp/' + result)
     else:

@@ -57,6 +57,13 @@ class ATRICore:
             {"$set": userdata},  # 插入的数据
             upsert=True  # 如果不存在则插入
         )
+
+        self.db_bind.update(
+            {"user_id": userdata['id']},  # 查询条件
+            {"$set": {'username': userdata['username']}},  # 插入的数据
+            upsert=False  # 不存在不插入
+        )
+
         return userdata
 
     # 数据模块-更新玩家bp信息
@@ -143,11 +150,13 @@ class ATRICore:
         score = self.db_score.find_one({'id': score_id})
 
         beatmap_id = score['beatmap_id']
-        mod_int = self.rosu.calculate_mod_int(score['mods'])
+        mods = score['mods']
         acc = score['accuracy'] * 100
         # 获取osu文件来计算
         await self.rosu.get_beatmap_file_async_one(beatmap_id)
-        iffcpp = await self.rosu.calculate_pp_if_fc(beatmap_id, mod_int, acc)
+        # 不需要combo计算
+        ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, mods, acc, None)
+        iffcpp = ppresult["fcpp"]
 
         self.db_score.update(
             {"id": score_id},  # 查询条件
@@ -244,7 +253,8 @@ class ATRICore:
             score = self.db_score.find_one({'id': bp})
             # 更新choke
             beatmap_id = score['beatmap_id']
-            maxcombo = await self.rosu.calculate_maxcombo(beatmap_id)
+            ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, [], 0, None)
+            maxcombo = ppresult["maxcombo"]
             self.update_choke(bp, maxcombo)
             # 重新获取score
             score = self.db_score.find_one({'id': bp})
@@ -826,19 +836,19 @@ class ATRICore:
         pp_list = self.db_user.find_one({'id': user_id})['bps_pp']
         list1 = np.array(pp_list)
         list2 = np.array(self.weight_list)
-        list3 = list1 * list2
+        weighted_pplist = list1 * list2
         time_list = self.db_user.find_one({'id': user_id})['bps_createdat']
 
         for i in range(24):
             per_time.append(i)
             sum_pp_per_hour.append(0)
 
-        for i in range(len(list3)):
+        for i in range(len(weighted_pplist)):
             formated_time = datetime.datetime.strptime(
                 time_list[i], "%Y-%m-%dT%H:%M:%SZ")
             formated_time = formated_time + datetime.timedelta(hours=8)
             hours = formated_time.hour
-            sum_pp_per_hour[hours] += list3[i]
+            sum_pp_per_hour[hours] += weighted_pplist[i]
 
         # 散点图
         x_list = []
@@ -858,13 +868,93 @@ class ATRICore:
 
         return data
 
+    def calculate_tdbavs(self, user_id, vs_id):
+
+        osuname = self.db_user.find_one({'id': user_id})['username']
+        vsname = self.db_user.find_one({'id': vs_id})['username']
+
+        per_time = []  # 每个时间段0-23
+        user1_sum_pp_per_hour = []  # 每个时间段的累计pp
+        user2_sum_pp_per_hour = []
+
+        user1_pp_list = self.db_user.find_one({'id': user_id})['bps_pp']
+        user2_pp_list = self.db_user.find_one({'id': vs_id})['bps_pp']
+        user1_rawpp_list = np.array(user1_pp_list)
+        weight_list = np.array(self.weight_list)
+        user1_weighted_pplist = user1_rawpp_list * weight_list
+        user2_rawpp_list = np.array(user2_pp_list)
+        user2_weighted_pplist = user2_rawpp_list * weight_list
+        user1_time_list = self.db_user.find_one({'id': user_id})[
+            'bps_createdat']
+        user2_time_list = self.db_user.find_one({'id': vs_id})['bps_createdat']
+
+        for i in range(24):
+            per_time.append(i)
+            user1_sum_pp_per_hour.append(0)
+            user2_sum_pp_per_hour.append(0)
+
+        for i in range(len(user1_weighted_pplist)):
+            formated_time = datetime.datetime.strptime(
+                user1_time_list[i], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)
+            hours = formated_time.hour
+            user1_sum_pp_per_hour[hours] += user1_weighted_pplist[i]
+
+        for i in range(len(user2_weighted_pplist)):
+            formated_time = datetime.datetime.strptime(
+                user2_time_list[i], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)
+            hours = formated_time.hour
+            user2_sum_pp_per_hour[hours] += user2_weighted_pplist[i]
+
+        # 散点图
+        user1_x_list = []
+        user1_y_list = []
+        user2_x_list = []
+        user2_y_list = []
+
+        # 获取坐标
+        for i in range(len(user1_rawpp_list)):
+            formated_time = datetime.datetime.strptime(
+                user1_time_list[i], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)
+            hours = formated_time.hour
+            user1_x_list.append(hours)
+            user1_y_list.append(user1_rawpp_list[i])
+
+        # 获取坐标
+        for i in range(len(user2_rawpp_list)):
+            formated_time = datetime.datetime.strptime(
+                user2_time_list[i], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)
+            hours = formated_time.hour
+            user2_x_list.append(hours)
+            user2_y_list.append(user2_rawpp_list[i])
+
+        data = self.tdba.drawvs(user1_sum_pp_per_hour, user2_sum_pp_per_hour, per_time,
+                                user1_x_list, user1_y_list,  user2_x_list, user2_y_list, osuname, vsname)
+
+        return data
+
     async def calculate_re_score(self, user_id):
         # 计算pr分数
         data = await self.ppy.get_user_recent_info(user_id)
         data = data[0]
-        
-        result = self.result.draw(data)
+
+        if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
+            await self.rosu.get_beatmap_file_async_one(data["beatmap"]["id"])
+
+            ppresult = await self.rosu.calculate_pp_if_all(
+                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"])
+        else:
+            await self.rosu.get_beatmap_file_tmp_async_one(
+                data["beatmap"]["id"])
+
+            ppresult = await self.rosu.calculate_pp_if_all_tmp(
+                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"])
+
+        result = self.result.draw(data, ppresult)
 
         print(result)
 
-        return result
+        return ppresult

@@ -366,13 +366,24 @@ class ATRI:
         data = await self.core.calculate_re_score(osuid)
 
         return data
-    
+
     async def get_tdba(self, osuname):
 
         osuid = await self.get_user(osuname)
         await self.get_bplists(osuname)
 
         data = self.core.calculate_tdba(osuid)
+
+        return data
+
+    async def get_tdbavs(self, osuname, vsname):
+
+        osuid = await self.get_user(osuname)
+        await self.get_bplists(osuname)
+        vsid = await self.get_user(vsname)
+        await self.get_bplists(vsname)
+
+        data = self.core.calculate_tdbavs(osuid, vsid)
 
         return data
 

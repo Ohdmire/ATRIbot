@@ -1,9 +1,12 @@
 
 from pathlib import Path
 from lxml import etree
-import cairosvg
 import matplotlib.pyplot as plt
 import datetime
+import subprocess
+from copy import deepcopy
+
+
 
 
 class TDBA:
@@ -17,8 +20,8 @@ class TDBA:
         plt.bar(times, bps, label=osuname)
         plt.xlabel('Hours')
         plt.ylabel('Weighted PP')
-        plt.title('Time based Distribution of BPA')
-        plt.legend(prop={'size': 30})
+        plt.title('Time based Distribution of BPA (UTC+8)')
+        plt.legend(prop={'size': 30}, loc='upper left')
         plt.xticks(times)
 
         plt.subplot(2, 1, 2)
@@ -32,44 +35,177 @@ class TDBA:
         plt.close()
         return f'{osuname}-TDBA.png'
 
+    def drawvs(self, user1bps, user2bps, times, user1x_list, user1y_list, user2x_list, user2y_list, osuname, vsname):
+
+        plt.rcParams['font.size'] = 20
+
+        plt.figure(figsize=(20, 15))
+
+        plt.subplot(2, 1, 1)
+        plt.bar(times, user1bps, label=osuname, alpha=1)
+        plt.bar(times, user2bps, label=vsname, alpha=0.75)
+        plt.xlabel('Hours')
+        plt.ylabel('Weighted PP')
+        plt.title('Time based Distribution of BPA (UTC+8)')
+        plt.legend(prop={'size': 30}, loc='upper left')
+        plt.xticks(times)
+
+        plt.subplot(2, 1, 2)
+        plt.scatter(user1x_list, user1y_list, label=osuname, s=500,
+                    alpha=0.7, marker='.')
+        plt.scatter(user2x_list, user2y_list, label=vsname, s=500,
+                    alpha=0.7, marker='.')
+        plt.xlabel('Hours')
+        plt.ylabel('PP')
+
+        plt.xticks(times)
+        plt.savefig(f'./data/tmp/{osuname}-{vsname}-vs.png')
+        plt.close()
+        return f'{osuname}-{vsname}-vs.png'
+
 
 class ResultScreen:
     def __init__(self):
         self.file_path = Path('./assets/customPanels/result.svg')
+        self.garde_path = Path('./assets/grade')
+        self.mods_path = Path('./assets/mods')
+        self.rank_path = Path('./assets/RankingStatus')
+        self.logo_path = Path('./assets/logo')
 
         with open(self.file_path, 'rb') as f:
             svg_data = f.read()
-            parser = etree.XMLParser(remove_blank_text=True)
+            parser = etree.XMLParser()
             self.svg_tree = etree.fromstring(svg_data, parser)
 
-    def draw(self, data):
+    def draw(self, data, ppresult):
+
+        logo_ele = self.svg_tree.xpath(
+            '//*[@id="$logo"]')[0]
+        logo_ele.tag = 'image'
+        logo_ele.set('xlink', f'{self.logo_path}/quaver.png')
 
         combo_ele = self.svg_tree.xpath(
             '//*[@id="$combo"]')[0]
         combo_ele_child = combo_ele.getchildren()[0]
         combo_ele.set('text-anchor', 'middle')
-        combo_ele_child.set('x', '330')
-        combo_ele_child.text = f'{data["max_combo"]}x'
+        combo_ele_child.set('x', '310')
+        combo_ele_child.text = f'{data["max_combo"]}x/{ppresult["maxcombo"]}x'
 
         accuracy_ele = self.svg_tree.xpath(
             '//*[@id="$accuracy"]')[0]
         accuracy_ele_child = accuracy_ele.getchildren()[0]
         accuracy_ele.set('text-anchor', 'middle')
-        accuracy_ele_child.set('x', '767')
+        accuracy_ele_child.set('x', '747')
         accuracy_ele_child.text = f'{data["accuracy"]*100:.2f}%'
 
         pp_ele = self.svg_tree.xpath(
             '//*[@id="$performance"]')[0]
         pp_ele_child = pp_ele.getchildren()[0]
         pp_ele.set('text-anchor', 'middle')
-        pp_ele_child.set('x', '1640')
-        pp_ele_child.text = f'{data["pp"]:.2f}pp'
+        pp_ele_child.set('x', '1620')
+
+        if data["pp"] is None:
+            pp_ele_child.text = f'{ppresult["pp"]:.2f}pp'
+            pp_ele.set('fill', '#A0A0A0')
+        else:
+            pp_ele_child.text = f'{data["pp"]:.2f}pp'
+            pp_ele.set('fill', '#FBB03B')
+
+        if data['max_combo'] == ppresult['maxcombo'] and data['pp'] is not None:
+            fcpp = data['pp']
+        else:
+            fcpp = ppresult['fcpp']
+
+        fcpp_ele = self.svg_tree.xpath(
+            '//*[@id="$fcpp"]')[0]
+        fcpp_ele_child = fcpp_ele.getchildren()[0]
+        fcpp_ele_child.text = f'{fcpp:.0f}pp'
+
+        fcppbar_ele = self.svg_tree.xpath(
+            '//*[@id="$fcppbar"]')[0]
+        fcppbar_ele.set('width', f'{ppresult["pp"] / ppresult["fcpp"] * 594}')
+
+        fcppcircle_ele = self.svg_tree.xpath(
+            '//*[@id="$fcppcircle"]')[0]
+        fcppcircle_ele.set(
+            'transform', f'translate({(ppresult["pp"] / ppresult["fcpp"]) * (1669-1075)})')
+
+        fcpppercent_ele = self.svg_tree.xpath(
+            '//*[@id="$fcpppercent"]')[0]
+        fcpppercent_ele_child = fcpppercent_ele.getchildren()[0]
+        fcpppercent_ele_child.text = f'{ppresult["pp"]/ppresult["fcpp"]*100:.0f}% / FC'
+
+        fc95_ele = self.svg_tree.xpath(
+            '//*[@id="$95fc"]')[0]
+        fc95_ele_child = fc95_ele.getchildren()[0]
+        fc95_ele_child.text = f'{ppresult["95fcpp"]:.0f}pp'
+
+        fc96_ele = self.svg_tree.xpath(
+            '//*[@id="$96fc"]')[0]
+        fc96_ele_child = fc96_ele.getchildren()[0]
+        fc96_ele_child.text = f'{ppresult["96fcpp"]:.0f}pp'
+
+        fc97_ele = self.svg_tree.xpath(
+            '//*[@id="$97fc"]')[0]
+        fc97_ele_child = fc97_ele.getchildren()[0]
+        fc97_ele_child.text = f'{ppresult["97fcpp"]:.0f}pp'
+
+        fc98_ele = self.svg_tree.xpath(
+            '//*[@id="$98fc"]')[0]
+        fc98_ele_child = fc98_ele.getchildren()[0]
+        fc98_ele_child.text = f'{ppresult["98fcpp"]:.0f}pp'
+
+        fc99_ele = self.svg_tree.xpath(
+            '//*[@id="$99fc"]')[0]
+        fc99_ele_child = fc99_ele.getchildren()[0]
+        fc99_ele_child.text = f'{ppresult["99fcpp"]:.0f}pp'
+
+        fc100_ele = self.svg_tree.xpath(
+            '//*[@id="$100fc"]')[0]
+        fc100_ele_child = fc100_ele.getchildren()[0]
+        fc100_ele_child.text = f'{ppresult["100fcpp"]:.0f}pp'
+
+        aimpp_ele = self.svg_tree.xpath(
+            '//*[@id="$aimpp"]')[0]
+        aimpp_ele.set('text-anchor', 'middle')
+        aimpp_ele_child = aimpp_ele.getchildren()[0]
+        aimpp_ele_child.set('x', '1222')
+        aimpp_ele_child.text = f'{ppresult["aimpp"]:.0f}pp/{ppresult["fullaimpp"]:.0f}pp'
+
+        speedpp_ele = self.svg_tree.xpath(
+            '//*[@id="$speedpp"]')[0]
+        speedpp_ele.set('text-anchor', 'middle')
+        speedpp_ele_child = speedpp_ele.getchildren()[0]
+        speedpp_ele_child.set('x', '1404')
+        speedpp_ele_child.text = f'{ppresult["speedpp"]:.0f}pp/{ppresult["fullspeedpp"]:.0f}pp'
+
+        accpp_ele = self.svg_tree.xpath(
+            '//*[@id="$accpp"]')[0]
+        accpp_ele.set('text-anchor', 'middle')
+        accpp_ele_child = accpp_ele.getchildren()[0]
+        accpp_ele_child.set('x', '1575')
+        accpp_ele_child.text = f'{ppresult["accpp"]:.0f}pp/{ppresult["fullaccpp"]:.0f}pp'
+
+        aimpppercent = self.svg_tree.xpath(
+            '//*[@id="$aimpppercent"]')[0]
+        aimpppercent_child = aimpppercent.getchildren()[0]
+        aimpppercent_child.text = f'{ppresult["aimpp"]/ppresult["fullaimpp"]*100:.0f}%'
+
+        speedpppercent = self.svg_tree.xpath(
+            '//*[@id="$speedpppercent"]')[0]
+        speedpppercent_child = speedpppercent.getchildren()[0]
+        speedpppercent_child.text = f'{ppresult["speedpp"]/ppresult["fullspeedpp"]*100:.0f}%'
+
+        accpppercent = self.svg_tree.xpath(
+            '//*[@id="$accpppercent"]')[0]
+        accpppercent_child = accpppercent.getchildren()[0]
+        accpppercent_child.text = f'{ppresult["accpp"]/ppresult["fullaccpp"]*100:.0f}%'
 
         score_ele = self.svg_tree.xpath(
             '//*[@id="$score"]')[0]
         score_ele_child = score_ele.getchildren()[0]
         score_ele.set('text-anchor', 'middle')
-        score_ele_child.set('x', '1195')
+        score_ele_child.set('x', '1175')
         score_ele_child.text = f'{data["score"]}'
 
         great_ele = self.svg_tree.xpath(
@@ -109,44 +245,53 @@ class ResultScreen:
         greatpercent_ele_child = greatpercent_ele.getchildren()[0]
         greatpercent = data["statistics"]["count_300"] / (data["statistics"]["count_300"] + data["statistics"]
                                                           ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
-        greatpercent_ele_child.text = f'{greatpercent*100:.2f}%'
+        greatpercent_ele_child.text = f'({greatpercent*100:.2f}%)'
 
         okpercent_ele = self.svg_tree.xpath(
             '//*[@id="$okpercent"]')[0]
         okpercent_ele_child = okpercent_ele.getchildren()[0]
         okpercent = data["statistics"]["count_100"] / (data["statistics"]["count_300"] + data["statistics"]
                                                        ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
-        okpercent_ele_child.text = f'{okpercent*100:.2f}%'
+        okpercent_ele_child.text = f'({okpercent*100:.2f}%)'
 
         mehpercent_ele = self.svg_tree.xpath(
             '//*[@id="$mehpercent"]')[0]
         mehpercent_ele_child = mehpercent_ele.getchildren()[0]
         mehpercent = data["statistics"]["count_50"] / (data["statistics"]["count_300"] + data["statistics"]
                                                        ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
-        mehpercent_ele_child.text = f'{mehpercent*100:.2f}%'
+        mehpercent_ele_child.text = f'({mehpercent*100:.2f}%)'
 
         misspercent_ele = self.svg_tree.xpath(
             '//*[@id="$misspercent"]')[0]
         misspercent_ele_child = misspercent_ele.getchildren()[0]
         misspercent = data["statistics"]["count_miss"] / (data["statistics"]["count_300"] + data["statistics"]
                                                           ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
-        misspercent_ele_child.text = f'{misspercent*100:.2f}%'
+        misspercent_ele_child.text = f'({misspercent*100:.2f}%)'
 
         great_fade_ele = self.svg_tree.xpath(
             '//*[@id="$great_fade"]')[0]
-        great_fade_ele.set('transform', f'translate({(1-greatpercent)*176},0) scale({greatpercent},1)')
+        great_fade_ele.set(
+            'transform', f'translate({(1-greatpercent)*176},0) scale({greatpercent},1)')
 
         ok_fade_ele = self.svg_tree.xpath(
             '//*[@id="$ok_fade"]')[0]
-        ok_fade_ele.set('transform', f'translate({(1-okpercent)*176},0) scale({okpercent},1)')
+        ok_fade_ele.set(
+            'transform', f'translate({(1-okpercent)*176},0) scale({okpercent},1)')
 
         meh_fade_ele = self.svg_tree.xpath(
             '//*[@id="$meh_fade"]')[0]
-        meh_fade_ele.set('transform', f'translate({(1-mehpercent)*176},0) scale({mehpercent},1)')
+        meh_fade_ele.set(
+            'transform', f'translate({(1-mehpercent)*176},0) scale({mehpercent},1)')
 
         miss_fade_ele = self.svg_tree.xpath(
             '//*[@id="$miss_fade"]')[0]
-        miss_fade_ele.set('transform', f'translate({(1-misspercent)*176},0) scale({misspercent},1)')
+        miss_fade_ele.set(
+            'transform', f'translate({(1-misspercent)*176},0) scale({misspercent},1)')
+
+        bid_ele = self.svg_tree.xpath(
+            '//*[@id="$bid"]')[0]
+        bid_ele_child = bid_ele.getchildren()[0]
+        bid_ele_child.text = f'{data["beatmap"]["id"]}'
 
         bpm_ele = self.svg_tree.xpath(
             '//*[@id="$bpm"]')[0]
@@ -182,14 +327,41 @@ class ResultScreen:
         avatar = self.svg_tree.xpath(
             '//*[@id="$avatar"]')[0]
         avatar.tag = 'image'
-        avatar.set('href', data['user']['avatar_url'])
+        avatar.set('xlink', data['user']['avatar_url'])
 
+        grade = self.svg_tree.xpath(
+            '//*[@id="$grade"]')[0]
+        grade.tag = 'image'
+        grade.set('xlink', f'{self.garde_path}/{data["rank"]}.png')
+
+        reverse_modslist = data["mods"]
+        reverse_modslist.reverse()
+        mod_ele = self.svg_tree.xpath(
+            '//*[@id="$mods"]')[0]
+        mod_ele_x = int(mod_ele.get('x'))
+        isFirstMod = True
+        for i in reverse_modslist:
+            if isFirstMod is True:
+                mod_ele.tag = 'image'
+                mod_ele.set('xlink', f'{self.mods_path}/{i}.svg')
+                isFirstMod = False
+            else:
+                new_mod_ele = deepcopy(mod_ele)
+                new_mod_ele.tag = 'image'
+                new_mod_ele.set('xlink', f'{self.mods_path}/{i}.svg')
+                new_mod_ele.set('x', f'{mod_ele_x-80}')
+                mod_ele.getparent().append(new_mod_ele)
+        rankstatus = self.svg_tree.xpath(
+            '//*[@id="$rankstatus"]')[0]
+        rankstatus.tag = 'image'
+        rankstatus.set(
+            'xlink', f'{self.rank_path}/{data["beatmap"]["ranked"]}.svg')
         beatmap_cover = self.svg_tree.xpath(
             '//*[@id="$beatmap_cover"]')[0]
         beatmap_cover.tag = 'image'
         coverurl = f'https://assets.ppy.sh/beatmaps/{data["beatmapset"]["id"]}/covers/raw.jpg'
         # coverurl = data['user']['avatar_url']
-        beatmap_cover.set('href', coverurl)
+        beatmap_cover.set('xlink', coverurl)
         beatmap_cover.set('preserveAspectRatio', 'xMidYMin slice')
         beatmap_cover.set('height', '560')
         beatmap_cover.set('y', '-300')
@@ -228,10 +400,16 @@ class ResultScreen:
 
         # 保存修改后的SVG文件
         with open('frame.svg', 'wb') as f:
-            f.write(etree.tostring(self.svg_tree, pretty_print=True))
+            content = etree.tostring(self.svg_tree, pretty_print=True).replace(
+                b'xlink="', b'xlink:href="')
+            content = content.replace(b'xmlns:xlink:href', b'xmlns:xlink')
+            f.write(content)
 
-        cairosvg.svg2png(url='frame.svg', write_to='frame.png',
-                         unsafe=True)
+        # cairosvg.svg2png(url='frame.svg', write_to='frame.png',
+        #                  unsafe=True)
+
+        subprocess.run(['inkscape', 'frame.svg', '-o', 'frame.png'])
+
         # with Image(filename='frame1.svg', background=Color("transparent")) as img:
         #     img.format = 'png'
         #     # img.compression_quality = 10

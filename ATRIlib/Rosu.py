@@ -2,15 +2,16 @@ import rosu_pp_py as rosu
 
 from pathlib import Path
 
-
 from ATRIlib import Download
 
 
 class Rosu:
     def __init__(self):
         self.beatmaps_path = Path('./data/beatmaps/')
+        self.beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
         self.download = Download.Downloader()
 
+    # 获取单个谱面(ranked)
     async def get_beatmap_file_async_one(self, beatmap_id):
         filepath = self.beatmaps_path / f'{beatmap_id}.osu'
         if filepath.exists():
@@ -19,6 +20,7 @@ class Rosu:
             beatmap_ids = [beatmap_id]
         await self.download.download_files(beatmap_ids)
 
+    # 批量获取谱面(ranked)
     async def get_beatmap_file_async_all(self, beatmap_id_list):
         beatmap_ids = []
         for beatmap_id in beatmap_id_list:
@@ -30,7 +32,20 @@ class Rosu:
 
         await self.download.download_files(beatmap_ids)
 
-    async def calculate_pp_if_fc(self, beatmap_id, mods, acc):
+    # 获取单个谱面(unranked)
+    async def get_beatmap_file_tmp_async_one(self, beatmap_id):
+        filepath = self.beatmaps_path_tmp / f'{beatmap_id}.osu'
+        if filepath.exists():
+            return
+        else:
+            await self.download.get_beatmap_file_tmp(beatmap_id)
+
+    # 计算pp(ranked)
+    async def calculate_pp_if_all(self, beatmap_id, mods, acc, combo):
+
+        mods_int = self.calculate_mod_int(mods)
+
+        result = {}
 
         await self.get_beatmap_file_async_one(beatmap_id)
 
@@ -38,95 +53,179 @@ class Rosu:
 
         map = rosu.Beatmap(path=str(file_path))
 
-        perf = rosu.Performance(mods=mods)
+        perf = rosu.Performance(mods=mods_int)
+
+        perf.set_combo(None)
+        perf.set_accuracy(acc)
+        attrs = perf.calculate(map)
+        result['fcpp'] = attrs.pp
+
+        perf.set_accuracy(95)
+        attrs = perf.calculate(map)
+        result['95fcpp'] = attrs.pp
+
+        perf.set_accuracy(96)
+        attrs = perf.calculate(map)
+        result['96fcpp'] = attrs.pp
+
+        perf.set_accuracy(97)
+        attrs = perf.calculate(map)
+        result['97fcpp'] = attrs.pp
+
+        perf.set_accuracy(98)
+        attrs = perf.calculate(map)
+        result['98fcpp'] = attrs.pp
+
+        perf.set_accuracy(99)
+        attrs = perf.calculate(map)
+        result['99fcpp'] = attrs.pp
+
+        perf.set_accuracy(100)
+        attrs = perf.calculate(map)
+        result['100fcpp'] = attrs.pp
+
+        result['fullaimpp'] = attrs.pp_aim
+        result['fullspeedpp'] = attrs.pp_speed
+        result['fullaccpp'] = attrs.pp_accuracy
+
+        result['maxcombo'] = attrs.difficulty.max_combo
 
         perf.set_accuracy(acc)
-        perf.set_combo(None)
-
+        perf.set_combo(combo)
         attrs = perf.calculate(map)
+        result['pp'] = attrs.pp
 
-        return attrs.pp
+        result['aimpp'] = attrs.pp_aim
+        result['speedpp'] = attrs.pp_speed
+        result['accpp'] = attrs.pp_accuracy
 
-    async def calculate_maxcombo(self, beatmap_id):
+        return result
+
+    # 计算rosu数据(unranked)
+    async def calculate_pp_if_all_tmp(self, beatmap_id, mods, acc, combo):
+
+        mods_int = self.calculate_mod_int(mods)
+
+        result = {}
 
         await self.get_beatmap_file_async_one(beatmap_id)
 
-        file_path = self.beatmaps_path / f'{beatmap_id}.osu'
+        file_path = self.beatmaps_path_tmp / f'{beatmap_id}.osu'
 
         map = rosu.Beatmap(path=str(file_path))
 
-        perf = rosu.Performance()
+        perf = rosu.Performance(mods=mods_int)
 
+        perf.set_combo(None)
+        perf.set_accuracy(acc)
         attrs = perf.calculate(map)
+        result['fcpp'] = attrs.pp
 
-        maxcombo = attrs.difficulty.max_combo
+        perf.set_accuracy(95)
+        attrs = perf.calculate(map)
+        result['95fcpp'] = attrs.pp
 
-        return maxcombo
+        perf.set_accuracy(96)
+        attrs = perf.calculate(map)
+        result['96fcpp'] = attrs.pp
 
-    # 功能模块-计算mod_int
+        perf.set_accuracy(97)
+        attrs = perf.calculate(map)
+        result['97fcpp'] = attrs.pp
+
+        perf.set_accuracy(98)
+        attrs = perf.calculate(map)
+        result['98fcpp'] = attrs.pp
+
+        perf.set_accuracy(99)
+        attrs = perf.calculate(map)
+        result['99fcpp'] = attrs.pp
+
+        perf.set_accuracy(100)
+        attrs = perf.calculate(map)
+        result['100fcpp'] = attrs.pp
+
+        result['fullaimpp'] = attrs.pp_aim
+        result['fullspeedpp'] = attrs.pp_speed
+        result['fullaccpp'] = attrs.pp_accuracy
+
+        result['maxcombo'] = attrs.difficulty.max_combo
+
+        perf.set_accuracy(acc)
+        perf.set_combo(combo)
+        attrs = perf.calculate(map)
+        result['pp'] = attrs.pp
+
+        result['aimpp'] = attrs.pp_aim
+        result['speedpp'] = attrs.pp_speed
+        result['accpp'] = attrs.pp_accuracy
+
+        return result
+
+    # 计算mod_int
     def calculate_mod_int(self, modlists):
-        mod_int = 0
+        mods_int = 0
         for i in modlists:
             if i == "NF":
-                mod_int += 1
+                mods_int += 1
             if i == "EZ":
-                mod_int += 2
+                mods_int += 2
             if i == "TD":
-                mod_int += 4
+                mods_int += 4
             if i == "HD":
-                mod_int += 8
+                mods_int += 8
             if i == "HR":
-                mod_int += 16
+                mods_int += 16
             if i == "SD":
-                mod_int += 32
+                mods_int += 32
             if i == "DT":
-                mod_int += 64
+                mods_int += 64
             if i == "RX":
-                mod_int += 128
+                mods_int += 128
             if i == "HT":
-                mod_int += 256
+                mods_int += 256
             if i == "NC":
-                mod_int += 576
+                mods_int += 576
             if i == "FL":
-                mod_int += 1024
+                mods_int += 1024
             if i == "AT":
-                mod_int += 2048
+                mods_int += 2048
             if i == "SO":
-                mod_int += 4096
+                mods_int += 4096
             if i == "AP":
-                mod_int += 8192
+                mods_int += 8192
             if i == "PF":
-                mod_int += 16416
+                mods_int += 16416
             if i == "4K":
-                mod_int += 32768
+                mods_int += 32768
             if i == "5K":
-                mod_int += 65536
+                mods_int += 65536
             if i == "6K":
-                mod_int += 131072
+                mods_int += 131072
             if i == "7K":
-                mod_int += 262144
+                mods_int += 262144
             if i == "8K":
-                mod_int += 524288
+                mods_int += 524288
             if i == "FI":
-                mod_int += 1048576
+                mods_int += 1048576
             if i == "RD":
-                mod_int += 2097152
+                mods_int += 2097152
             if i == "CM":
-                mod_int += 4194304
+                mods_int += 4194304
             if i == "TP":
-                mod_int += 8388608
+                mods_int += 8388608
             if i == "9K":
-                mod_int += 16777216
+                mods_int += 16777216
             if i == "CO":
-                mod_int += 33554432
+                mods_int += 33554432
             if i == "1K":
-                mod_int += 67108864
+                mods_int += 67108864
             if i == "3K":
-                mod_int += 134217728
+                mods_int += 134217728
             if i == "2K":
-                mod_int += 268435456
+                mods_int += 268435456
             if i == "V2":
-                mod_int += 536870912
+                mods_int += 536870912
             if i == "MR":
-                mod_int += 1073741824
-        return mod_int
+                mods_int += 1073741824
+        return mods_int

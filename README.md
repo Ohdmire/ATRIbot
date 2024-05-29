@@ -19,6 +19,12 @@
 - [x] FASTAPI包装
 - [x] Onebotv11对接
 
+### 需要考虑的问题
+
+- [ ] .osu文件缓存
+- [ ] svg的可维护性
+- [ ] 多模式如何储存 更新
+
 ## MongoDB储存的数据
 
 - user表
@@ -32,3 +38,9 @@
 
 -group表
 储存群的成员列表
+
+# 特别鸣谢
+
+## 大土豪
+
+[Pouxba](https://osu.ppy.sh/users/16378561) 138元 
