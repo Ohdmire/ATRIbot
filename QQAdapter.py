@@ -137,7 +137,7 @@ class QQ:
             return "请先绑定输入 !getbind"
 
         return await self.proxy.get_ptt_pp(osuname)
-    
+
     async def qq_get_tdba(self, qq_id, osuname=None):
 
         if osuname is None:
@@ -147,7 +147,7 @@ class QQ:
             return "请先绑定输入 !getbind"
 
         return await self.proxy.get_tdba(osuname)
-    
+
     async def qq_get_tdbavs(self, qq_id, vsname, osuname=None):
 
         if osuname is None:
@@ -157,8 +157,8 @@ class QQ:
             return "请先绑定输入 !getbind"
 
         return await self.proxy.get_tdbavs(osuname, vsname)
-    
-    async def qq_get_re(self, qq_id, osuname=None):
+
+    async def qq_get_pr(self, qq_id, osuname=None):
 
         if osuname is None:
             osuname = self.proxy.find_bind_name_qq(qq_id)
@@ -166,4 +166,4 @@ class QQ:
         if osuname is None:
             return "请先绑定输入 !getbind"
 
-        return await self.proxy.get_re(osuname)
+        return await self.proxy.get_pr(osuname)

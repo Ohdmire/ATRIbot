@@ -359,11 +359,14 @@ class ATRI:
 
         return data
 
-    async def get_re(self, osuname):
+    async def get_pr(self, osuname):
 
         osuid = await self.get_user(osuname)
 
-        data = await self.core.calculate_re_score(osuid)
+        data = await self.core.calculate_pr_score(osuid)
+
+        if data is None:
+            return f'未查询到{osuname}最近pass的成绩'
 
         return data
 

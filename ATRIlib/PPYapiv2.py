@@ -72,7 +72,7 @@ class PPYapiv2:
                 return data
 
     # 获取recent
-    async def get_user_recent_info(self, user_id):
+    async def get_user_passrecent_info(self, user_id):
         token = self.token
         url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?mode=osu'
         headers = {'Authorization': f'Bearer {token}'}

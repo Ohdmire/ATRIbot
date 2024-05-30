@@ -81,18 +81,21 @@ class Item11(BaseModel):
     osuname: Optional[str] = None
 
 
-@app.api_route("/qq/re", methods=["GET", "POST"])
-async def get_re(item: Item):
-    result = await atri_qq.qq_get_re(item.qq_id, item.osuname)
-    print(result)
-    return result
+@app.api_route("/qq/pr", methods=["GET", "POST"])
+async def get_pr(item: Item):
+    result = await atri_qq.qq_get_pr(item.qq_id, item.osuname)
+    if os.path.exists('data/tmp/pr/' + result):
+        return FileResponse(path='data/tmp/pr/' + result)
+    else:
+        print('File not found')
+        return result
 
 
 @app.api_route("/qq/tdba", methods=["GET", "POST"])
 async def get_tdba(item: Item):
     result = await atri_qq.qq_get_tdba(item.qq_id, item.osuname)
-    if os.path.exists('data/tmp/' + result):
-        return FileResponse(path='data/tmp/' + result)
+    if os.path.exists('data/tmp/tdba/' + result):
+        return FileResponse(path='data/tmp/tdba/' + result)
     else:
         print('File not found')
         return result
@@ -101,8 +104,8 @@ async def get_tdba(item: Item):
 @app.api_route("/qq/tdbavs", methods=["GET", "POST"])
 async def get_tdbavs(item: Item4):
     result = await atri_qq.qq_get_tdbavs(item.qq_id, item.vs_name, item.osuname)
-    if os.path.exists('data/tmp/' + result):
-        return FileResponse(path='data/tmp/' + result)
+    if os.path.exists('data/tmp/tdbavs/' + result):
+        return FileResponse(path='data/tmp/tdbavs/' + result)
     else:
         print('File not found')
         return result

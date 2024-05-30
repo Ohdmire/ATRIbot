@@ -53,10 +53,11 @@ def calc_diff_color(star):
     b_hex = color_to_hex(b0, b1, s, 0.9)
     return r_hex + g_hex + b_hex
 
+
 def color_to_hex(color0, color1, s, gamma):
-    result = hex(int(min(max(round(pow((1 - s) * pow(color0, gamma) + s * pow(color1, gamma), 1 / gamma)), 0), 255)))[2:]
+    result = hex(int(min(max(round(pow((1 - s) * pow(color0, gamma) +
+                 s * pow(color1, gamma), 1 / gamma)), 0), 255)))[2:]
     if len(result) == 1:
         return "0" + result
     else:
         return result
-    

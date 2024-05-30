@@ -932,13 +932,15 @@ class ATRICore:
             user2_y_list.append(user2_rawpp_list[i])
 
         data = self.tdba.drawvs(user1_sum_pp_per_hour, user2_sum_pp_per_hour, per_time,
-                                user1_x_list, user1_y_list,  user2_x_list, user2_y_list, osuname, vsname)
+                                user1_x_list, user1_y_list, user2_x_list, user2_y_list, osuname, vsname)
 
         return data
 
-    async def calculate_re_score(self, user_id):
+    async def calculate_pr_score(self, user_id):
         # 计算pr分数
-        data = await self.ppy.get_user_recent_info(user_id)
+        data = await self.ppy.get_user_passrecent_info(user_id)
+        if data == []:
+            return None
         data = data[0]
 
         if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
@@ -955,6 +957,4 @@ class ATRICore:
 
         result = self.result.draw(data, ppresult)
 
-        print(result)
-
-        return ppresult
+        return result

@@ -99,6 +99,8 @@ class Rosu:
         result['speedpp'] = attrs.pp_speed
         result['accpp'] = attrs.pp_accuracy
 
+        result['difficulty'] = attrs.difficulty.stars
+
         return result
 
     # 计算rosu数据(unranked)
@@ -159,6 +161,8 @@ class Rosu:
         result['aimpp'] = attrs.pp_aim
         result['speedpp'] = attrs.pp_speed
         result['accpp'] = attrs.pp_accuracy
+
+        result['difficulty'] = attrs.difficulty.stars
 
         return result
 
