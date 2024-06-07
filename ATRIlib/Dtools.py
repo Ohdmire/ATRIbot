@@ -6,6 +6,7 @@ import datetime
 import subprocess
 from copy import deepcopy
 from .CommonTool import calc_diff_color
+from .Download import Downloader
 
 
 class TDBA:
@@ -70,14 +71,23 @@ class ResultScreen:
         self.mods_path = Path('../../../assets/mods')
         self.rank_path = Path('../../../assets/RankingStatus')
         self.logo_path = Path('../../../assets/logo')
+        self.avatar_true_path = Path('../../../data/avatar')
+        self.cover_true_path = Path('../../../data/cover')
         self.result_path = Path('./data/tmp/pr')
-
-    def draw(self, data, ppresult):
-
         with open(self.file_path, 'rb') as f:
             svg_data = f.read()
             parser = etree.XMLParser()
-            svg_tree = etree.fromstring(svg_data, parser)
+            self.svg_tree = etree.fromstring(svg_data, parser)
+
+        self.download = Downloader()
+        self.avatar_path = Path('./data/avatar')
+        self.cover_path = Path('./data/cover')
+
+    async def draw(self, data, ppresult):
+
+        start_time = datetime.datetime.now()
+
+        svg_tree = deepcopy(self.svg_tree)
 
         logo_ele = svg_tree.xpath(
             '//*[@id="$logo"]')[0]
@@ -189,17 +199,26 @@ class ResultScreen:
         aimpppercent = svg_tree.xpath(
             '//*[@id="$aimpppercent"]')[0]
         aimpppercent_child = aimpppercent.getchildren()[0]
-        aimpppercent_child.text = f'{ppresult["aimpp"]/ppresult["fullaimpp"]*100:.0f}%'
+        try:
+            aimpppercent_child.text = f'{ppresult["aimpp"]/ppresult["fullaimpp"]*100:.0f}%'
+        except ZeroDivisionError:
+            aimpppercent_child.text = 'NaN%'
 
         speedpppercent = svg_tree.xpath(
             '//*[@id="$speedpppercent"]')[0]
         speedpppercent_child = speedpppercent.getchildren()[0]
-        speedpppercent_child.text = f'{ppresult["speedpp"]/ppresult["fullspeedpp"]*100:.0f}%'
+        try:
+            speedpppercent_child.text = f'{ppresult["speedpp"]/ppresult["fullspeedpp"]*100:.0f}%'
+        except ZeroDivisionError:
+            speedpppercent_child.text = 'NaN%'
 
         accpppercent = svg_tree.xpath(
             '//*[@id="$accpppercent"]')[0]
         accpppercent_child = accpppercent.getchildren()[0]
-        accpppercent_child.text = f'{ppresult["accpp"]/ppresult["fullaccpp"]*100:.0f}%'
+        try:
+            accpppercent_child.text = f'{ppresult["accpp"]/ppresult["fullaccpp"]*100:.0f}%'
+        except ZeroDivisionError:
+            accpppercent_child.text = 'NaN%'
 
         score_ele = svg_tree.xpath(
             '//*[@id="$score"]')[0]
@@ -324,10 +343,18 @@ class ResultScreen:
         hp_ele_child = hp_ele.getchildren()[0]
         hp_ele_child.text = f'{data["beatmap"]["drain"]}'
 
+        avatar_img = self.avatar_path / f'{data["user"]["id"]}.jpeg'
+        if avatar_img.exists() is True:
+            pass
+        else:
+            await self.download.download_avatar_async([data["user"]["avatar_url"]], [data["user"]["id"]])
+
         avatar = svg_tree.xpath(
             '//*[@id="$avatar"]')[0]
         avatar.tag = 'image'
-        avatar.set('xlink', data['user']['avatar_url'])
+        # avatar.set('xlink', data['user']['avatar_url'])
+        avatar.set(
+            'xlink', f'{self.avatar_true_path}/{data["user"]["id"]}.jpeg')
 
         grade = svg_tree.xpath(
             '//*[@id="$grade"]')[0]
@@ -353,17 +380,28 @@ class ResultScreen:
                 new_mod_ele.set('xlink', f'{self.mods_path}/{i}.svg')
                 new_mod_ele.set('x', f'{mod_ele_x-50}')
                 mod_ele.getparent().append(new_mod_ele)
+        # rankstatus = svg_tree.xpath(
+        #     '//*[@id="$rankstatus"]')[0]
+        # rankstatus.tag = 'image'
+        # rankstatus.set(
+        #     'xlink', f'{self.rank_path}/{data["beatmap"]["ranked"]}.svg')
+
         rankstatus = svg_tree.xpath(
-            '//*[@id="$rankstatus"]')[0]
-        rankstatus.tag = 'image'
-        rankstatus.set(
-            'xlink', f'{self.rank_path}/{data["beatmap"]["ranked"]}.svg')
+            f'//*[@id="RankingStatus/{data["beatmap"]["ranked"]}"]')[0]
+        rankstatus.set('opacity', '1')
+
+        cover_img = self.cover_path / f'{data["beatmapset"]["id"]}.jpg'
+        if cover_img.exists() is True:
+            pass
+        else:
+            await self.download.download_cover(f'https://assets.ppy.sh/beatmaps/{data["beatmapset"]["id"]}/covers/raw.jpg', data["beatmapset"]["id"])
+
         beatmap_cover = svg_tree.xpath(
             '//*[@id="$beatmap_cover"]')[0]
         beatmap_cover.tag = 'image'
-        coverurl = f'https://assets.ppy.sh/beatmaps/{data["beatmapset"]["id"]}/covers/raw.jpg'
         # coverurl = data['user']['avatar_url']
-        beatmap_cover.set('xlink', coverurl)
+        beatmap_cover.set(
+            'xlink', f'{self.cover_true_path}/{data["beatmapset"]["id"]}.jpg')
         beatmap_cover.set('preserveAspectRatio', 'xMidYMin slice')
         beatmap_cover.set('height', '560')
         beatmap_cover.set('y', '-300')
@@ -422,4 +460,390 @@ class ResultScreen:
         #     # img.compression_quality = 10
         #     img.save(filename='frame.png')
 
+        endtime = datetime.datetime.now()
+
+        totaltime = endtime - start_time
+
+        print(totaltime)
+
         return f'{data["user"]["username"]}-pr.png'
+
+
+class BeatmapRankingscreeen:
+
+    def __init__(self):
+        self.file_path = Path('./assets/customPanels/ranking.svg')
+        self.garde_path = Path('../../../assets/grade')
+        self.mods_path = Path('../../../assets/mods')
+        self.rank_path = Path('../../../assets/RankingStatus')
+        self.logo_path = Path('../../../assets/logo')
+        self.avatar_true_path = Path('../../../data/avatar')
+        self.cover_true_path = Path('../../../data/cover')
+        self.result_path = Path('./data/tmp/brk')
+        with open(self.file_path, 'rb') as f:
+            svg_data = f.read()
+            parser = etree.XMLParser()
+            self.svg_tree = etree.fromstring(svg_data, parser)
+
+        self.download = Downloader()
+        self.avatar_path = Path('./data/avatar')
+        self.cover_path = Path('./data/cover')
+
+    async def draw(self, player, other_players, beatmap_info):
+
+        start_time = datetime.datetime.now()
+
+        svg_tree = deepcopy(self.svg_tree)
+
+        logo_ele = svg_tree.xpath(
+            '//*[@id="$logo"]')[0]
+        logo_ele.tag = 'image'
+        logo_ele.set('xlink', f'{self.logo_path}/quaver.png')
+
+        rankstatus = svg_tree.xpath(
+            f'//*[@id="RankingStatus/{beatmap_info["ranked"]}"]')[0]
+        rankstatus.set('opacity', '1')
+
+        cover_img = self.cover_path / f'{beatmap_info["beatmapset"]["id"]}.jpg'
+        if cover_img.exists() is True:
+            pass
+        else:
+            await self.download.download_cover(f'https://assets.ppy.sh/beatmaps/{beatmap_info["beatmapset"]["id"]}/covers/raw.jpg', beatmap_info["beatmapset"]["id"])
+
+        beatmap_cover = svg_tree.xpath(
+            '//*[@id="$beatmap_cover"]')[0]
+        beatmap_cover.tag = 'image'
+        # coverurl = data['user']['avatar_url']
+        beatmap_cover.set(
+            'xlink', f'{self.cover_true_path}/{beatmap_info["beatmapset"]["id"]}.jpg')
+        beatmap_cover.set('preserveAspectRatio', 'xMidYMin slice')
+        beatmap_cover.set('height', '560')
+        beatmap_cover.set('y', '-300')
+
+        songname_ele = svg_tree.xpath(
+            '//*[@id="$songname"]')[0]
+        songname_ele_child = songname_ele.getchildren()[0]
+        songname_ele_child.text = beatmap_info['beatmapset']['title_unicode']
+
+        color = calc_diff_color(beatmap_info["difficulty_rating"])
+
+        diffname_ele = svg_tree.xpath(
+            '//*[@id="$diffname"]')[0]
+        diffname_ele.set('fill', f'#{color}')
+
+        diffname_ele_child = diffname_ele.getchildren()[0]
+        diffname_ele_child.text = f'{beatmap_info["version"]}({beatmap_info["difficulty_rating"]:.2f}*)'
+
+        mappername_ele = svg_tree.xpath(
+            '//*[@id="$mappername"]')[0]
+        mappername_ele_child = mappername_ele.getchildren()[0]
+        mappername_ele_child.text = beatmap_info['beatmapset']['creator']
+
+        bpm_ele = svg_tree.xpath(
+            '//*[@id="$bpm"]')[0]
+        bpm_ele_child = bpm_ele.getchildren()[0]
+        bpm_ele_child.text = f'{beatmap_info["bpm"]}'
+
+        length_m, length_s = divmod(beatmap_info['total_length'], 60)
+        length_ele = svg_tree.xpath(
+            '//*[@id="$length"]')[0]
+        length_ele_child = length_ele.getchildren()[0]
+        length_ele_child.text = f'{length_m:.0f}:{length_s:0>2d}'
+
+        ar_ele = svg_tree.xpath(
+            '//*[@id="$ar"]')[0]
+        ar_ele_child = ar_ele.getchildren()[0]
+        ar_ele_child.text = f'{beatmap_info["ar"]}'
+
+        od_ele = svg_tree.xpath(
+            '//*[@id="$od"]')[0]
+        od_ele_child = od_ele.getchildren()[0]
+        od_ele_child.text = f'{beatmap_info["accuracy"]}'
+
+        cs_ele = svg_tree.xpath(
+            '//*[@id="$cs"]')[0]
+        cs_ele_child = cs_ele.getchildren()[0]
+        cs_ele_child.text = f'{beatmap_info["cs"]}'
+
+        hp_ele = svg_tree.xpath(
+            '//*[@id="$hp"]')[0]
+        hp_ele_child = hp_ele.getchildren()[0]
+        hp_ele_child.text = f'{beatmap_info["drain"]}'
+
+        bid_ele = svg_tree.xpath(
+            '//*[@id="$bid"]')[0]
+        bid_ele_child = bid_ele.getchildren()[0]
+        bid_ele_child.text = f'{beatmap_info["id"]}'
+
+        rankedtime = svg_tree.xpath(
+            '//*[@id="$rankedtime"]')[0]
+        rankedtime_child = rankedtime.getchildren()[0]
+
+        try:
+            formated_time = datetime.datetime.strptime(
+                beatmap_info["beatmapset"]['ranked_date'], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)  # 东八区
+        except:
+            formated_time = datetime.datetime.strptime(
+                beatmap_info["beatmapset"]['last_update'], "%Y-%m-%dT%H:%M:%SZ")
+            formated_time = formated_time + datetime.timedelta(hours=8)  # 东八区
+
+        rankedtime_child.text = formated_time.strftime('%Y/%m/%d %H:%M:%S %p')
+
+        # 渲染玩家自己的成绩
+
+        try:
+
+            my_grade = svg_tree.xpath(
+                '//*[@id="my_grade"]')[0]
+
+            my_grade_child = my_grade.getchildren()
+
+            for j in my_grade_child:
+
+                if j.attrib['id'] == '$avatar_my':  # 渲染avatar
+
+                    avatar_img = self.avatar_path / \
+                        f'{player["user_id"]}.jpeg'
+                    if avatar_img.exists() is True:
+                        pass
+                    else:
+                        await self.download.download_avatar_async([player["avatar_url"]], [player["user_id"]])
+
+                    j.tag = 'image'
+                    j.set(
+                        'xlink', f'{self.avatar_true_path}/{player["user_id"]}.jpeg')
+
+                if j.attrib['id'] == '$index_my':  # 渲染index
+
+                    # 获取自己在第几位
+                    for i in other_players:
+                        if i['username'] == player['username']:
+                            index = other_players.index(i) + 1
+
+                    j.getchildren()[0].text = f'{index}.'
+
+                    index_in = svg_tree.xpath(
+                        '//*[@id="$i_in"]')[0]
+                    index_in_child = index_in.getchildren()[0]
+                    index_in_child.text = f'# {index} / {len(other_players)}'
+
+                if j.attrib['id'] == '$judgementdetails_my':  # 渲染对应的文本咯
+                    j.getchildren()[
+                        0].text = f'{player["statistics"]["count_300"]}/{player["statistics"]["count_100"]}/{player["statistics"]["count_50"]}/{player["statistics"]["count_miss"]}'
+
+                if j.attrib['id'] == '$daysago_my':  # 渲染daysago
+
+                    formated_time = datetime.datetime.strptime(
+                        player['created_at'], "%Y-%m-%dT%H:%M:%SZ")  # 格式化
+                    formated_time = formated_time + \
+                        datetime.timedelta(hours=8)  # 时区转换
+                    now = datetime.datetime.now()
+
+                    delta = now - formated_time
+
+                    delta_years = delta.days // 365
+
+                    delta_months = (delta.days % 365) // 30
+
+                    delta_days = delta.days
+
+                    delta_hours = delta.seconds // 3600
+
+                    delta_minutes = (delta.seconds % 3600) // 60
+
+                    delta_seconds = delta.seconds
+
+                    if delta_years >= 1:
+                        j.getchildren()[
+                            0].text = f'{delta_years} years ago'
+                    elif delta_months >= 1:
+                        j.getchildren()[
+                            0].text = f'{delta_months} months ago'
+                    elif delta_days >= 1:
+                        j.getchildren()[
+                            0].text = f'{delta_days} days ago'
+                    elif delta_hours >= 1:
+                        j.getchildren()[
+                            0].text = f'{delta_hours} hours ago'
+                    elif delta_minutes >= 1:
+                        j.getchildren()[
+                            0].text = f'{delta_minutes} minutes ago'
+                    else:
+                        j.getchildren()[
+                            0].text = f'{delta_seconds} seconds ago'
+
+                if j.attrib['id'] == '$playername_my':  # 渲染playername
+                    j.getchildren()[
+                        0].text = f'{player["username"]}'
+
+                if j.attrib['id'] == '$combo_my':  # 渲染combo
+                    j.getchildren()[
+                        0].text = f'{player["max_combo"]}x'
+
+                if j.attrib['id'] == '$acc_my':  # 渲染acc
+                    j.getchildren()[
+                        0].text = f'{player["accuracy"]*100:.2f}%'
+
+                if j.attrib['id'] == '$score_my':  # 渲染score
+                    j.getchildren()[
+                        0].text = f'Score:{player["score"]:,}'
+
+                if j.attrib['id'] == '$mods_my':  # 渲染mods
+                    j.set('text-anchor', 'end')
+                    j.set('transform', 'translate(50)')
+                    j.getchildren()[
+                        0].text = f'{player["mods"]}'
+
+                if j.attrib['id'] == '$grade_pic_my':  # 渲染grade
+                    j.tag = 'image'
+                    j.set('xlink', f'{self.garde_path}/{player["rank"]}.png')
+
+        except:
+            my_grade.set('opacity', '0')
+            no_score = svg_tree.xpath(
+                '//*[@id="$no_score"]')[0]
+            no_score.set('opacity', '1')
+        # 提前下载其他玩家的头像
+
+        for i in other_players:
+            avatar_id_list = []
+            avatar_url_list = []
+
+            img = self.avatar_path / f'{i["user_id"]}.jpeg'
+
+            if img.exists() is True:
+                pass
+            else:
+                avatar_id_list.append(i['user_id'])
+                avatar_url_list.append(i['avatar_url'])
+
+        await self.download.download_avatar_async(avatar_url_list, avatar_id_list)
+
+        # 渲染其他玩家(<16)
+        total_display = len(other_players) + 1
+        if total_display > 17:
+            total_display = 17
+        for i in range(1, total_display):
+            player_grade = svg_tree.xpath(
+                f'//*[@id="player_grade_{i}"]')[0]
+
+            player_grade_child = player_grade.getchildren()
+
+            for j in player_grade_child:  # 每一个就是一个grade了 渲染好每一个grade
+
+                if j.attrib['id'] == f'$avatar_{i}':  # 渲染avatar
+
+                    avatar_img = self.avatar_path / \
+                        f'{other_players[i - 1]["user_id"]}.jpeg'
+                    if avatar_img.exists() is True:
+                        pass
+                    else:
+                        # await self.download.get_avatar_file(other_players[i - 1]["avatar_url"], other_players[i - 1]["user_id"])
+                        await self.download.download_avatar_async([other_players[i - 1]["avatar_url"]], [other_players[i - 1]["user_id"]])
+
+                    j.tag = 'image'
+                    j.set(
+                        'xlink', f'{self.avatar_true_path}/{other_players[i - 1]["user_id"]}.jpeg')
+
+                if j.attrib['id'] == f'$index_{i}':  # 渲染index
+                    j.getchildren()[0].text = f'{i}.'
+
+                if j.attrib['id'] == f'$judgementdetails_{i}':  # 渲染对应的文本咯
+                    j.getchildren()[
+                        0].text = f'{other_players[i - 1]["statistics"]["count_300"]}/{other_players[i - 1]["statistics"]["count_100"]}/{other_players[i - 1]["statistics"]["count_50"]}/{other_players[i - 1]["statistics"]["count_miss"]}'
+
+                if j.attrib['id'] == f'$daysago_{i}':  # 渲染daysago
+                    formated_time = datetime.datetime.strptime(
+                        other_players[i - 1]['created_at'], "%Y-%m-%dT%H:%M:%SZ")  # 格式化
+
+                    formated_time = formated_time + \
+                        datetime.timedelta(hours=8)  # 时区转换
+                    now = datetime.datetime.now()  # 当前时间
+                    delta = now - formated_time
+
+                    delta_years = delta.days // 365
+
+                    delta_months = (delta.days % 365) // 30
+
+                    delta_days = delta.days
+
+                    delta_hours = delta.seconds // 3600
+
+                    delta_minutes = (delta.seconds % 3600) // 60
+
+                    delta_seconds = delta.seconds
+
+                    if delta_years >= 1:
+                        j.getchildren()[0].text = f'{delta_years} years ago'
+
+                    elif delta_months >= 1:
+                        j.getchildren()[0].text = f'{delta_months} months ago'
+
+                    elif delta_days >= 1:
+                        j.getchildren()[0].text = f'{delta_days} days ago'
+
+                    elif delta_hours >= 1:
+                        j.getchildren()[0].text = f'{delta_hours} hours ago'
+
+                    elif delta_minutes >= 1:
+                        j.getchildren()[
+                            0].text = f'{delta_minutes} minutes ago'
+
+                    else:
+                        j.getchildren()[
+                            0].text = f'{delta_seconds} seconds ago'
+
+                if j.attrib['id'] == f'$playername_{i}':  # 渲染playername
+                    j.getchildren()[
+                        0].text = f'{other_players[i - 1]["username"]}'
+
+                if j.attrib['id'] == f'$combo_{i}':  # 渲染combo
+                    j.getchildren()[
+                        0].text = f'{other_players[i - 1]["max_combo"]}x'
+
+                if j.attrib['id'] == f'$acc_{i}':  # 渲染acc
+                    j.getchildren()[
+                        0].text = f'{other_players[i - 1]["accuracy"]*100: .2f}%'
+
+                if j.attrib['id'] == f'$score_{i}':  # 渲染score
+                    j.getchildren()[
+                        0].text = f'Score:{other_players[i - 1]["score"]:,}'
+
+                if j.attrib['id'] == f'$mods_{i}':  # 渲染mods
+                    j.set('text-anchor', 'end')
+                    j.set('transform', 'translate(50)')
+                    j.getchildren()[0].text = f'{other_players[i - 1]["mods"]}'
+
+                if j.attrib['id'] == f'$grade_pic_{i}':  # 渲染grade
+                    j.tag = 'image'
+                    j.set(
+                        'xlink', f'{self.garde_path}/{other_players[i - 1]["rank"]}.png')
+        # 去除掉其他未渲染的
+        print(len(other_players))
+        for i in range(len(other_players) + 1, 17):
+            player_grade = svg_tree.xpath(
+                f'//*[@id="player_grade_{i}"]')[0]
+
+            player_grade.set('opacity', '0')
+
+        # 保存修改后的SVG文件
+        with open(f'{self.result_path}/{player["user_id"]}-brk.svg', 'wb') as f:
+            content = etree.tostring(svg_tree, pretty_print=True).replace(
+                b'xlink="', b'xlink:href="')
+            content = content.replace(b'xmlns:xlink:href', b'xmlns:xlink')
+            f.write(content)
+
+        # cairosvg.svg2png(url='frame.svg', write_to='frame.png',
+        #                  unsafe=True)
+
+        subprocess.run(['inkscape', f'{self.result_path}/{player["user_id"]}-brk.svg',
+                       '-o', f'{self.result_path}/{player["user_id"]}-brk.png'])
+
+        endtime = datetime.datetime.now()
+
+        totaltime = endtime - start_time
+
+        print(totaltime)
+
+        return f'{player["user_id"]}-brk.png'

@@ -355,7 +355,7 @@ class ATRI:
 
         bps_ptt_pp = round(bps_ptt_pp, 2)
 
-        data = f'{osuname}\n现在的pp: {now_pp}pp\n预测pp: {bps_ptt_pp}pp'
+        data = f'{osuname}\n现在的pp: {now_pp}pp\n预测潜力pp: {bps_ptt_pp}pp'
 
         return data
 
@@ -387,6 +387,15 @@ class ATRI:
         await self.get_bplists(vsname)
 
         data = self.core.calculate_tdbavs(osuid, vsid)
+
+        return data
+
+    async def get_brk(self, osuname, group_id, beatmap_id):
+
+        osuid = await self.get_user(osuname)
+        await self.get_bplists(osuname)
+
+        data = await self.core.calculate_beatmapranking(osuid, group_id=group_id, beatmap_id=beatmap_id)
 
         return data
 

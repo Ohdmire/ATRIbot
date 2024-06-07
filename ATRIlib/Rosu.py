@@ -11,17 +11,20 @@ class Rosu:
         self.beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
         self.download = Download.Downloader()
 
-    # 获取单个谱面(ranked)
-    async def get_beatmap_file_async_one(self, beatmap_id):
-        filepath = self.beatmaps_path / f'{beatmap_id}.osu'
+    # 获取单个谱面(ranked or unranked)
+    async def get_beatmap_file_async_one(self, beatmap_id, Temp=True):
+        if Temp:
+            filepath = self.beatmaps_path_tmp / f'{beatmap_id}.osu'
+        else:
+            filepath = self.beatmaps_path / f'{beatmap_id}.osu'
         if filepath.exists():
             return
         else:
             beatmap_ids = [beatmap_id]
-        await self.download.download_files(beatmap_ids)
+        await self.download.download_osu_async(beatmap_ids, Temp=Temp)
 
-    # 批量获取谱面(ranked)
-    async def get_beatmap_file_async_all(self, beatmap_id_list):
+    # 批量获取谱面(ranked or unranked)
+    async def get_beatmap_file_async_all(self, beatmap_id_list, Temp=False):
         beatmap_ids = []
         for beatmap_id in beatmap_id_list:
             file_path = self.beatmaps_path / f'{beatmap_id}.osu'
@@ -30,89 +33,21 @@ class Rosu:
             else:
                 beatmap_ids.append(beatmap_id)
 
-        await self.download.download_files(beatmap_ids)
+        await self.download.download_osu_async(beatmap_ids, Temp=Temp)
 
-    # 获取单个谱面(unranked)
-    async def get_beatmap_file_tmp_async_one(self, beatmap_id):
-        filepath = self.beatmaps_path_tmp / f'{beatmap_id}.osu'
-        if filepath.exists():
-            return
+    # 计算pp(ranked or unranked)
+    async def calculate_pp_if_all(self, beatmap_id, mods, acc, combo, Temp=True):
+
+        mods_int = self.calculate_mod_int(mods)
+
+        result = {}
+
+        await self.get_beatmap_file_async_one(beatmap_id, Temp=Temp)
+
+        if Temp:
+            file_path = self.beatmaps_path_tmp / f'{beatmap_id}.osu'
         else:
-            await self.download.get_beatmap_file_tmp(beatmap_id)
-
-    # 计算pp(ranked)
-    async def calculate_pp_if_all(self, beatmap_id, mods, acc, combo):
-
-        mods_int = self.calculate_mod_int(mods)
-
-        result = {}
-
-        await self.get_beatmap_file_async_one(beatmap_id)
-
-        file_path = self.beatmaps_path / f'{beatmap_id}.osu'
-
-        map = rosu.Beatmap(path=str(file_path))
-
-        perf = rosu.Performance(mods=mods_int)
-
-        perf.set_combo(None)
-        perf.set_accuracy(acc)
-        attrs = perf.calculate(map)
-        result['fcpp'] = attrs.pp
-
-        perf.set_accuracy(95)
-        attrs = perf.calculate(map)
-        result['95fcpp'] = attrs.pp
-
-        perf.set_accuracy(96)
-        attrs = perf.calculate(map)
-        result['96fcpp'] = attrs.pp
-
-        perf.set_accuracy(97)
-        attrs = perf.calculate(map)
-        result['97fcpp'] = attrs.pp
-
-        perf.set_accuracy(98)
-        attrs = perf.calculate(map)
-        result['98fcpp'] = attrs.pp
-
-        perf.set_accuracy(99)
-        attrs = perf.calculate(map)
-        result['99fcpp'] = attrs.pp
-
-        perf.set_accuracy(100)
-        attrs = perf.calculate(map)
-        result['100fcpp'] = attrs.pp
-
-        result['fullaimpp'] = attrs.pp_aim
-        result['fullspeedpp'] = attrs.pp_speed
-        result['fullaccpp'] = attrs.pp_accuracy
-
-        result['maxcombo'] = attrs.difficulty.max_combo
-
-        perf.set_accuracy(acc)
-        perf.set_combo(combo)
-        attrs = perf.calculate(map)
-        result['pp'] = attrs.pp
-
-        result['aimpp'] = attrs.pp_aim
-        result['speedpp'] = attrs.pp_speed
-        result['accpp'] = attrs.pp_accuracy
-
-        result['difficulty'] = attrs.difficulty.stars
-
-        return result
-
-    # 计算rosu数据(unranked)
-    async def calculate_pp_if_all_tmp(self, beatmap_id, mods, acc, combo):
-
-        mods_int = self.calculate_mod_int(mods)
-
-        result = {}
-
-        await self.get_beatmap_file_async_one(beatmap_id)
-
-        file_path = self.beatmaps_path_tmp / f'{beatmap_id}.osu'
+            file_path = self.beatmaps_path / f'{beatmap_id}.osu'
 
         map = rosu.Beatmap(path=str(file_path))
 

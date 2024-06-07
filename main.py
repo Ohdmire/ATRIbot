@@ -81,6 +81,13 @@ class Item11(BaseModel):
     osuname: Optional[str] = None
 
 
+class Item12(BaseModel):
+    qq_id: int
+    group_id: int
+    beatmap_id: int
+    osuname: Optional[str] = None
+
+
 @app.api_route("/qq/pr", methods=["GET", "POST"])
 async def get_pr(item: Item):
     result = await atri_qq.qq_get_pr(item.qq_id, item.osuname)
@@ -89,6 +96,13 @@ async def get_pr(item: Item):
     else:
         print('File not found')
         return result
+
+
+@app.api_route("/qq/brk", methods=["GET", "POST"])
+async def get_brk(item: Item12):
+    result = await atri_qq.qq_get_brk(item.qq_id, item.group_id, item.beatmap_id, item.osuname)
+    print(result)
+    return result
 
 
 @app.api_route("/qq/tdba", methods=["GET", "POST"])
@@ -247,4 +261,4 @@ async def job_update_users_bps():
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='0.0.0.0', port=8008, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=8007, reload=True)

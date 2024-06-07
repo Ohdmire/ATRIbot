@@ -68,13 +68,24 @@ class PPYapiv2:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
                 data = await response.json()
-                data = response.json()['scores']
+                data = data['scores']
                 return data
 
     # 获取recent
     async def get_user_passrecent_info(self, user_id):
         token = self.token
         url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?mode=osu'
+        headers = {'Authorization': f'Bearer {token}'}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                data = await response.json()
+                return data
+    
+    # 获取beatmap info
+    async def get_beatmap_info(self, beatmap_id):
+        token = self.token
+        url = f'https://osu.ppy.sh/api/v2/beatmaps/{beatmap_id}'
         headers = {'Authorization': f'Bearer {token}'}
 
         async with aiohttp.ClientSession() as session:

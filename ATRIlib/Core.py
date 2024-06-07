@@ -7,8 +7,7 @@ from ATRIlib.Mongodb import Mongodb
 from ATRIlib.Rosu import Rosu
 from ATRIlib.Jobs import Jobs
 from ATRIlib.Mtools import Tools
-from ATRIlib.Dtools import ResultScreen
-from ATRIlib.Dtools import TDBA
+from ATRIlib.Dtools import ResultScreen, TDBA, BeatmapRankingscreeen
 
 import numpy as np
 
@@ -41,6 +40,7 @@ class ATRICore:
                             0.06944284018723361, 0.06597069817787193, 0.06267216326897833, 0.05953855510552941, 0.056561627350252934, 0.053733545982740286, 0.051046868683603266, 0.048494525249423104, 0.046069798986951946, 0.043766309037604346, 0.041577993585724136, 0.03949909390643792, 0.03752413921111602, 0.03564793225056022, 0.033865535638032206, 0.03217225885613059, 0.030563645913324066, 0.029035463617657863, 0.027583690436774964, 0.026204505914936217, 0.024894280619189402, 0.023649566588229934, 0.02246708825881844, 0.02134373384587751, 0.020276547153583634, 0.01926271979590445, 0.01829958380610923, 0.017384604615803767, 0.01651537438501358, 0.0156896056657629, 0.014905125382474753, 0.014159869113351013, 0.013451875657683464, 0.012779281874799289, 0.012140317781059324, 0.011533301892006359, 0.01095663679740604, 0.010408804957535737, 0.00988836470965895, 0.009393946474176, 0.008924249150467202, 0.00847803669294384, 0.008054134858296648, 0.007651428115381815, 0.007268856709612724, 0.006905413874132088, 0.006560143180425483, 0.006232136021404208]
 
         self.result = ResultScreen()
+        self.ranking = BeatmapRankingscreeen()
         self.tdba = TDBA()
 
     # 数据模块-更新玩家信息
@@ -131,6 +131,8 @@ class ATRICore:
                 upsert=True  # 如果不存在则插入
             )
 
+        return socresdata
+
     # 功能模块-计算原始pp
     def calculate_origin_pp(self, user_id):
 
@@ -153,9 +155,9 @@ class ATRICore:
         mods = score['mods']
         acc = score['accuracy'] * 100
         # 获取osu文件来计算
-        await self.rosu.get_beatmap_file_async_one(beatmap_id)
+        await self.rosu.get_beatmap_file_async_one(beatmap_id, Temp=False)
         # 不需要combo计算
-        ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, mods, acc, None)
+        ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, mods, acc, None, Temp=False)
         iffcpp = ppresult["fcpp"]
 
         self.db_score.update(
@@ -195,7 +197,6 @@ class ATRICore:
                 {"$set": {'choke': True}},  # 插入的数据l
                 upsert=True  # 如果不存在则插入
             )
-
         else:
             self.db_score.update(
                 {"id": score_id},  # 查询条件
@@ -217,10 +218,14 @@ class ATRICore:
         sorted_list = sorted(list_of_dicts, key=lambda x: list(x.keys())[0])
         return sorted_list
 
-    def sort_by_value_reverse(self, mydict):
+    def sort_dict_by_value_reverse(self, mydict):
         sorted_dict = dict(sorted(mydict.items(), reverse=True,
                            key=operator.itemgetter(1)))
         return sorted_dict
+
+    def sort_by_givenkey_reverse(self, list_of_dicts, key):
+        sorted_list = sorted(list_of_dicts, key=lambda x: x[key], reverse=True)
+        return sorted_list
 
     # 功能模块-计算bonus pp
     def calculate_bonus_pp(self, user_id):
@@ -253,7 +258,7 @@ class ATRICore:
             score = self.db_score.find_one({'id': bp})
             # 更新choke
             beatmap_id = score['beatmap_id']
-            ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, [], 0, None)
+            ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, [], 0, None, Temp=False)
             maxcombo = ppresult["maxcombo"]
             self.update_choke(bp, maxcombo)
             # 重新获取score
@@ -785,7 +790,7 @@ class ATRICore:
             else:
                 pp_dict[key] = 0
 
-        sorted_count_dict = self.sort_by_value_reverse(count_dict)
+        sorted_count_dict = self.sort_dict_by_value_reverse(count_dict)
 
         return sorted_count_dict, pp_dict, amount_user, start_pp, end_pp
 
@@ -793,8 +798,10 @@ class ATRICore:
 
         now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
         # now_bp1 = self.db_user.find_one({'id': user_id})['bps_pp'][0]
-        now_bp1to13avg = sum(self.db_user.find_one(
-            {'id': user_id})['bps_pp'][0:12]) / 13
+        # now_bp1to2avg = sum(self.db_user.find_one(
+        #     {'id': user_id})['bps_pp'][0:1]) / 2
+
+        now_bp1 = self.db_user.find_one({'id': user_id})['bps_pp'][0]
 
         start_pp = now_pp - 1000
         end_pp = now_pp + 1000
@@ -805,24 +812,25 @@ class ATRICore:
         # k1_bp1_list = []
         # k1_pp_list = []
 
-        k2_bp1to13avg_list = []
+        k2_bp2_list = []
         k2_pp_list = []
 
         for range_user in range_users:
             try:
                 # k1_bp1_list.append(range_user['bps_pp'][0])
                 # k1_pp_list.append(range_user['statistics']['pp'])
-                k2_bp1to13avg_list.append(sum(range_user['bps_pp'][0:12]) / 13)
+                # k2_bp1to2avg_list.append(sum(range_user['bps_pp'][0:1]) / 2)
+                k2_bp2_list.append(range_user['bps_pp'][1])
                 k2_pp_list.append(range_user['statistics']['pp'])
             except:
                 print(f'{range_user["username"]}没有bplist')
 
         # k1, b1 = self.mtools.leastsquares(k1_bp1_list, k1_pp_list)
 
-        k2, b2 = self.mtools.leastsquares(k2_bp1to13avg_list, k2_pp_list)
+        k2, b2 = self.mtools.leastsquares(k2_bp2_list, k2_pp_list)
 
         # avg_ptt_pp = k1 * now_bp1 + b1
-        bps_ptt_pp = k2 * now_bp1to13avg + b2
+        bps_ptt_pp = k2 * now_bp1 + b2
 
         return bps_ptt_pp, now_pp
 
@@ -944,17 +952,145 @@ class ATRICore:
         data = data[0]
 
         if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
-            await self.rosu.get_beatmap_file_async_one(data["beatmap"]["id"])
+            # 永久保存谱面
+            await self.rosu.get_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
 
             ppresult = await self.rosu.calculate_pp_if_all(
-                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"])
+                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=False)
         else:
-            await self.rosu.get_beatmap_file_tmp_async_one(
-                data["beatmap"]["id"])
+            # 临时保存谱面
+            await self.rosu.get_beatmap_file_async_one(
+                data["beatmap"]["id"], Temp=True)
 
-            ppresult = await self.rosu.calculate_pp_if_all_tmp(
-                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"])
+            ppresult = await self.rosu.calculate_pp_if_all(
+                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
 
         result = self.result.draw(data, ppresult)
 
         return result
+
+    async def calculate_score(self, user_id, beatmap_id):
+
+        data = await self.ppy.get_user_socres_info(user_id, beatmap_id)
+
+        if data == []:
+            return None
+        data = data[0]
+
+        if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
+            # 永久保存谱面
+            await self.rosu.get_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
+
+            ppresult = await self.rosu.calculate_pp_if_all(
+                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=False)
+        else:
+            # 临时保存谱面
+            await self.rosu.get_beatmap_file_async_one(
+                data["beatmap"]["id"], Temp=True)
+
+            ppresult = await self.rosu.calculate_pp_if_all(
+                data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
+
+        result = await self.result.draw(data, ppresult)
+
+        return result
+
+    async def calculate_beatmapranking(self, user_id, beatmap_id, group_id):
+
+        try:
+            # 更新个人成绩
+
+            await self.update_scores_info(user_id, beatmap_id)
+
+            userscores = self.db_score.find(
+                {"beatmap_id": beatmap_id, "user_id": user_id})
+
+            count = 0
+
+            user_best_score = {}
+
+            for userscore in userscores:
+
+                if count == 0:
+                    user_best_score = userscore
+                    count += 1
+
+                if userscore["score"] > user_best_score["score"]:
+                    user_best_score = userscore
+
+                # 加入用户名,avatar_url
+            username = self.db_user.find_one(
+                {"id": user_best_score["user_id"]})["username"]
+
+            avatar_url = self.db_user.find_one(
+                {"id": user_best_score["user_id"]})["avatar_url"]
+
+            user_best_score.update({"username": username})
+            user_best_score.update({"avatar_url": avatar_url})
+
+        except:
+
+            user_best_score = {}
+            # username = self.db_user.find_one(
+            #     {"id": user_id})["username"]
+
+            user_best_score = {"user_id": user_id}
+
+        beatmapinfo = await self.ppy.get_beatmap_info(beatmap_id)
+
+        # 查找群友的最好成绩
+
+        group_users_list = self.db_group.find_one(
+            {"id": group_id})["user_id_list"]
+
+        all_users_list = self.db_bind.find({"id": {"$in": group_users_list}})
+
+        # 这下user_list就是本群玩家了
+
+        other_users_best_score_list = []
+
+        for another_user in all_users_list:
+
+            another_userscores = self.db_score.find(
+                {"beatmap_id": beatmap_id, "user_id": another_user["user_id"]})
+
+            count = 0
+            another_user_best_score = {}
+
+            for another_userscore in another_userscores:
+
+                if count == 0:
+                    another_user_best_score = another_userscore
+                    count += 1
+
+                if another_userscore["score"] > another_user_best_score["score"]:
+                    another_user_best_score = another_userscore
+
+            if another_user_best_score != {}:
+                other_users_best_score_list.append(another_user_best_score)
+
+        sorted_others = self.sort_by_givenkey_reverse(
+            other_users_best_score_list, "score")
+
+        final_sorted_others = []
+
+        # 加入用户名,avatar_url
+        for sorted_other in sorted_others:
+            username = self.db_user.find_one(
+                {"id": sorted_other["user_id"]})["username"]
+
+            avatar_url = self.db_user.find_one(
+                {"id": sorted_other["user_id"]})["avatar_url"]
+
+            sorted_other.update({"username": username})
+            sorted_other.update({"avatar_url": avatar_url})
+
+            final_sorted_others.append(sorted_other)
+
+        result = await self.ranking.draw(user_best_score, final_sorted_others, beatmapinfo)
+
+        return result
+
+    async def calculate_beatmapranking_update(self, user_id, beatmap_id, group_id):
+
+        pass
