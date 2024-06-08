@@ -965,7 +965,7 @@ class ATRICore:
             ppresult = await self.rosu.calculate_pp_if_all(
                 data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
 
-        result = self.result.draw(data, ppresult)
+        result = await self.result.draw(data, ppresult)
 
         return result
 
