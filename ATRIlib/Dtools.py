@@ -585,7 +585,7 @@ class BeatmapRankingscreeen:
             formated_time = formated_time + datetime.timedelta(hours=8)  # 东八区
         except:
             formated_time = datetime.datetime.strptime(
-                beatmap_info["beatmapset"]['last_update'], "%Y-%m-%dT%H:%M:%SZ")
+                beatmap_info["beatmapset"]['last_updated'], "%Y-%m-%dT%H:%M:%SZ")
             formated_time = formated_time + datetime.timedelta(hours=8)  # 东八区
 
         rankedtime_child.text = formated_time.strftime('%Y/%m/%d %H:%M:%S %p')
@@ -704,11 +704,15 @@ class BeatmapRankingscreeen:
             no_score = svg_tree.xpath(
                 '//*[@id="$no_score"]')[0]
             no_score.set('opacity', '1')
+
+            index_in = svg_tree.xpath(
+                '//*[@id="$i_in"]')[0]
+            index_in.set('opacity', '0')
         # 提前下载其他玩家的头像
+        avatar_id_list = []
+        avatar_url_list = []
 
         for i in other_players:
-            avatar_id_list = []
-            avatar_url_list = []
 
             img = self.avatar_path / f'{i["user_id"]}.jpeg'
 
@@ -820,7 +824,6 @@ class BeatmapRankingscreeen:
                     j.set(
                         'xlink', f'{self.garde_path}/{other_players[i - 1]["rank"]}.png')
         # 去除掉其他未渲染的
-        print(len(other_players))
         for i in range(len(other_players) + 1, 17):
             player_grade = svg_tree.xpath(
                 f'//*[@id="player_grade_{i}"]')[0]

@@ -78,6 +78,23 @@ class Jobs:
                 upsert=True  # 如果不存在则插入
             )
 
+    async def update_users_scores(self, beatmap_id, osuid, semaphore):
+
+        id = osuid
+
+        async with semaphore:
+            socresdata = await self.ppy.get_user_socres_info(id, beatmap_id)
+
+        for score in socresdata:
+            # 加入beatmap_id
+            score.update({'beatmap_id': int(beatmap_id)})
+
+            self.db_score.update(
+                {"id": score["id"]},  # 查询条件
+                {"$set": score},  # 插入的数据
+                upsert=True  # 如果不存在则插入
+            )
+
     async def update_users_async(self, users_lists):
         total_users = len(users_lists)
 
@@ -127,3 +144,32 @@ class Jobs:
         count = success_users / total_users
 
         return f'成功率{count} 用时{total_time}s'
+
+    async def update_users_beatmap_score_async(self, beatmap_id, users_lists):
+
+        total_users = len(users_lists)
+
+        start_time = time.time()
+
+        semaphore = asyncio.Semaphore(100)
+
+        tasks = [self.update_users_scores(
+            beatmap_id, user, semaphore) for user in users_lists]
+
+        result = await asyncio.gather(*tasks)
+
+        endtime = time.time()
+
+        total_time = endtime - start_time
+        total_time = round(total_time, 2)
+
+        try:
+            result.remove(None)
+        except:
+            pass
+
+        success_users = len(result)
+
+        count = success_users / total_users
+
+        return f'成功率{count*100:.2f}% 用时{total_time}s'

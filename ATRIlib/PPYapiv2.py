@@ -68,7 +68,10 @@ class PPYapiv2:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
                 data = await response.json()
-                data = data['scores']
+                try:
+                    data = data['scores']
+                except:
+                    data = []
                 return data
 
     # 获取recent
@@ -81,7 +84,7 @@ class PPYapiv2:
             async with session.get(url, headers=headers) as response:
                 data = await response.json()
                 return data
-    
+
     # 获取beatmap info
     async def get_beatmap_info(self, beatmap_id):
         token = self.token

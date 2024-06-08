@@ -113,15 +113,14 @@
 </g>
 </g>
 <rect id="back" x="124" y="387" width="1680" height="610" fill="#242424"/>
-<rect id="Rectangle 400" x="957" y="387" width="1680" height="610" fill="#242424"/>
 <g id="other_players_grade">
 <g id="player_grade_16">
 <g id="Rectangle 382">
-<mask id="path-57-inside-1_0_1" fill="white">
+<mask id="path-56-inside-1_0_1" fill="white">
 <path d="M977 927H1777V987H977V927Z"/>
 </mask>
 <path d="M977 927H1777V987H977V927Z" fill="url(#paint2_linear_0_1)"/>
-<path d="M1777 984H977V990H1777V984Z" fill="#525252" mask="url(#path-57-inside-1_0_1)"/>
+<path d="M1777 984H977V990H1777V984Z" fill="#525252" mask="url(#path-56-inside-1_0_1)"/>
 </g>
 <text id="$index_16" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="968.136">1.</tspan></text>
 <rect id="$grade_pic_16" x="1105" y="931" width="50" height="50" fill="#C4C4C4"/>
@@ -136,11 +135,11 @@
 </g>
 <g id="player_grade_15">
 <g id="Rectangle 382_2">
-<mask id="path-69-inside-2_0_1" fill="white">
+<mask id="path-68-inside-2_0_1" fill="white">
 <path d="M977 863H1777V923H977V863Z"/>
 </mask>
 <path d="M977 863H1777V923H977V863Z" fill="url(#paint3_linear_0_1)"/>
-<path d="M1777 920H977V926H1777V920Z" fill="#525252" mask="url(#path-69-inside-2_0_1)"/>
+<path d="M1777 920H977V926H1777V920Z" fill="#525252" mask="url(#path-68-inside-2_0_1)"/>
 </g>
 <text id="$index_15" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="904.136">1.</tspan></text>
 <rect id="$grade_pic_15" x="1105" y="867" width="50" height="50" fill="#C4C4C4"/>
@@ -155,11 +154,11 @@
 </g>
 <g id="player_grade_14">
 <g id="Rectangle 382_3">
-<mask id="path-81-inside-3_0_1" fill="white">
+<mask id="path-80-inside-3_0_1" fill="white">
 <path d="M977 801H1777V861H977V801Z"/>
 </mask>
 <path d="M977 801H1777V861H977V801Z" fill="url(#paint4_linear_0_1)"/>
-<path d="M1777 858H977V864H1777V858Z" fill="#525252" mask="url(#path-81-inside-3_0_1)"/>
+<path d="M1777 858H977V864H1777V858Z" fill="#525252" mask="url(#path-80-inside-3_0_1)"/>
 </g>
 <text id="$index_14" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="842.136">1.</tspan></text>
 <rect id="$grade_pic_14" x="1105" y="805" width="50" height="50" fill="#C4C4C4"/>
@@ -174,11 +173,11 @@
 </g>
 <g id="player_grade_13">
 <g id="Rectangle 382_4">
-<mask id="path-93-inside-4_0_1" fill="white">
+<mask id="path-92-inside-4_0_1" fill="white">
 <path d="M977 739H1777V799H977V739Z"/>
 </mask>
 <path d="M977 739H1777V799H977V739Z" fill="url(#paint5_linear_0_1)"/>
-<path d="M1777 796H977V802H1777V796Z" fill="#525252" mask="url(#path-93-inside-4_0_1)"/>
+<path d="M1777 796H977V802H1777V796Z" fill="#525252" mask="url(#path-92-inside-4_0_1)"/>
 </g>
 <text id="$index_13" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="780.136">1.</tspan></text>
 <rect id="$grade_pic_13" x="1105" y="743" width="50" height="50" fill="#C4C4C4"/>
@@ -193,11 +192,11 @@
 </g>
 <g id="player_grade_12">
 <g id="Rectangle 382_5">
-<mask id="path-105-inside-5_0_1" fill="white">
+<mask id="path-104-inside-5_0_1" fill="white">
 <path d="M977 677H1777V737H977V677Z"/>
 </mask>
 <path d="M977 677H1777V737H977V677Z" fill="url(#paint6_linear_0_1)"/>
-<path d="M1777 734H977V740H1777V734Z" fill="#525252" mask="url(#path-105-inside-5_0_1)"/>
+<path d="M1777 734H977V740H1777V734Z" fill="#525252" mask="url(#path-104-inside-5_0_1)"/>
 </g>
 <text id="$index_12" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="718.136">1.</tspan></text>
 <rect id="$grade_pic_12" x="1105" y="681" width="50" height="50" fill="#C4C4C4"/>
@@ -212,11 +211,11 @@
 </g>
 <g id="player_grade_11">
 <g id="Rectangle 382_6">
-<mask id="path-117-inside-6_0_1" fill="white">
+<mask id="path-116-inside-6_0_1" fill="white">
 <path d="M977 615H1777V675H977V615Z"/>
 </mask>
 <path d="M977 615H1777V675H977V615Z" fill="url(#paint7_linear_0_1)"/>
-<path d="M1777 672H977V678H1777V672Z" fill="#525252" mask="url(#path-117-inside-6_0_1)"/>
+<path d="M1777 672H977V678H1777V672Z" fill="#525252" mask="url(#path-116-inside-6_0_1)"/>
 </g>
 <text id="$index_11" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="656.136">1.</tspan></text>
 <rect id="$grade_pic_11" x="1105" y="619" width="50" height="50" fill="#C4C4C4"/>
@@ -231,11 +230,11 @@
 </g>
 <g id="player_grade_10">
 <g id="Rectangle 382_7">
-<mask id="path-129-inside-7_0_1" fill="white">
+<mask id="path-128-inside-7_0_1" fill="white">
 <path d="M977 553H1777V613H977V553Z"/>
 </mask>
 <path d="M977 553H1777V613H977V553Z" fill="url(#paint8_linear_0_1)"/>
-<path d="M1777 610H977V616H1777V610Z" fill="#525252" mask="url(#path-129-inside-7_0_1)"/>
+<path d="M1777 610H977V616H1777V610Z" fill="#525252" mask="url(#path-128-inside-7_0_1)"/>
 </g>
 <text id="$index_10" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="594.136">1.</tspan></text>
 <rect id="$grade_pic_10" x="1105" y="557" width="50" height="50" fill="#C4C4C4"/>
@@ -250,11 +249,11 @@
 </g>
 <g id="player_grade_9">
 <g id="Rectangle 382_8">
-<mask id="path-141-inside-8_0_1" fill="white">
+<mask id="path-140-inside-8_0_1" fill="white">
 <path d="M977 491H1777V551H977V491Z"/>
 </mask>
 <path d="M977 491H1777V551H977V491Z" fill="url(#paint9_linear_0_1)"/>
-<path d="M1777 548H977V554H1777V548Z" fill="#525252" mask="url(#path-141-inside-8_0_1)"/>
+<path d="M1777 548H977V554H1777V548Z" fill="#525252" mask="url(#path-140-inside-8_0_1)"/>
 </g>
 <text id="$index_9" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="532.136">1.</tspan></text>
 <rect id="$grade_pic_9" x="1105" y="495" width="50" height="50" fill="#C4C4C4"/>
@@ -269,11 +268,11 @@
 </g>
 <g id="player_grade_8">
 <g id="Rectangle 382_9">
-<mask id="path-153-inside-9_0_1" fill="white">
+<mask id="path-152-inside-9_0_1" fill="white">
 <path d="M977 429H1777V489H977V429Z"/>
 </mask>
 <path d="M977 429H1777V489H977V429Z" fill="url(#paint10_linear_0_1)"/>
-<path d="M977 432H1777V426H977V432ZM1777 486H977V492H1777V486Z" fill="#525252" mask="url(#path-153-inside-9_0_1)"/>
+<path d="M977 432H1777V426H977V432ZM1777 486H977V492H1777V486Z" fill="#525252" mask="url(#path-152-inside-9_0_1)"/>
 </g>
 <text id="$index_8" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="993" y="470.136">1.</tspan></text>
 <rect id="$grade_pic_8" x="1105" y="433" width="50" height="50" fill="#C4C4C4"/>
@@ -288,11 +287,11 @@
 </g>
 <g id="player_grade_7">
 <g id="Rectangle 382_10">
-<mask id="path-165-inside-10_0_1" fill="white">
+<mask id="path-164-inside-10_0_1" fill="white">
 <path d="M142 801H942V861H142V801Z"/>
 </mask>
 <path d="M142 801H942V861H142V801Z" fill="url(#paint11_linear_0_1)"/>
-<path d="M942 858H142V864H942V858Z" fill="#525252" mask="url(#path-165-inside-10_0_1)"/>
+<path d="M942 858H142V864H942V858Z" fill="#525252" mask="url(#path-164-inside-10_0_1)"/>
 </g>
 <text id="$index_7" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="158" y="842.136">1.</tspan></text>
 <rect id="$grade_pic_7" x="270" y="805" width="50" height="50" fill="#C4C4C4"/>
@@ -307,11 +306,11 @@
 </g>
 <g id="player_grade_6">
 <g id="Rectangle 382_11">
-<mask id="path-177-inside-11_0_1" fill="white">
+<mask id="path-176-inside-11_0_1" fill="white">
 <path d="M142 739H942V799H142V739Z"/>
 </mask>
 <path d="M142 739H942V799H142V739Z" fill="url(#paint12_linear_0_1)"/>
-<path d="M942 796H142V802H942V796Z" fill="#525252" mask="url(#path-177-inside-11_0_1)"/>
+<path d="M942 796H142V802H942V796Z" fill="#525252" mask="url(#path-176-inside-11_0_1)"/>
 </g>
 <text id="$index_6" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="158" y="780.136">1.</tspan></text>
 <rect id="$grade_pic_6" x="270" y="743" width="50" height="50" fill="#C4C4C4"/>
@@ -326,11 +325,11 @@
 </g>
 <g id="player_grade_5">
 <g id="Rectangle 382_12">
-<mask id="path-189-inside-12_0_1" fill="white">
+<mask id="path-188-inside-12_0_1" fill="white">
 <path d="M142 677H942V737H142V677Z"/>
 </mask>
 <path d="M142 677H942V737H142V677Z" fill="url(#paint13_linear_0_1)"/>
-<path d="M942 734H142V740H942V734Z" fill="#525252" mask="url(#path-189-inside-12_0_1)"/>
+<path d="M942 734H142V740H942V734Z" fill="#525252" mask="url(#path-188-inside-12_0_1)"/>
 </g>
 <text id="$index_5" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="158" y="718.136">1.</tspan></text>
 <rect id="$grade_pic_5" x="270" y="681" width="50" height="50" fill="#C4C4C4"/>
@@ -345,11 +344,11 @@
 </g>
 <g id="player_grade_4">
 <g id="Rectangle 382_13">
-<mask id="path-201-inside-13_0_1" fill="white">
+<mask id="path-200-inside-13_0_1" fill="white">
 <path d="M142 615H942V675H142V615Z"/>
 </mask>
 <path d="M142 615H942V675H142V615Z" fill="url(#paint14_linear_0_1)"/>
-<path d="M942 672H142V678H942V672Z" fill="#525252" mask="url(#path-201-inside-13_0_1)"/>
+<path d="M942 672H142V678H942V672Z" fill="#525252" mask="url(#path-200-inside-13_0_1)"/>
 </g>
 <text id="$index_4" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="158" y="656.136">1.</tspan></text>
 <rect id="$grade_pic_4" x="270" y="619" width="50" height="50" fill="#C4C4C4"/>
@@ -364,11 +363,11 @@
 </g>
 <g id="player_grade_3">
 <g id="Rectangle 382_14">
-<mask id="path-213-inside-14_0_1" fill="white">
+<mask id="path-212-inside-14_0_1" fill="white">
 <path d="M142 553H942V613H142V553Z"/>
 </mask>
 <path d="M142 553H942V613H142V553Z" fill="url(#paint15_linear_0_1)"/>
-<path d="M942 610H142V616H942V610Z" fill="#525252" mask="url(#path-213-inside-14_0_1)"/>
+<path d="M942 610H142V616H942V610Z" fill="#525252" mask="url(#path-212-inside-14_0_1)"/>
 </g>
 <text id="$index_3" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="158" y="594.136">1.</tspan></text>
 <rect id="$grade_pic_3" x="270" y="557" width="50" height="50" fill="#C4C4C4"/>
@@ -383,11 +382,11 @@
 </g>
 <g id="player_grade_2">
 <g id="Rectangle 382_15">
-<mask id="path-225-inside-15_0_1" fill="white">
+<mask id="path-224-inside-15_0_1" fill="white">
 <path d="M142 491H942V551H142V491Z"/>
 </mask>
 <path d="M142 491H942V551H142V491Z" fill="url(#paint16_linear_0_1)"/>
-<path d="M942 548H142V554H942V548Z" fill="#525252" mask="url(#path-225-inside-15_0_1)"/>
+<path d="M942 548H142V554H942V548Z" fill="#525252" mask="url(#path-224-inside-15_0_1)"/>
 </g>
 <text id="$index_2" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="158" y="532.136">1.</tspan></text>
 <rect id="$grade_pic_2" x="270" y="495" width="50" height="50" fill="#C4C4C4"/>
@@ -402,11 +401,11 @@
 </g>
 <g id="player_grade_1">
 <g id="Rectangle 382_16">
-<mask id="path-237-inside-16_0_1" fill="white">
+<mask id="path-236-inside-16_0_1" fill="white">
 <path d="M142 429H942V489H142V429Z"/>
 </mask>
 <path d="M142 429H942V489H142V429Z" fill="url(#paint17_linear_0_1)"/>
-<path d="M142 432H942V426H142V432ZM942 486H142V492H942V486Z" fill="#525252" mask="url(#path-237-inside-16_0_1)"/>
+<path d="M142 432H942V426H142V432ZM942 486H142V492H942V486Z" fill="#525252" mask="url(#path-236-inside-16_0_1)"/>
 </g>
 <text id="$index_1" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="158" y="470.136">1.</tspan></text>
 <rect id="$grade_pic_1" x="270" y="433" width="50" height="50" fill="#C4C4C4"/>
@@ -423,11 +422,11 @@
 <text id="$no_score" opacity="0.01" fill="white" xml:space="preserve" style="white-space: pre" font-family="Lato" font-size="36" letter-spacing="0em"><tspan x="472" y="966.432">No Score</tspan></text>
 <g id="my_grade">
 <g id="Rectangle 382_17">
-<mask id="path-250-inside-17_0_1" fill="white">
+<mask id="path-249-inside-17_0_1" fill="white">
 <path d="M137 926H937V986H137V926Z"/>
 </mask>
 <path d="M137 926H937V986H137V926Z" fill="url(#paint18_linear_0_1)"/>
-<path d="M137 929H937V923H137V929ZM937 983H137V989H937V983Z" fill="#525252" mask="url(#path-250-inside-17_0_1)"/>
+<path d="M137 929H937V923H137V929ZM937 983H137V989H937V983Z" fill="#525252" mask="url(#path-249-inside-17_0_1)"/>
 </g>
 <text id="$index_my" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="32" letter-spacing="0em"><tspan x="153" y="967.136">1.</tspan></text>
 <rect id="$grade_pic_my" x="265" y="930" width="50" height="50" fill="#C4C4C4"/>

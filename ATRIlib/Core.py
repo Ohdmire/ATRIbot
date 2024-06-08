@@ -1006,7 +1006,6 @@ class ATRICore:
                 {"beatmap_id": beatmap_id, "user_id": user_id})
 
             count = 0
-
             user_best_score = {}
 
             for userscore in userscores:
@@ -1076,21 +1075,48 @@ class ATRICore:
 
         # 加入用户名,avatar_url
         for sorted_other in sorted_others:
-            username = self.db_user.find_one(
-                {"id": sorted_other["user_id"]})["username"]
 
-            avatar_url = self.db_user.find_one(
-                {"id": sorted_other["user_id"]})["avatar_url"]
+            try:
+                username = self.db_user.find_one(
+                    {"id": sorted_other["user_id"]})["username"]
 
-            sorted_other.update({"username": username})
-            sorted_other.update({"avatar_url": avatar_url})
+                avatar_url = self.db_user.find_one(
+                    {"id": sorted_other["user_id"]})["avatar_url"]
 
-            final_sorted_others.append(sorted_other)
+                sorted_other.update({"username": username})
+                sorted_other.update({"avatar_url": avatar_url})
+
+                final_sorted_others.append(sorted_other)
+            except:
+                print(f'error {sorted_other}')
 
         result = await self.ranking.draw(user_best_score, final_sorted_others, beatmapinfo)
 
         return result
 
-    async def calculate_beatmapranking_update(self, user_id, beatmap_id, group_id):
+    async def calculate_beatmapranking_update(self, beatmap_id, group_id):
 
-        pass
+        beatmapinfo = await self.ppy.get_beatmap_info(beatmap_id)
+
+        if beatmapinfo == {'error': "Specified beatmap difficulty couldn't be found."}:
+            return "无法找到该谱面"
+
+        # 批量获取beatmap
+
+        # 获取user的id 遍历范围限制群友
+
+        group_users_list = self.db_group.find_one(
+            {"id": group_id})["user_id_list"]
+
+        all_users_list = self.db_bind.find({"id": {"$in": group_users_list}})
+
+        users_list = []
+
+        for i in all_users_list:
+            users_list.append(i["user_id"])
+
+        # 这下user_list就是本群玩家了
+        result = f'm{beatmap_id}共遍历{len(users_list)}个玩家 '
+        result += await self.jobs.update_users_beatmap_score_async(beatmap_id, users_list)
+
+        return result

@@ -177,3 +177,7 @@ class QQ:
             return "请先绑定输入 !getbind"
 
         return await self.proxy.get_brk(osuname, group_id, beatmap_id)
+
+    async def qq_get_brkup(self, beatmap_id, group_id):
+
+        return await self.proxy.get_brkup(beatmap_id, group_id)
