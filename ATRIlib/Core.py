@@ -995,7 +995,10 @@ class ATRICore:
 
         return result
 
-    async def calculate_beatmapranking(self, user_id, beatmap_id, group_id):
+    async def calculate_beatmapranking(self, user_id, beatmap_id, group_id, mods_list=None):
+
+        if mods_list == ['NM']:
+            mods_list = []
 
         try:
             # 更新个人成绩
@@ -1005,17 +1008,19 @@ class ATRICore:
             userscores = self.db_score.find(
                 {"beatmap_id": beatmap_id, "user_id": user_id})
 
-            count = 0
             user_best_score = {}
-
+            user_best_score.update({"score": -1})
             for userscore in userscores:
 
-                if count == 0:
-                    user_best_score = userscore
-                    count += 1
-
                 if userscore["score"] > user_best_score["score"]:
-                    user_best_score = userscore
+                    if mods_list is not None:
+                        try:
+                            if sorted(userscore["mods"]) == sorted(mods_list):
+                                user_best_score = userscore
+                        except:
+                            pass
+                    else:
+                        user_best_score = userscore
 
                 # 加入用户名,avatar_url
             username = self.db_user.find_one(
@@ -1053,19 +1058,21 @@ class ATRICore:
             another_userscores = self.db_score.find(
                 {"beatmap_id": beatmap_id, "user_id": another_user["user_id"]})
 
-            count = 0
             another_user_best_score = {}
+            another_user_best_score.update({"score": -1})
 
             for another_userscore in another_userscores:
-
-                if count == 0:
-                    another_user_best_score = another_userscore
-                    count += 1
-
                 if another_userscore["score"] > another_user_best_score["score"]:
-                    another_user_best_score = another_userscore
+                    if mods_list is not None:
+                        try:
+                            if sorted(another_userscore["mods"]) == sorted(mods_list):
+                                another_user_best_score = another_userscore
+                        except:
+                            pass
+                    else:
+                        another_user_best_score = another_userscore
 
-            if another_user_best_score != {}:
+            if another_user_best_score != {"score": -1}:
                 other_users_best_score_list.append(another_user_best_score)
 
         sorted_others = self.sort_by_givenkey_reverse(

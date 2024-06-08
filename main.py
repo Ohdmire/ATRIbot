@@ -85,11 +85,14 @@ class Item12(BaseModel):
     qq_id: int
     group_id: int
     beatmap_id: int
+    mods_list: Optional[list] = None
     osuname: Optional[str] = None
+
 
 class Item13(BaseModel):
     group_id: int
     beatmap_id: int
+
 
 @app.api_route("/qq/pr", methods=["GET", "POST"])
 async def get_pr(item: Item):
@@ -103,7 +106,7 @@ async def get_pr(item: Item):
 
 @app.api_route("/qq/brk", methods=["GET", "POST"])
 async def get_brk(item: Item12):
-    result = await atri_qq.qq_get_brk(item.qq_id, item.group_id, item.beatmap_id, item.osuname)
+    result = await atri_qq.qq_get_brk(item.qq_id, item.group_id, item.beatmap_id, item.mods_list, item.osuname)
     if os.path.exists('data/tmp/brk/' + result):
         return FileResponse(path='data/tmp/brk/' + result)
     else:

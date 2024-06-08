@@ -168,7 +168,7 @@ class QQ:
 
         return await self.proxy.get_pr(osuname)
 
-    async def qq_get_brk(self, qq_id, group_id, beatmap_id, osuname=None):
+    async def qq_get_brk(self, qq_id, group_id, beatmap_id, mods_list, osuname=None):
 
         if osuname is None:
             osuname = self.proxy.find_bind_name_qq(qq_id)
@@ -176,7 +176,7 @@ class QQ:
         if osuname is None:
             return "请先绑定输入 !getbind"
 
-        return await self.proxy.get_brk(osuname, group_id, beatmap_id)
+        return await self.proxy.get_brk(osuname, group_id, beatmap_id, mods_list)
 
     async def qq_get_brkup(self, beatmap_id, group_id):
 

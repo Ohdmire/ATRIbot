@@ -390,11 +390,11 @@ class ATRI:
 
         return data
 
-    async def get_brk(self, osuname, group_id, beatmap_id):
+    async def get_brk(self, osuname, group_id, beatmap_id, mods_list):
 
         osuid = await self.get_user(osuname)
 
-        data = await self.core.calculate_beatmapranking(osuid, group_id=group_id, beatmap_id=beatmap_id)
+        data = await self.core.calculate_beatmapranking(osuid, group_id=group_id, beatmap_id=beatmap_id, mods_list=mods_list)
 
         return data
 

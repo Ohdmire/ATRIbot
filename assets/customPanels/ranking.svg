@@ -3,7 +3,7 @@
 <g id="ranking" clip-path="url(#clip0_0_1)">
 <rect width="1920" height="1080" fill="#2F2F2F"/>
 <rect id="backgroud_back" width="1920" height="1080" fill="url(#pattern0_0_1)"/>
-<rect id="bottom_bar" x="-97" y="1050" width="1920" height="60" fill="url(#paint0_linear_0_1)"/>
+<rect id="bottom_bar" y="1020" width="1920" height="60" fill="url(#paint0_linear_0_1)"/>
 <g id="blue_bar_tiny" filter="url(#filter0_d_0_1)">
 <rect y="1020" width="1920" height="2.5" fill="#5294A3"/>
 </g>
@@ -460,7 +460,7 @@
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"/>
 </filter>
-<linearGradient id="paint0_linear_0_1" x1="-97" y1="1080" x2="1823" y2="1080" gradientUnits="userSpaceOnUse">
+<linearGradient id="paint0_linear_0_1" x1="0" y1="1050" x2="1920" y2="1050" gradientUnits="userSpaceOnUse">
 <stop stop-color="#1A1A1A"/>
 <stop offset="1" stop-color="#262626"/>
 </linearGradient>

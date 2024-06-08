@@ -699,7 +699,8 @@ class BeatmapRankingscreeen:
                     j.tag = 'image'
                     j.set('xlink', f'{self.garde_path}/{player["rank"]}.png')
 
-        except:
+        except Exception as e:
+            print(f'self ranking error:{e}')
             my_grade.set('opacity', '0')
             no_score = svg_tree.xpath(
                 '//*[@id="$no_score"]')[0]
