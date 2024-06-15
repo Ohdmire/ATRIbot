@@ -692,8 +692,12 @@ class BeatmapRankingscreeen:
                 if j.attrib['id'] == '$mods_my':  # 渲染mods
                     j.set('text-anchor', 'end')
                     j.set('transform', 'translate(50)')
+                    modstext = ""
+                    for mod in player["mods"]:
+                        modstext = modstext + mod + ","
+                    modstext = modstext[:-1]
                     j.getchildren()[
-                        0].text = f'{player["mods"]}'
+                        0].text = f'{modstext}'
 
                 if j.attrib['id'] == '$grade_pic_my':  # 渲染grade
                     j.tag = 'image'
@@ -818,7 +822,11 @@ class BeatmapRankingscreeen:
                 if j.attrib['id'] == f'$mods_{i}':  # 渲染mods
                     j.set('text-anchor', 'end')
                     j.set('transform', 'translate(50)')
-                    j.getchildren()[0].text = f'{other_players[i - 1]["mods"]}'
+                    modstext = ""
+                    for mod in other_players[i - 1]["mods"]:
+                        modstext = modstext + mod + ","
+                    modstext = modstext[:-1]
+                    j.getchildren()[0].text = f'{modstext}'
 
                 if j.attrib['id'] == f'$grade_pic_{i}':  # 渲染grade
                     j.tag = 'image'

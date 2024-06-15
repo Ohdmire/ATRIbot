@@ -4,6 +4,5 @@ __pycache__
 data/
 .idea
 *test*.py
-result*
 frame.png
 frame.svg
