@@ -1123,7 +1123,7 @@ class ATRICore:
             users_list.append(i["user_id"])
 
         # 这下user_list就是本群玩家了
-        result = f'm{beatmap_id}共遍历{len(users_list)}个玩家 '
+        result = f'b{beatmap_id}共遍历{len(users_list)}个玩家 '
         result += await self.jobs.update_users_beatmap_score_async(beatmap_id, users_list)
 
         return result

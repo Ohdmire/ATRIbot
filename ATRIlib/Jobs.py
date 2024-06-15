@@ -16,7 +16,11 @@ class Jobs:
     async def update_user(self, osuid, seamaphore):
 
         async with seamaphore:
-            userdata = await self.ppy.get_user_info_fromid(osuid)
+            try:
+                userdata = await self.ppy.get_user_info_fromid(osuid)
+            except:
+                print(f'失败{osuid}')
+                return None
 
         try:
             userdata["id"]
@@ -35,7 +39,11 @@ class Jobs:
         id = osuid
 
         async with seamaphore:
-            bps = await self.ppy.get_user_best_all_info(id)
+            try:
+                bps = await self.ppy.get_user_best_all_info(id)
+            except:
+                print(f'失败{id}')
+                return None
 
         bpscoreid_list = []
         bpspp_list = []

@@ -9,6 +9,9 @@ services:
       - ./data_db:/data/db
   bot:
     container_name: ATRI_SERVER
+    environment:
+      - OSU_CLIENT_ID=
+      - OSU_CLIENT_SECRET=
     build:
       context: .
       args:
