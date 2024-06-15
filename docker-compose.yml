@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  database:
+    container_name: ATRI_DB
+    image: mongo
+    restart: always
+    volumes:
+      - ./data_db:/data/db
+  bot:
+    container_name: ATRI_SERVER
+    build:
+      context: .
+      args:
+        - MONGO_URL==mongodb://database
+    ports:
+      - "9999:8008"
+    depends_on:
+     - database
