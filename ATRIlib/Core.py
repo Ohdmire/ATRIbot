@@ -1097,7 +1097,7 @@ class ATRICore:
             except:
                 print(f'error {sorted_other}')
 
-        result = await self.ranking.draw(user_best_score, final_sorted_others, beatmapinfo)
+        result = await self.ranking.draw(user_best_score, final_sorted_others, beatmapinfo, mods_list)
 
         return result
 

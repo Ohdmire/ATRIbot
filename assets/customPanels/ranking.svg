@@ -446,6 +446,9 @@
 <text id="$bid" fill="#FFE76B" xml:space="preserve" style="white-space: pre" font-family="DM Sans" font-size="24" font-weight="500" letter-spacing="0em"><tspan x="197.211" y="415.184">12345678</tspan></text>
 <text id="$i_in" fill="#01D5FB" xml:space="preserve" style="white-space: pre" font-family="DM Sans" font-size="32" font-weight="500" letter-spacing="0em"><tspan x="226.156" y="372.912">#1 / 30</tspan></text>
 <text id="&#230;&#143;&#144;&#231;&#164;&#186;&#239;&#188;&#154;&#229;&#166;&#130;&#230;&#158;&#156;&#230;&#142;&#146;&#232;&#161;&#140;&#230;&#166;&#156;&#230;&#178;&#161;&#228;&#186;&#186;&#229;&#143;&#175;&#228;&#187;&#165;&#232;&#190;&#147;&#229;&#133;&#165;&#239;&#188;&#129;brkup bid&#230;&#155;&#180;&#230;&#150;&#176;&#230;&#142;&#146;&#232;&#161;&#140;&#230;&#166;&#156;" fill="#B8B8B8" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="14" letter-spacing="0em"><tspan x="1517" y="1054.59">&#x63d0;&#x793a;&#xff1a;&#x5982;&#x679c;&#x6392;&#x884c;&#x699c;&#x6ca1;&#x4eba;&#x53ef;&#x4ee5;&#x8f93;&#x5165;&#xff01;brkup bid&#x66f4;&#x65b0;&#x6392;&#x884c;&#x699c;</tspan></text>
+<g id="modsF">
+<rect id="$mods" x="1720" y="275" width="70" height="30" rx="15" fill="#D9D9D9"/>
+</g>
 </g>
 <defs>
 <pattern id="pattern0_0_1" patternContentUnits="objectBoundingBox" width="1" height="1">

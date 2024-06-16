@@ -369,6 +369,7 @@ class ResultScreen:
         isFirstMod = True
         if reverse_modslist == []:
             mod_ele.getparent().remove(mod_ele)
+        count = 1
         for i in reverse_modslist:
             if isFirstMod is True:
                 mod_ele.tag = 'image'
@@ -378,7 +379,8 @@ class ResultScreen:
                 new_mod_ele = deepcopy(mod_ele)
                 new_mod_ele.tag = 'image'
                 new_mod_ele.set('xlink', f'{self.mods_path}/{i}.svg')
-                new_mod_ele.set('x', f'{mod_ele_x-50}')
+                new_mod_ele.set('x', f'{mod_ele_x-60*count}')
+                count += 1
                 mod_ele.getparent().append(new_mod_ele)
         # rankstatus = svg_tree.xpath(
         #     '//*[@id="$rankstatus"]')[0]
@@ -489,7 +491,7 @@ class BeatmapRankingscreeen:
         self.avatar_path = Path('./data/avatar')
         self.cover_path = Path('./data/cover')
 
-    async def draw(self, player, other_players, beatmap_info):
+    async def draw(self, player, other_players, beatmap_info, mods_list):
 
         start_time = datetime.datetime.now()
 
@@ -578,6 +580,31 @@ class BeatmapRankingscreeen:
         rankedtime = svg_tree.xpath(
             '//*[@id="$rankedtime"]')[0]
         rankedtime_child = rankedtime.getchildren()[0]
+
+        # 转换一下None为[]
+        if mods_list is None:
+            mods_list = []
+        reverse_modslist = mods_list
+        reverse_modslist.reverse()
+        mod_ele = svg_tree.xpath(
+            '//*[@id="$mods"]')[0]
+        mod_ele_x = int(mod_ele.get('x'))
+        isFirstMod = True
+        if reverse_modslist == []:
+            mod_ele.getparent().remove(mod_ele)
+        count = 1
+        for i in reverse_modslist:
+            if isFirstMod is True:
+                mod_ele.tag = 'image'
+                mod_ele.set('xlink', f'{self.mods_path}/{i}.svg')
+                isFirstMod = False
+            else:
+                new_mod_ele = deepcopy(mod_ele)
+                new_mod_ele.tag = 'image'
+                new_mod_ele.set('xlink', f'{self.mods_path}/{i}.svg')
+                new_mod_ele.set('x', f'{mod_ele_x-60*count}')
+                count += 1
+                mod_ele.getparent().append(new_mod_ele)
 
         try:
             formated_time = datetime.datetime.strptime(
