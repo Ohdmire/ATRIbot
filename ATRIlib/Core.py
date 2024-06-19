@@ -50,7 +50,9 @@ class ATRICore:
         try:
             userdata["id"]
         except:
-            return None
+            self.ppy.get_token()
+            userdata = await self.ppy.get_user_info(osuname)
+            userdata["id"]
 
         self.db_user.update(
             {"id": userdata["id"]},  # 查询条件
