@@ -6,12 +6,12 @@ import time
 
 class Jobs:
 
-    def __init__(self):
-        self.ppy = PPYapiv2()
+    def __init__(self, ppy, db_user, db_score):
+        self.ppy = ppy
         self.ppy.get_token()
 
-        self.db_user = Mongodb('localhost', 27017, 'osu', 'user')
-        self.db_score = Mongodb('localhost', 27017, 'osu', 'score')
+        self.db_user = db_user
+        self.db_score = db_score
 
     async def update_user(self, osuid, seamaphore):
 
