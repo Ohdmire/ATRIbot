@@ -5,6 +5,9 @@ class ATRI:
     def __init__(self):
         self.core = Core.ATRICore()
 
+    def update_token(self):
+        self.core.update_token()
+
     async def get_user(self, osuname):
         data = await self.core.update_user_info(osuname)
         return data['id']
@@ -404,14 +407,11 @@ class ATRI:
 
         return data
 
-    async def get_update_users(self, user_lists):
-        return await self.core.update_users_async(user_lists)
-
     def return_all_userids(self):
         return self.core.return_all_userids()
 
-    async def jobs_update_users(self):
-        return await self.core.jobs_update_users()
+    async def jobs_update_users_info(self):
+        return await self.core.jobs_update_users_info()
 
     async def jobs_update_users_bps(self):
         return await self.core.jobs_update_users_bps()

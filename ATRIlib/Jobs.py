@@ -103,7 +103,7 @@ class Jobs:
                 upsert=True  # 如果不存在则插入
             )
 
-    async def update_users_async(self, users_lists):
+    async def update_users_info_async(self, users_lists):
         total_users = len(users_lists)
 
         start_time = time.time()

@@ -1,6 +1,7 @@
 from ATRIlib.Config import Config
 import requests
 import aiohttp
+import asyncio
 import json
 
 
@@ -9,6 +10,12 @@ class PPYapiv2:
 
         self.client_id = Config().osuclientid
         self.client_secret = Config().osuclientsecret
+        # asyncio.run(self.jobs_refresh_token())
+
+    async def jobs_refresh_token(self):
+        while True:
+            self.get_token()
+            await asyncio.sleep(3600)
 
     # 获取访问令牌
     def get_token(self):

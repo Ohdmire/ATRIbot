@@ -33,8 +33,10 @@ class QQ:
 
         if osuname is None:
             return "请先绑定输入 !getbind"
-
-        return await self.proxy.get_choke(osuname)
+        try:
+            return await self.proxy.get_choke(osuname)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_if_add_pp(self, qq_id, pp_list, osuname=None):
 
@@ -94,7 +96,10 @@ class QQ:
         if osuname is None:
             return "请先绑定输入 !getbind"
 
-        return await self.proxy.get_bpsim_group(group_id, osuname, pp_range)
+        try:
+            return await self.proxy.get_bpsim_group(group_id, osuname, pp_range)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_bpsimvs(self, qq_id, vs_name, osuname=None):
 
@@ -104,7 +109,10 @@ class QQ:
         if osuname is None:
             return "请先绑定输入 !getbind"
 
-        return await self.proxy.get_bpsimvs(osuname, vs_name)
+        try:
+            return await self.proxy.get_bpsimvs(osuname, vs_name)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_join_date(self, group_id, qq_id, pp_range, osuname=None):
 
@@ -115,8 +123,10 @@ class QQ:
             return "请先绑定输入 !getbind"
         try:
             return await self.proxy.get_join_date(group_id, osuname, pp_range)
+        except ValueError:
+            return "错误 尝试输入 !getgroups更新群成员列表"
         except Exception as e:
-            return f'失败,尝试输入 !getgroups更新群员列表\n{e}'
+            return f'error: {e}'
 
     async def qq_get_group_ppmap(self, group_id, qq_id, pp_range, osuname=None):
 
@@ -125,8 +135,11 @@ class QQ:
 
         if osuname is None:
             return "请先绑定输入 !getbind"
-
-        return await self.proxy.get_group_ppmap(group_id, osuname, pp_range)
+        
+        try:
+            return await self.proxy.get_group_ppmap(group_id, osuname, pp_range)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_ptt_pp(self, qq_id, osuname=None):
 
@@ -135,8 +148,11 @@ class QQ:
 
         if osuname is None:
             return "请先绑定输入 !getbind"
-
-        return await self.proxy.get_ptt_pp(osuname)
+        
+        try:
+            return await self.proxy.get_ptt_pp(osuname)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_tdba(self, qq_id, osuname=None):
 
@@ -145,8 +161,11 @@ class QQ:
 
         if osuname is None:
             return "请先绑定输入 !getbind"
-
-        return await self.proxy.get_tdba(osuname)
+        
+        try:
+            return await self.proxy.get_tdba(osuname)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_tdbavs(self, qq_id, vsname, osuname=None):
 
@@ -166,7 +185,10 @@ class QQ:
         if osuname is None:
             return "请先绑定输入 !getbind"
 
-        return await self.proxy.get_pr(osuname)
+        try:
+            return await self.proxy.get_pr(osuname)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_brk(self, qq_id, group_id, beatmap_id, mods_list, osuname=None):
 
@@ -176,8 +198,14 @@ class QQ:
         if osuname is None:
             return "请先绑定输入 !getbind"
 
-        return await self.proxy.get_brk(osuname, group_id, beatmap_id, mods_list)
+        try:
+            return await self.proxy.get_brk(osuname, group_id, beatmap_id, mods_list)
+        except Exception as e:
+            return f'error: {e}'
 
     async def qq_get_brkup(self, beatmap_id, group_id):
 
-        return await self.proxy.get_brkup(beatmap_id, group_id)
+        try:
+            return await self.proxy.get_brkup(beatmap_id, group_id)
+        except Exception as e:
+            return f'error: {e}'

@@ -1,5 +1,11 @@
+from datetime import datetime
+import time
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+
+from contextlib import asynccontextmanager
+
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from pydantic import BaseModel
 
@@ -11,9 +17,6 @@ import ATRIproxy
 import uvicorn
 
 import os
-
-
-app = FastAPI()
 
 atri_qq = QQAdapter.QQ()
 atri_proxy = ATRIproxy.ATRI()
@@ -92,6 +95,38 @@ class Item12(BaseModel):
 class Item13(BaseModel):
     group_id: int
     beatmap_id: int
+
+
+# 定时任务
+def execute_periodic_update_token():
+    print(f'更新token：{datetime.now()}')
+    atri_proxy.update_token()
+
+
+def execute_periodic_update_all_users():
+    print(f'更新所有用户info：{datetime.now()}')
+    atri_proxy.jobs_update_users_info()
+    time.sleep(60)
+    print(f'更新所有用户bps：{datetime.now()}')
+    atri_proxy.jobs_update_users_bps()
+
+
+scheduler = BackgroundScheduler()
+
+
+@asynccontextmanager
+async def app_lifespan(app: FastAPI):
+    print("init lifespan")
+    scheduler.add_job(execute_periodic_update_token,
+                      trigger="interval", seconds=43200)
+    scheduler.add_job(execute_periodic_update_all_users,
+                      trigger="cron", hour=4, minute=0)
+    scheduler.start()
+    yield
+    print("clean up lifespan")
+
+
+app = FastAPI(lifespan=app_lifespan)
 
 
 @app.api_route("/qq/pr", methods=["GET", "POST"])
@@ -248,23 +283,16 @@ async def get_ptt_pp(item: Item):
     return result
 
 
-@app.api_route("/updateusers", methods=["GET", "POST"])
-async def get_updateusers(item: Item10):
-    result = await atri_proxy.get_update_users(item.user_lists)
-    print(result)
-    return result
-
-
-@app.api_route("/fetchusers", methods=["GET", "POST"])
-def get_all_userids():
-    result = atri_proxy.return_all_userids()
-    print(result)
-    return result
+# @app.api_route("/fetchusers", methods=["GET", "POST"])
+# def get_all_userids():
+#     result = atri_proxy.return_all_userids()
+#     print(result)
+#     return result
 
 
 @app.api_route("/jobupdateusers", methods=["GET", "POST"])
 async def job_update_users():
-    result = await atri_proxy.jobs_update_users()
+    result = await atri_proxy.jobs_update_users_info()
     print(result)
     return result
 

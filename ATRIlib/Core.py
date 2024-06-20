@@ -43,6 +43,10 @@ class ATRICore:
         self.ranking = BeatmapRankingscreeen()
         self.tdba = TDBA()
 
+    # 更新token
+    def update_token(self):
+        self.ppy.get_token()
+
     # 数据模块-更新玩家信息
     async def update_user_info(self, osuname):
         userdata = await self.ppy.get_user_info(osuname)
@@ -75,7 +79,9 @@ class ATRICore:
         try:
             id = userdata['id']
         except:
-            return None
+            self.ppy.get_token()
+            userdata = await self.ppy.get_user_info(osuname)
+            id = userdata['id']
 
         bps = await self.ppy.get_user_best_all_info(id)
 
@@ -404,7 +410,7 @@ class ATRICore:
                 bp5_pps_list.append(range_user['bps_pp'][4])
                 bp100_pps_list.append(range_user['bps_pp'][99])
             except:
-                print(f'{range_user["username"]}没有bp100')
+                pass
 
         # 随便找个list计数
         users_amount = len(bp1_pps_list)
@@ -472,7 +478,7 @@ class ATRICore:
                 bp100_pps_list.append(range_user['bps_pp'][99])
                 total_pps_list.append(range_user['statistics']['pp'])
             except:
-                print(f'{range_user["username"]}没有bp100')
+                pass
 
         # 随便找个list计数
         users_amount = len(bp1_pps_list)
@@ -540,7 +546,7 @@ class ATRICore:
                 bp100_pps_list.append(range_user['bps_pp'][99])
                 total_pps_list.append(range_user['statistics']['pp'])
             except:
-                print(f'{range_user["username"]}没有bp100')
+                pass
 
         # 随便找个list计数
         users_amount = len(bp1_pps_list)
@@ -606,7 +612,7 @@ class ATRICore:
 
                 sim_list.append({range_user['username']: sim})
             except:
-                print(f'{range_user["username"]}没有bps_beatmapid')
+                pass
 
         sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
         sorted_sim_list = sorted_sim_list[1:11]
@@ -646,7 +652,7 @@ class ATRICore:
 
                 sim_list.append({range_user['username']: sim})
             except:
-                print(f'{range_user["username"]}没有bps_beatmapid')
+                pass
 
         sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
         sorted_sim_list = sorted_sim_list[1:11]
@@ -704,7 +710,7 @@ class ATRICore:
                 join_date_list.append(
                     {range_user['username']: range_user['join_date']})
             except:
-                print(f'{range_user["username"]}没有join_date')
+                pass
 
         sorted_join_date_list = self.sort_by_firstvalue(
             join_date_list)
@@ -712,33 +718,6 @@ class ATRICore:
         index = sorted_join_date_list.index({osuname: user_joindate}) + 1
 
         return sorted_join_date_list, index, start_pp, end_pp
-
-    async def update_users_async(self, users_lists):
-        data = await self.jobs.update_users_async(users_lists)
-        return data
-
-    def return_all_userids(self):
-        users = self.db_user.find({})
-        user_lists = []
-
-        for i in users:
-            user_lists.append(i['id'])
-
-        return user_lists
-
-    async def jobs_update_users(self):
-        user_lists = self.return_all_userids()
-
-        result = await self.jobs.update_users_async(user_lists)
-
-        return result
-
-    async def jobs_update_users_bps(self):
-        user_lists = self.return_all_userids()
-
-        result = await self.jobs.update_users_bps_async(user_lists)
-
-        return result
 
     def calculate_group_ppmap(self, group_id, user_id, pp_range):
 
@@ -780,7 +759,7 @@ class ATRICore:
                 amount_user += 1
 
             except:
-                print(f'{range_user["username"]}没有bps_beatmapid')
+                pass
 
         # 查找已经刷过的
         for key in count_dict:
@@ -825,7 +804,7 @@ class ATRICore:
                 k2_bp2_list.append(range_user['bps_pp'][1])
                 k2_pp_list.append(range_user['statistics']['pp'])
             except:
-                print(f'{range_user["username"]}没有bplist')
+                pass
 
         # k1, b1 = self.mtools.leastsquares(k1_bp1_list, k1_pp_list)
 
@@ -1127,5 +1106,28 @@ class ATRICore:
         # 这下user_list就是本群玩家了
         result = f'b{beatmap_id}共遍历{len(users_list)}个玩家 '
         result += await self.jobs.update_users_beatmap_score_async(beatmap_id, users_list)
+
+        return result
+
+    def return_all_userids(self):
+        users = self.db_user.find({})
+        user_lists = []
+
+        for i in users:
+            user_lists.append(i['id'])
+
+        return user_lists
+
+    async def jobs_update_users_info(self):
+        user_lists = self.return_all_userids()
+
+        result = await self.jobs.update_users_info_async(user_lists)
+
+        return result
+
+    async def jobs_update_users_bps(self):
+        user_lists = self.return_all_userids()
+
+        result = await self.jobs.update_users_bps_async(user_lists)
 
         return result
