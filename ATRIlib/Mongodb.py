@@ -1,14 +1,17 @@
 from pymongo import MongoClient
 
-
 class Mongodb:
-    def __init__(self, host, port, db_name, collection_name):
+    def __init__(self, client, db_name, collection_name):
 
-        self.client = MongoClient(host, port)
+        self.client = client
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
 
         # self.collection.create_index('userid', unique=True)
+    @staticmethod
+    def get_client(url):
+        print("mongo url is " + url)
+        return MongoClient(url)
 
     def insert(self, data):
         self.collection.insert_one(data)

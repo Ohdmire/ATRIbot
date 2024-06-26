@@ -10,12 +10,11 @@ services:
   bot:
     container_name: ATRI_SERVER
     environment:
+      - MONGO_URL=mongodb://database:27017
       - OSU_CLIENT_ID=
       - OSU_CLIENT_SECRET=
     build:
       context: .
-      args:
-        - MONGO_URL==mongodb://database
     ports:
       - "9999:8008"
     depends_on:
