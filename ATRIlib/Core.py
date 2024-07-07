@@ -8,10 +8,11 @@ from ATRIlib.Rosu import Rosu
 from ATRIlib.Jobs import Jobs
 from ATRIlib.Mtools import Tools
 from ATRIlib.Dtools import ResultScreen, TDBA, BeatmapRankingscreeen
+from ATRIlib.CommonTool import sort_by_firstkey, sort_by_firstvalue, sort_by_givenkey_reverse, sort_dict_by_value_reverse, sorted_by_firstvalue_reverse
 
 import numpy as np
 
-import operator
+
 import datetime
 
 
@@ -20,10 +21,10 @@ class ATRICore:
 
         self.mtools = Tools()
 
-        self.jobs = Jobs()
-
         self.ppy = PPYapiv2()
         self.ppy.get_token()
+
+        self.jobs = Jobs(self.ppy)
 
         self.rosu = Rosu()
 
@@ -45,7 +46,7 @@ class ATRICore:
 
     # 更新token
     def update_token(self):
-        self.ppy.get_token()
+        return self.ppy.get_token()
 
     # 数据模块-更新玩家信息
     async def update_user_info(self, osuname):
@@ -54,9 +55,7 @@ class ATRICore:
         try:
             userdata["id"]
         except:
-            self.ppy.get_token()
-            userdata = await self.ppy.get_user_info(osuname)
-            userdata["id"]
+            return None
 
         self.db_user.update(
             {"id": userdata["id"]},  # 查询条件
@@ -79,9 +78,7 @@ class ATRICore:
         try:
             id = userdata['id']
         except:
-            self.ppy.get_token()
-            userdata = await self.ppy.get_user_info(osuname)
-            id = userdata['id']
+            return None
 
         bps = await self.ppy.get_user_best_all_info(id)
 
@@ -212,29 +209,6 @@ class ATRICore:
                 upsert=True  # 如果不存在则插入
             )
 
-    # 功能模块-排序
-    def sort_by_firstvalue(self, list_of_dicts):
-        sorted_list = sorted(list_of_dicts, key=lambda x: list(x.values())[0])
-        return sorted_list
-
-    def sorted_by_firstvalue_reverse(self, list_of_dicts):
-        sorted_list = sorted(list_of_dicts, key=lambda x: list(
-            x.values())[0], reverse=True)
-        return sorted_list
-
-    def sort_by_firstkey(self, list_of_dicts):
-        sorted_list = sorted(list_of_dicts, key=lambda x: list(x.keys())[0])
-        return sorted_list
-
-    def sort_dict_by_value_reverse(self, mydict):
-        sorted_dict = dict(sorted(mydict.items(), reverse=True,
-                           key=operator.itemgetter(1)))
-        return sorted_dict
-
-    def sort_by_givenkey_reverse(self, list_of_dicts, key):
-        sorted_list = sorted(list_of_dicts, key=lambda x: x[key], reverse=True)
-        return sorted_list
-
     # 功能模块-计算bonus pp
     def calculate_bonus_pp(self, user_id):
         # 获取bp的scoreid
@@ -297,7 +271,7 @@ class ATRICore:
         # 计算差值
         weight_total_lost_pp = origin_pp_sum - fixed_pp_sum
         # 按照choke程度排序
-        chokeid_list = self.sort_by_firstvalue(chokeid_list)
+        chokeid_list = sort_by_firstvalue(chokeid_list)
 
         choke_num = len(chokeid_list)
 
@@ -614,7 +588,7 @@ class ATRICore:
             except:
                 pass
 
-        sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
+        sorted_sim_list = sorted_by_firstvalue_reverse(sim_list)
         sorted_sim_list = sorted_sim_list[1:11]
 
         return sorted_sim_list, start_pp, end_pp
@@ -654,7 +628,7 @@ class ATRICore:
             except:
                 pass
 
-        sorted_sim_list = self.sorted_by_firstvalue_reverse(sim_list)
+        sorted_sim_list = sorted_by_firstvalue_reverse(sim_list)
         sorted_sim_list = sorted_sim_list[1:11]
 
         return sorted_sim_list, start_pp, end_pp
@@ -675,7 +649,7 @@ class ATRICore:
             user12_index_list.append(
                 {user1_bps.index(i) + 1: user2_bps.index(i) + 1})
 
-        index_dict = self.sort_by_firstkey(user12_index_list)
+        index_dict = sort_by_firstkey(user12_index_list)
 
         return index_dict, user1_bps_pp_list, user2_bps_pp_list
 
@@ -712,7 +686,7 @@ class ATRICore:
             except:
                 pass
 
-        sorted_join_date_list = self.sort_by_firstvalue(
+        sorted_join_date_list = sort_by_firstvalue(
             join_date_list)
 
         index = sorted_join_date_list.index({osuname: user_joindate}) + 1
@@ -771,7 +745,7 @@ class ATRICore:
             else:
                 pp_dict[key] = 0
 
-        sorted_count_dict = self.sort_dict_by_value_reverse(count_dict)
+        sorted_count_dict = sort_dict_by_value_reverse(count_dict)
 
         return sorted_count_dict, pp_dict, amount_user, start_pp, end_pp
 
@@ -1056,7 +1030,7 @@ class ATRICore:
             if another_user_best_score != {"score": -1}:
                 other_users_best_score_list.append(another_user_best_score)
 
-        sorted_others = self.sort_by_givenkey_reverse(
+        sorted_others = sort_by_givenkey_reverse(
             other_users_best_score_list, "score")
 
         final_sorted_others = []

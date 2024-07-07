@@ -1,3 +1,4 @@
+import operator
 
 
 def calc_diff_color(star):
@@ -52,6 +53,34 @@ def calc_diff_color(star):
     g_hex = color_to_hex(g0, g1, s, 0.9)
     b_hex = color_to_hex(b0, b1, s, 0.9)
     return r_hex + g_hex + b_hex
+
+
+# 功能模块-排序
+def sort_by_firstvalue(list_of_dicts):
+    sorted_list = sorted(list_of_dicts, key=lambda x: list(x.values())[0])
+    return sorted_list
+
+
+def sorted_by_firstvalue_reverse(list_of_dicts):
+    sorted_list = sorted(list_of_dicts, key=lambda x: list(
+        x.values())[0], reverse=True)
+    return sorted_list
+
+
+def sort_by_firstkey(list_of_dicts):
+    sorted_list = sorted(list_of_dicts, key=lambda x: list(x.keys())[0])
+    return sorted_list
+
+
+def sort_dict_by_value_reverse(mydict):
+    sorted_dict = dict(sorted(mydict.items(), reverse=True,
+                              key=operator.itemgetter(1)))
+    return sorted_dict
+
+
+def sort_by_givenkey_reverse(list_of_dicts, key):
+    sorted_list = sorted(list_of_dicts, key=lambda x: x[key], reverse=True)
+    return sorted_list
 
 
 def color_to_hex(color0, color1, s, gamma):

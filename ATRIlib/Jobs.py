@@ -1,14 +1,12 @@
 import asyncio
-from ATRIlib.PPYapiv2 import PPYapiv2
 from ATRIlib.Mongodb import Mongodb
 import time
 
 
 class Jobs:
 
-    def __init__(self):
-        self.ppy = PPYapiv2()
-        self.ppy.get_token()
+    def __init__(self, PPY):
+        self.ppy = PPY
 
         self.db_user = Mongodb('localhost', 27017, 'osu', 'user')
         self.db_score = Mongodb('localhost', 27017, 'osu', 'score')
@@ -19,7 +17,6 @@ class Jobs:
             try:
                 userdata = await self.ppy.get_user_info_fromid(osuid)
             except:
-                print(f'失败{osuid}')
                 return None
 
         try:
@@ -42,7 +39,6 @@ class Jobs:
             try:
                 bps = await self.ppy.get_user_best_all_info(id)
             except:
-                print(f'失败{id}')
                 return None
 
         bpscoreid_list = []
@@ -53,7 +49,6 @@ class Jobs:
             try:
                 scoreid = bp['id']
             except:
-                print(f'失败{id}')
                 return None
             scorepp = bp['pp']
             scorebeatmapid = bp['beatmap']['id']

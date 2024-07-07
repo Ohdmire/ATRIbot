@@ -6,7 +6,7 @@ class ATRI:
         self.core = Core.ATRICore()
 
     def update_token(self):
-        self.core.update_token()
+        return self.core.update_token()
 
     async def get_user(self, osuname):
         data = await self.core.update_user_info(osuname)

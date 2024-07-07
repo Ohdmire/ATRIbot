@@ -10,12 +10,6 @@ class PPYapiv2:
 
         self.client_id = Config().osuclientid
         self.client_secret = Config().osuclientsecret
-        # asyncio.run(self.jobs_refresh_token())
-
-    async def jobs_refresh_token(self):
-        while True:
-            self.get_token()
-            await asyncio.sleep(3600)
 
     # 获取访问令牌
     def get_token(self):
@@ -28,6 +22,8 @@ class PPYapiv2:
         }
         response = requests.post(url, data=data)
         self.token = response.json()['access_token']
+        print(self.token)
+        return self.token
 
     # 获取玩家信息id
     async def get_user_info(self, osu_name):

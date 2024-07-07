@@ -32,7 +32,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
         try:
             return await self.proxy.get_choke(osuname)
         except Exception as e:
@@ -44,7 +44,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         return await self.proxy.get_if_add_pp(osuname, pp_list)
 
@@ -54,7 +54,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         return await self.proxy.get_avg_pp(osuname, pp_range)
 
@@ -64,7 +64,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         return await self.proxy.get_avg_tth(osuname, tth_range)
 
@@ -74,7 +74,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         return await self.proxy.get_avg_pt(osuname, pt_range)
 
@@ -84,7 +84,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         return await self.proxy.get_bpsim(osuname, pp_range)
 
@@ -94,7 +94,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         try:
             return await self.proxy.get_bpsim_group(group_id, osuname, pp_range)
@@ -107,7 +107,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         try:
             return await self.proxy.get_bpsimvs(osuname, vs_name)
@@ -120,7 +120,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
         try:
             return await self.proxy.get_join_date(group_id, osuname, pp_range)
         except ValueError:
@@ -134,7 +134,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
         
         try:
             return await self.proxy.get_group_ppmap(group_id, osuname, pp_range)
@@ -147,7 +147,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
         
         try:
             return await self.proxy.get_ptt_pp(osuname)
@@ -160,7 +160,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
         
         try:
             return await self.proxy.get_tdba(osuname)
@@ -173,7 +173,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         return await self.proxy.get_tdbavs(osuname, vsname)
 
@@ -183,7 +183,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         try:
             return await self.proxy.get_pr(osuname)
@@ -196,7 +196,7 @@ class QQ:
             osuname = self.proxy.find_bind_name_qq(qq_id)
 
         if osuname is None:
-            return "请先绑定输入 !getbind"
+            return "请先绑定输入 !getbind 你的osu用户名"
 
         try:
             return await self.proxy.get_brk(osuname, group_id, beatmap_id, mods_list)

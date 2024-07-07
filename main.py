@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 
 from contextlib import asynccontextmanager
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from pydantic import BaseModel
 
@@ -17,6 +17,8 @@ import ATRIproxy
 import uvicorn
 
 import os
+
+import asyncio
 
 atri_qq = QQAdapter.QQ()
 atri_proxy = ATRIproxy.ATRI()
@@ -103,22 +105,23 @@ def execute_periodic_update_token():
     atri_proxy.update_token()
 
 
-def execute_periodic_update_all_users():
+async def execute_periodic_update_all_users():
     print(f'更新所有用户info：{datetime.now()}')
-    atri_proxy.jobs_update_users_info()
-    time.sleep(60)
+    await atri_proxy.jobs_update_users_info()
+    await asyncio.sleep(60)
     print(f'更新所有用户bps：{datetime.now()}')
-    atri_proxy.jobs_update_users_bps()
+    await atri_proxy.jobs_update_users_bps()
+    print(f'更新所有用户info和bps完成：{datetime.now()}')
 
 
-scheduler = BackgroundScheduler()
+scheduler = AsyncIOScheduler()
 
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     print("init lifespan")
     scheduler.add_job(execute_periodic_update_token,
-                      trigger="interval", seconds=43200)
+                      trigger="interval", seconds=3600)
     scheduler.add_job(execute_periodic_update_all_users,
                       trigger="cron", hour=4, minute=0)
     scheduler.start()
@@ -127,6 +130,12 @@ async def app_lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=app_lifespan)
+
+
+@app.api_route("/token", methods=["GET", "POST"])
+def update_token():
+    atri_proxy.update_token()
+    return 'OK'
 
 
 @app.api_route("/qq/pr", methods=["GET", "POST"])
