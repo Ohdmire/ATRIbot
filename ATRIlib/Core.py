@@ -22,7 +22,6 @@ class ATRICore:
         self.mtools = Tools()
 
         self.ppy = PPYapiv2()
-        self.ppy.get_token()
 
         self.jobs = Jobs(self.ppy)
 
@@ -52,11 +51,6 @@ class ATRICore:
     async def update_user_info(self, osuname):
         userdata = await self.ppy.get_user_info(osuname)
 
-        try:
-            userdata["id"]
-        except:
-            return None
-
         self.db_user.update(
             {"id": userdata["id"]},  # 查询条件
             {"$set": userdata},  # 插入的数据
@@ -75,10 +69,7 @@ class ATRICore:
     async def update_bplist_info(self, osuname):
 
         userdata = await self.ppy.get_user_info(osuname)
-        try:
-            id = userdata['id']
-        except:
-            return None
+        id = userdata['id']
 
         bps = await self.ppy.get_user_best_all_info(id)
 
@@ -902,8 +893,6 @@ class ATRICore:
     async def calculate_pr_score(self, user_id):
         # 计算pr分数
         data = await self.ppy.get_user_passrecent_info(user_id)
-        if data == []:
-            return None
         data = data[0]
 
         if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
@@ -927,9 +916,6 @@ class ATRICore:
     async def calculate_score(self, user_id, beatmap_id):
 
         data = await self.ppy.get_user_socres_info(user_id, beatmap_id)
-
-        if data == []:
-            return None
         data = data[0]
 
         if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
@@ -967,7 +953,7 @@ class ATRICore:
             user_best_score.update({"score": -1})
             for userscore in userscores:
 
-                if userscore["score"] > user_best_score["score"]:
+                if userscore["score"] > user_best_score["score"]:  # 愚人节
                     if mods_list is not None:
                         try:
                             if sorted(userscore["mods"]) == sorted(mods_list):
@@ -1017,7 +1003,7 @@ class ATRICore:
             another_user_best_score.update({"score": -1})
 
             for another_userscore in another_userscores:
-                if another_userscore["score"] > another_user_best_score["score"]:
+                if another_userscore["score"] > another_user_best_score["score"]:  # 愚人节
                     if mods_list is not None:
                         try:
                             if sorted(another_userscore["mods"]) == sorted(mods_list):

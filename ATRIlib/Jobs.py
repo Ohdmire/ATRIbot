@@ -19,16 +19,12 @@ class Jobs:
             except:
                 return None
 
-        try:
-            userdata["id"]
-        except:
-            return None
-
         self.db_user.update(
             {"id": userdata["id"]},  # 查询条件
             {"$set": userdata},  # 插入的数据
             upsert=True  # 如果不存在则插入
         )
+
         return userdata['id']
 
     async def update_user_bps(self, osuid, seamaphore):
@@ -46,10 +42,7 @@ class Jobs:
         bpsbeatmapid_list = []
         # 只要成score id，其他格式化导入score表 还要pp，beatmap_id
         for bp in bps:
-            try:
-                scoreid = bp['id']
-            except:
-                return None
+            scoreid = bp['id']
             scorepp = bp['pp']
             scorebeatmapid = bp['beatmap']['id']
             bpscoreid_list.append(scoreid)

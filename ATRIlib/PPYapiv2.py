@@ -1,8 +1,6 @@
 from ATRIlib.Config import Config
 import requests
 import aiohttp
-import asyncio
-import json
 
 
 class PPYapiv2:
@@ -10,6 +8,7 @@ class PPYapiv2:
 
         self.client_id = Config().osuclientid
         self.client_secret = Config().osuclientsecret
+        self.token = self.get_token()
 
     # 获取访问令牌
     def get_token(self):
@@ -21,9 +20,8 @@ class PPYapiv2:
             'scope': 'public'
         }
         response = requests.post(url, data=data)
-        self.token = response.json()['access_token']
-        print(self.token)
-        return self.token
+        token = response.json()['access_token']
+        return token
 
     # 获取玩家信息id
     async def get_user_info(self, osu_name):
