@@ -1,211 +1,225 @@
+import ATRIproxy
 
-import ATRIproxy as Core
 
+async def qq_get_user_id(qq_id, osuname=None):
 
-class QQ:
-    def __init__(self):
-        self.proxy = Core.ATRI()
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-    async def qq_get_user_id(self, qq_id, osuname=None):
+    return await ATRIproxy.get_user(osuname)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
 
-        return await self.proxy.get_user(osuname)
+async def qq_get_bplists(qq_id, osuname=None):
 
-    async def qq_get_bplists(self, qq_id, osuname=None):
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    return await ATRIproxy.get_bplists(osuname)
 
-        return await self.proxy.get_bplists(osuname)
 
-    async def qq_get_bind(self, qq_id, osuname=None):
-        return await self.proxy.update_bind_qq(qq_id, osuname)
+async def qq_get_bind(qq_id, osuname=None):
+    return await ATRIproxy.update_bind_qq(qq_id, osuname)
 
-    def qq_get_group_bind(self, group_id, members_list):
-        return self.proxy.update_bind_group(group_id, members_list)
 
-    async def qq_get_choke(self, qq_id, osuname=None):
+def qq_get_group_bind(group_id, members_list):
+    return ATRIproxy.update_bind_group(group_id, members_list)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
-        try:
-            return await self.proxy.get_choke(osuname)
-        except Exception as e:
-            return f'error: {e}'
+async def qq_get_choke(qq_id, osuname=None):
 
-    async def qq_get_if_add_pp(self, qq_id, pp_list, osuname=None):
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+    try:
+        return await ATRIproxy.get_choke(osuname)
+    except Exception as e:
+        return f'error: {e}'
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
 
-        return await self.proxy.get_if_add_pp(osuname, pp_list)
+async def qq_get_if_add_pp(qq_id, pp_list, osuname=None):
 
-    async def qq_get_avg_pp(self, qq_id, pp_range, osuname=None):
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
+    return await ATRIproxy.get_if_add_pp(osuname, pp_list)
 
-        return await self.proxy.get_avg_pp(osuname, pp_range)
 
-    async def qq_get_avg_tth(self, qq_id, tth_range, osuname=None):
+async def qq_get_avg_pp(qq_id, pp_range, osuname=None):
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-        return await self.proxy.get_avg_tth(osuname, tth_range)
+    return await ATRIproxy.get_avg_pp(osuname, pp_range)
 
-    async def qq_get_avg_pt(self, qq_id, pt_range, osuname=None):
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+async def qq_get_avg_tth(qq_id, tth_range, osuname=None):
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        return await self.proxy.get_avg_pt(osuname, pt_range)
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-    async def qq_get_bpsim(self, qq_id, pp_range, osuname=None):
+    return await ATRIproxy.get_avg_tth(osuname, tth_range)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
+async def qq_get_avg_pt(qq_id, pt_range, osuname=None):
 
-        return await self.proxy.get_bpsim(osuname, pp_range)
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-    async def qq_get_bpsim_group(self, group_id, qq_id, pp_range, osuname=None):
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    return await ATRIproxy.get_avg_pt(osuname, pt_range)
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
 
-        try:
-            return await self.proxy.get_bpsim_group(group_id, osuname, pp_range)
-        except Exception as e:
-            return f'error: {e}'
+async def qq_get_bpsim(qq_id, pp_range, osuname=None):
 
-    async def qq_get_bpsimvs(self, qq_id, vs_name, osuname=None):
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
+    return await ATRIproxy.get_bpsim(osuname, pp_range)
 
-        try:
-            return await self.proxy.get_bpsimvs(osuname, vs_name)
-        except Exception as e:
-            return f'error: {e}'
 
-    async def qq_get_join_date(self, group_id, qq_id, pp_range, osuname=None):
+async def qq_get_bpsim_group(group_id, qq_id, pp_range, osuname=None):
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
-        try:
-            return await self.proxy.get_join_date(group_id, osuname, pp_range)
-        except ValueError:
-            return "错误 尝试输入 !getgroups更新群成员列表"
-        except Exception as e:
-            return f'error: {e}'
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-    async def qq_get_group_ppmap(self, group_id, qq_id, pp_range, osuname=None):
+    try:
+        return await ATRIproxy.get_bpsim_group(group_id, osuname, pp_range)
+    except Exception as e:
+        return f'error: {e}'
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
-        
-        try:
-            return await self.proxy.get_group_ppmap(group_id, osuname, pp_range)
-        except Exception as e:
-            return f'error: {e}'
+async def qq_get_bpsimvs(qq_id, vs_name, osuname=None):
 
-    async def qq_get_ptt_pp(self, qq_id, osuname=None):
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
-        
-        try:
-            return await self.proxy.get_ptt_pp(osuname)
-        except Exception as e:
-            return f'error: {e}'
+    try:
+        return await ATRIproxy.get_bpsimvs(osuname, vs_name)
+    except Exception as e:
+        return f'error: {e}'
 
-    async def qq_get_tdba(self, qq_id, osuname=None):
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+async def qq_get_join_date(group_id, qq_id, pp_range, osuname=None):
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
-        
-        try:
-            return await self.proxy.get_tdba(osuname)
-        except Exception as e:
-            return f'error: {e}'
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-    async def qq_get_tdbavs(self, qq_id, vsname, osuname=None):
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+    try:
+        return await ATRIproxy.get_join_date(group_id, osuname, pp_range)
+    except ValueError:
+        return "错误 尝试输入 !getgroups更新群成员列表"
+    except Exception as e:
+        return f'error: {e}'
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
+async def qq_get_group_ppmap(group_id, qq_id, pp_range, osuname=None):
 
-        return await self.proxy.get_tdbavs(osuname, vsname)
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-    async def qq_get_pr(self, qq_id, osuname=None):
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    try:
+        return await ATRIproxy.get_group_ppmap(group_id, osuname, pp_range)
+    except Exception as e:
+        return f'error: {e}'
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
 
-        try:
-            return await self.proxy.get_pr(osuname)
-        except Exception as e:
-            return f'error: {e}'
+async def qq_get_ptt_pp(qq_id, osuname=None):
 
-    async def qq_get_brk(self, qq_id, group_id, beatmap_id, mods_list, osuname=None):
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
 
-        if osuname is None:
-            osuname = self.proxy.find_bind_name_qq(qq_id)
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
 
-        if osuname is None:
-            return "请先绑定输入 !getbind 你的osu用户名"
+    try:
+        return await ATRIproxy.get_ptt_pp(osuname)
+    except Exception as e:
+        return f'error: {e}'
 
-        try:
-            return await self.proxy.get_brk(osuname, group_id, beatmap_id, mods_list)
-        except Exception as e:
-            return f'error: {e}'
 
-    async def qq_get_brkup(self, beatmap_id, group_id):
+async def qq_get_tdba(qq_id, osuname=None):
 
-        try:
-            return await self.proxy.get_brkup(beatmap_id, group_id)
-        except Exception as e:
-            return f'error: {e}'
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
+
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+
+    try:
+        return await ATRIproxy.get_tdba(osuname)
+    except Exception as e:
+        return f'error: {e}'
+
+
+async def qq_get_tdbavs(qq_id, vsname, osuname=None):
+
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
+
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+
+    return await ATRIproxy.get_tdbavs(osuname, vsname)
+
+
+async def qq_get_pr(qq_id, osuname=None):
+
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
+
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+
+    try:
+        return await ATRIproxy.get_pr(osuname)
+    except Exception as e:
+        return f'error: {e}'
+
+
+async def qq_get_brk(qq_id, group_id, beatmap_id, mods_list, osuname=None):
+
+    if osuname is None:
+        osuname = ATRIproxy.find_bind_name_qq(qq_id)
+
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+
+    try:
+        return await ATRIproxy.get_brk(osuname, group_id, beatmap_id, mods_list)
+    except Exception as e:
+        return f'error: {e}'
+
+
+async def qq_get_brkup(beatmap_id, group_id):
+
+    try:
+        return await ATRIproxy.get_brkup(beatmap_id, group_id)
+    except Exception as e:
+        return f'error: {e}'

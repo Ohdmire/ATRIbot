@@ -2,30 +2,21 @@
 # from Mongodb import Mongodb
 # from Rosu import Rosu
 
-from ATRIlib.PPYapiv2 import PPYapiv2
-from ATRIlib.Mongodb import Mongodb
-from ATRIlib.Rosu import Rosu
-from ATRIlib.Jobs import Jobs
-from ATRIlib.Mtools import Tools
+from . import PPYapiv2
+from .Mongodb import Mongodb
+from . import Rosu
+from . import Jobs
+from . import Mtools
 from ATRIlib.Dtools import ResultScreen, TDBA, BeatmapRankingscreeen
 from ATRIlib.CommonTool import sort_by_firstkey, sort_by_firstvalue, sort_by_givenkey_reverse, sort_dict_by_value_reverse, sorted_by_firstvalue_reverse
 
 import numpy as np
-
-
 import datetime
+import aiohttp
 
 
 class ATRICore:
     def __init__(self):
-
-        self.mtools = Tools()
-
-        self.ppy = PPYapiv2()
-
-        self.jobs = Jobs(self.ppy)
-
-        self.rosu = Rosu()
 
         self.db_user = Mongodb('localhost', 27017, 'osu',
                                'user')  # 数据库名字为osu，表名为user
@@ -43,13 +34,21 @@ class ATRICore:
         self.ranking = BeatmapRankingscreeen()
         self.tdba = TDBA()
 
+        print("初始化")
+
     # 更新token
     def update_token(self):
-        return self.ppy.get_token()
+        PPYapiv2.token = PPYapiv2.get_token()
 
     # 数据模块-更新玩家信息
     async def update_user_info(self, osuname):
-        userdata = await self.ppy.get_user_info(osuname)
+        userdata = await PPYapiv2.get_user_info(osuname)
+
+        try:
+            userdata["id"]
+        except:
+            print(userdata)
+            print(PPYapiv2.token)
 
         self.db_user.update(
             {"id": userdata["id"]},  # 查询条件
@@ -68,10 +67,10 @@ class ATRICore:
     # 数据模块-更新玩家bp信息
     async def update_bplist_info(self, osuname):
 
-        userdata = await self.ppy.get_user_info(osuname)
+        userdata = await PPYapiv2.get_user_info(osuname)
         id = userdata['id']
 
-        bps = await self.ppy.get_user_best_all_info(id)
+        bps = await PPYapiv2.get_user_best_all_info(id)
 
         bpscoreid_list = []
         bpspp_list = []
@@ -115,7 +114,7 @@ class ATRICore:
 
     # 数据模块-更新玩家成绩信息
     async def update_scores_info(self, user_id, beatmap_id):
-        socresdata = await self.ppy.get_user_socres_info(user_id, beatmap_id)
+        socresdata = await PPYapiv2.get_user_socres_info(user_id, beatmap_id)
 
         for score in socresdata:
             # 加入beatmap_id
@@ -151,9 +150,9 @@ class ATRICore:
         mods = score['mods']
         acc = score['accuracy'] * 100
         # 获取osu文件来计算
-        await self.rosu.get_beatmap_file_async_one(beatmap_id, Temp=False)
+        await Rosu.get_beatmap_file_async_one(beatmap_id, Temp=False)
         # 不需要combo计算
-        ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, mods, acc, None, Temp=False)
+        ppresult = await Rosu.calculate_pp_if_all(beatmap_id, mods, acc, None, Temp=False)
         iffcpp = ppresult["fcpp"]
 
         self.db_score.update(
@@ -212,7 +211,7 @@ class ATRICore:
     async def get_bps_osu(self, user_id):
         bps_beatmapid_list = self.db_user.find_one({'id': user_id})[
             'bps_beatmapid']
-        await self.rosu.get_beatmap_file_async_all(bps_beatmapid_list)
+        await Rosu.get_beatmap_file_async_all(bps_beatmapid_list)
 
     # 数据模块-计算choke pp
     async def calculate_choke_pp(self, user_id):
@@ -231,7 +230,7 @@ class ATRICore:
             score = self.db_score.find_one({'id': bp})
             # 更新choke
             beatmap_id = score['beatmap_id']
-            ppresult = await self.rosu.calculate_pp_if_all(beatmap_id, [], 0, None, Temp=False)
+            ppresult = await Rosu.calculate_pp_if_all(beatmap_id, [], 0, None, Temp=False)
             maxcombo = ppresult["maxcombo"]
             self.update_choke(bp, maxcombo)
             # 重新获取score
@@ -269,7 +268,7 @@ class ATRICore:
         return fixed_pp_sum, origin_pp_sum, total_lost_pp, chokeid_list, choke_num, weight_total_lost_pp
 
     # 数据模块-if刷pp
-    def calculate_if_get_pp(self, user_id, pp_lists):
+    async def calculate_if_get_pp(self, user_id, pp_lists):
         # 获取bp的scoreid
 
         now_pp = self.db_user.find_one({'id': user_id})['statistics']['pp']
@@ -293,7 +292,41 @@ class ATRICore:
 
         new_pp_sum = np.sum(list3) + bonuspp
 
-        return now_pp, new_pp_sum
+        # 获取变化的排名
+
+        original_rank = self.db_user.find_one(
+            {'id': user_id})['statistics']['global_rank']
+
+        if new_pp_sum - now_pp > 1:
+            try:
+                new_rank = await self.get_rank_based_on_pp(new_pp_sum)
+            except:
+                new_rank = original_rank
+            new_rank = int(new_rank)
+        else:
+            new_rank = original_rank
+
+        return now_pp, new_pp_sum, original_rank, new_rank
+
+    async def get_rank_based_on_pp(self, pp):
+
+        url = "https://osudaily.net/data/getPPRank.php?t=pp&v=" + \
+            str(pp) + "&m=0"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.text()
+                return data
+
+    async def get_rank_based_on_rank(self, rank):
+
+        url = "https://osudaily.net/data/getPPRank.php?t=rank&v=" + \
+            str(rank) + "&m=0"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.text()
+                return data
 
     # 功能模块-更新绑定
     # 返回值：True-绑定成功 False-已经绑定
@@ -771,9 +804,9 @@ class ATRICore:
             except:
                 pass
 
-        # k1, b1 = self.mtools.leastsquares(k1_bp1_list, k1_pp_list)
+        # k1, b1 = Mtools.leastsquares(k1_bp1_list, k1_pp_list)
 
-        k2, b2 = self.mtools.leastsquares(k2_bp2_list, k2_pp_list)
+        k2, b2 = Mtools.leastsquares(k2_bp2_list, k2_pp_list)
 
         # avg_ptt_pp = k1 * now_bp1 + b1
         bps_ptt_pp = k2 * now_bp1 + b2
@@ -892,21 +925,21 @@ class ATRICore:
 
     async def calculate_pr_score(self, user_id):
         # 计算pr分数
-        data = await self.ppy.get_user_passrecent_info(user_id)
+        data = await PPYapiv2.get_user_passrecent_info(user_id)
         data = data[0]
 
         if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
             # 永久保存谱面
-            await self.rosu.get_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
+            await Rosu.get_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
 
-            ppresult = await self.rosu.calculate_pp_if_all(
+            ppresult = await Rosu.calculate_pp_if_all(
                 data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=False)
         else:
             # 临时保存谱面
-            await self.rosu.get_beatmap_file_async_one(
+            await Rosu.get_beatmap_file_async_one(
                 data["beatmap"]["id"], Temp=True)
 
-            ppresult = await self.rosu.calculate_pp_if_all(
+            ppresult = await Rosu.calculate_pp_if_all(
                 data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
 
         result = await self.result.draw(data, ppresult)
@@ -915,21 +948,21 @@ class ATRICore:
 
     async def calculate_score(self, user_id, beatmap_id):
 
-        data = await self.ppy.get_user_socres_info(user_id, beatmap_id)
+        data = await PPYapiv2.get_user_socres_info(user_id, beatmap_id)
         data = data[0]
 
         if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
             # 永久保存谱面
-            await self.rosu.get_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
+            await Rosu.get_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
 
-            ppresult = await self.rosu.calculate_pp_if_all(
+            ppresult = await Rosu.calculate_pp_if_all(
                 data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=False)
         else:
             # 临时保存谱面
-            await self.rosu.get_beatmap_file_async_one(
+            await Rosu.get_beatmap_file_async_one(
                 data["beatmap"]["id"], Temp=True)
 
-            ppresult = await self.rosu.calculate_pp_if_all(
+            ppresult = await Rosu.calculate_pp_if_all(
                 data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
 
         result = await self.result.draw(data, ppresult)
@@ -981,7 +1014,7 @@ class ATRICore:
 
             user_best_score = {"user_id": user_id}
 
-        beatmapinfo = await self.ppy.get_beatmap_info(beatmap_id)
+        beatmapinfo = await PPYapiv2.get_beatmap_info(beatmap_id)
 
         # 查找群友的最好成绩
 
@@ -1044,7 +1077,7 @@ class ATRICore:
 
     async def calculate_beatmapranking_update(self, beatmap_id, group_id):
 
-        beatmapinfo = await self.ppy.get_beatmap_info(beatmap_id)
+        beatmapinfo = await PPYapiv2.get_beatmap_info(beatmap_id)
 
         if beatmapinfo == {'error': "Specified beatmap difficulty couldn't be found."}:
             return "无法找到该谱面"
@@ -1065,7 +1098,7 @@ class ATRICore:
 
         # 这下user_list就是本群玩家了
         result = f'b{beatmap_id}共遍历{len(users_list)}个玩家 '
-        result += await self.jobs.update_users_beatmap_score_async(beatmap_id, users_list)
+        result += await Jobs.update_users_beatmap_score_async(beatmap_id, users_list)
 
         return result
 
@@ -1081,13 +1114,13 @@ class ATRICore:
     async def jobs_update_users_info(self):
         user_lists = self.return_all_userids()
 
-        result = await self.jobs.update_users_info_async(user_lists)
+        result = await Jobs.update_users_info_async(user_lists)
 
         return result
 
     async def jobs_update_users_bps(self):
         user_lists = self.return_all_userids()
 
-        result = await self.jobs.update_users_bps_async(user_lists)
+        result = await Jobs.update_users_bps_async(user_lists)
 
         return result

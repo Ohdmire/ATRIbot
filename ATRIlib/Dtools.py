@@ -6,7 +6,7 @@ import datetime
 import subprocess
 from copy import deepcopy
 from .CommonTool import calc_diff_color
-from .Download import Downloader
+from . import Download
 
 
 class TDBA:
@@ -79,7 +79,6 @@ class ResultScreen:
             parser = etree.XMLParser()
             self.svg_tree = etree.fromstring(svg_data, parser)
 
-        self.download = Downloader()
         self.avatar_path = Path('./data/avatar')
         self.cover_path = Path('./data/cover')
 
@@ -347,7 +346,7 @@ class ResultScreen:
         if avatar_img.exists() is True:
             pass
         else:
-            await self.download.download_avatar_async([data["user"]["avatar_url"]], [data["user"]["id"]])
+            await Download.download_avatar_async([data["user"]["avatar_url"]], [data["user"]["id"]])
 
         avatar = svg_tree.xpath(
             '//*[@id="$avatar"]')[0]
@@ -396,7 +395,7 @@ class ResultScreen:
         if cover_img.exists() is True:
             pass
         else:
-            await self.download.download_cover(f'https://assets.ppy.sh/beatmaps/{data["beatmapset"]["id"]}/covers/raw.jpg', data["beatmapset"]["id"])
+            await Download.download_cover(f'https://assets.ppy.sh/beatmaps/{data["beatmapset"]["id"]}/covers/raw.jpg', data["beatmapset"]["id"])
 
         beatmap_cover = svg_tree.xpath(
             '//*[@id="$beatmap_cover"]')[0]
@@ -487,7 +486,6 @@ class BeatmapRankingscreeen:
             parser = etree.XMLParser()
             self.svg_tree = etree.fromstring(svg_data, parser)
 
-        self.download = Downloader()
         self.avatar_path = Path('./data/avatar')
         self.cover_path = Path('./data/cover')
 
@@ -510,7 +508,7 @@ class BeatmapRankingscreeen:
         if cover_img.exists() is True:
             pass
         else:
-            await self.download.download_cover(f'https://assets.ppy.sh/beatmaps/{beatmap_info["beatmapset"]["id"]}/covers/raw.jpg', beatmap_info["beatmapset"]["id"])
+            await Download.download_cover(f'https://assets.ppy.sh/beatmaps/{beatmap_info["beatmapset"]["id"]}/covers/raw.jpg', beatmap_info["beatmapset"]["id"])
 
         beatmap_cover = svg_tree.xpath(
             '//*[@id="$beatmap_cover"]')[0]
@@ -635,7 +633,7 @@ class BeatmapRankingscreeen:
                     if avatar_img.exists() is True:
                         pass
                     else:
-                        await self.download.download_avatar_async([player["avatar_url"]], [player["user_id"]])
+                        await Download.download_avatar_async([player["avatar_url"]], [player["user_id"]])
 
                     j.tag = 'image'
                     j.set(
@@ -754,7 +752,7 @@ class BeatmapRankingscreeen:
                 avatar_id_list.append(i['user_id'])
                 avatar_url_list.append(i['avatar_url'])
 
-        await self.download.download_avatar_async(avatar_url_list, avatar_id_list)
+        await Download.download_avatar_async(avatar_url_list, avatar_id_list)
 
         # 渲染其他玩家(<16)
         total_display = len(other_players) + 1
@@ -775,8 +773,8 @@ class BeatmapRankingscreeen:
                     if avatar_img.exists() is True:
                         pass
                     else:
-                        # await self.download.get_avatar_file(other_players[i - 1]["avatar_url"], other_players[i - 1]["user_id"])
-                        await self.download.download_avatar_async([other_players[i - 1]["avatar_url"]], [other_players[i - 1]["user_id"]])
+                        # await Download.get_avatar_file(other_players[i - 1]["avatar_url"], other_players[i - 1]["user_id"])
+                        await Download.download_avatar_async([other_players[i - 1]["avatar_url"]], [other_players[i - 1]["user_id"]])
 
                     j.tag = 'image'
                     j.set(
