@@ -334,22 +334,22 @@ class ATRICore:
         # 先判断是否已经绑定
         bind_info = self.db_bind.find_one({'id': qq_id})
         if bind_info is not None:
-            return "已经绑定过了" + bind_info['username']
+            return f'你已经绑定了{bind_info["username"]} 如需解绑请联系管理员'
         else:
             # 先获取user_id,user_name
             userdata = await self.update_user_info(osuname)
             if userdata is None:
-                return "用户" + osuname + "不存在"
+                return f'用户{osuname}不存在'
             try:
                 username = userdata['username']
                 user_id = self.db_user.find_one({'username': username})['id']
             except:
-                return "用户" + username + "不存在"
-
+                return f'用户{username}不存在'
+            
             user_name = self.db_user.find_one({'id': user_id})['username']
             bind_info = self.db_bind.find_one({'user_id': user_id})
             if bind_info is not None:
-                return "用户" + bind_info['username'] + "已被绑定"
+                return f'用户{bind_info["username"]}已被QQ({bind_info["id"]})绑定'
             if user_id is not None:  # 检查user插入的合法性
                 self.db_bind.update(
                     {"id": qq_id},  # 查询条件
@@ -1101,6 +1101,18 @@ class ATRICore:
         result += await Jobs.update_users_beatmap_score_async(beatmap_id, users_list)
 
         return result
+
+    async def get_interbot_test3(self, osuname):
+        data = {"osuname": osuname}
+        async with aiohttp.ClientSession() as session:
+            async with session.post('https://interbot.cn/osubot/test', data=data) as response:
+                return await response.text()
+
+    async def get_interbot_test4(self, osuname):
+        data = {"osuname": osuname}
+        async with aiohttp.ClientSession() as session:
+            async with session.post('https://interbot.cn/osubot/pptest', data=data) as response:
+                return await response.text()
 
     def return_all_userids(self):
         users = self.db_user.find({})

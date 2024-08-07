@@ -3,7 +3,7 @@ from ATRIlib import Core
 core = Core.ATRICore()
 
 
-def update_token(self):
+def update_token():
     return core.update_token()
 
 
@@ -259,7 +259,7 @@ async def get_bpsim_group(group_id, osuname, pp_range):
     await get_bplists(osuname)
 
     sim_list, start_pp, end_pp = core.calculate_bpsim_group(group_id,
-                                                                 osuid, pp_range)
+                                                            osuid, pp_range)
 
     sim = ""
 
@@ -438,13 +438,21 @@ async def get_brkup(beatmap_id, group_id):
     return data
 
 
-def return_all_userids(self):
+async def get_interbot_test3(osuname):
+    return await core.get_interbot_test3(osuname)
+
+
+async def get_interbot_test4(osuname):
+    return await core.get_interbot_test4(osuname)
+
+
+def return_all_userids():
     return core.return_all_userids()
 
 
-async def jobs_update_users_info(self):
+async def jobs_update_users_info():
     return await core.jobs_update_users_info()
 
 
-async def jobs_update_users_bps(self):
+async def jobs_update_users_bps():
     return await core.jobs_update_users_bps()

@@ -13,6 +13,7 @@ async def update_user(osuid, seamaphore):
     async with seamaphore:
         try:
             userdata = await PPYapiv2.get_user_info_fromid(osuid)
+            id = userdata['id']
         except:
             return None
 
@@ -32,6 +33,7 @@ async def update_user_bps(osuid, seamaphore):
     async with seamaphore:
         try:
             bps = await PPYapiv2.get_user_best_all_info(id)
+            id = userdata['id']
         except:
             return None
 

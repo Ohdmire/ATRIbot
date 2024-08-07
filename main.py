@@ -208,6 +208,19 @@ async def get_choke_info(item: IName):
 # async def test():
 #     await QQAdapter.test()
 
+@app.api_route("/qq/test3", methods=["GET", "POST"])
+async def test3(item: IName):
+    result = await QQAdapter.qq_get_interbot_test3(item.qq_id)
+    print(result)
+    return result
+
+
+@app.api_route("/qq/test4", methods=["GET", "POST"])
+async def test4(item: IName):
+    result = await QQAdapter.qq_get_interbot_test4(item.qq_id)
+    print(result)
+    return result
+
 
 @app.api_route("/qq/addpp", methods=["GET", "POST"])
 async def add_pp(item: INamePPlist):

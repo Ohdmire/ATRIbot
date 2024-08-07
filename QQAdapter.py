@@ -223,3 +223,25 @@ async def qq_get_brkup(beatmap_id, group_id):
         return await ATRIproxy.get_brkup(beatmap_id, group_id)
     except Exception as e:
         return f'error: {e}'
+
+
+async def qq_get_interbot_test3(qq_id):
+
+    osuname = ATRIproxy.find_bind_name_qq(qq_id)
+
+    print(osuname)
+
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+
+    return await ATRIproxy.get_interbot_test3(osuname)
+
+
+async def qq_get_interbot_test4(qq_id):
+
+    osuname = ATRIproxy.find_bind_name_qq(qq_id)
+
+    if osuname is None:
+        return "请先绑定输入 !getbind 你的osu用户名"
+
+    return await ATRIproxy.get_interbot_test4(osuname)
