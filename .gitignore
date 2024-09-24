@@ -3,6 +3,7 @@ __pycache__
 *.json
 data/
 .idea
+.venv
 *test*.py
 frame.png
 frame.svg

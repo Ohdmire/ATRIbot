@@ -1,458 +1,506 @@
-from ATRIlib import Core
+import logging
 
-core = Core.ATRICore()
+from ATRIlib.bpsim import calculate_bpsim
+from ATRIlib.joindate import calculate_joindate
+from ATRIlib.avg import calculate_avg_pp,calculate_avg_pt,calculate_avg_tth
+from ATRIlib.choke import calculate_choke_pp
+from utils import get_userstruct_automatically,get_bpstruct
+from ATRIlib.TOOLS.CommonTools import sort_dict_by_value
+from ATRIlib.addpp import calculate_if_get_pp
+from ATRIlib.score import calculate_pr_score,calculate_score
+from ATRIlib.pttpp import calculate_ptt_pp
+from ATRIlib.tdba import calculate_tdba
+from ATRIlib.tdba import calculate_tdba_sim
 
+from ATRIlib.beatmapranking import calculate_beatmapranking,calculate_beatmapranking_update
 
-def update_token():
-    return core.update_token()
+from ATRIlib.myjobs import job_update_all_bind_user_info,job_compress_score_database,job_update_all_bind_user_bps
+from ATRIlib.myjobs import job_update_all_user_info,job_update_all_user_bp
 
+from ATRIlib.group import update_group_info
 
-async def get_user(osuname):
-    data = await core.update_user_info(osuname)
-    return data['id']
+from ATRIlib.bind import update_bind_info
 
+from ATRIlib.interbot import get_interbot_test1,get_interbot_test2
 
-async def get_bplists(osuname):
-    data = await core.update_bplist_info(osuname)
-    return data
-
-
-def find_bind_name_qq(qq_id):
-    try:
-        return core.find_bind(qq_id)['username']
-    except:
-        return None
-
-
-def find_bind_id_qq(qq_id):
-    try:
-        return core.find_bind(qq_id)['user_id']
-    except:
-        return None
+from ATRIlib.API.PPYapiv2 import get_token
+from ATRIlib.whatif import calculate_pp,calculate_rank
 
 
-async def update_bind_qq(qq_id, osuname):
-    return await core.update_bind(qq_id, osuname)
+import traceback
+import asyncio
 
 
-def update_bind_group(group_id, members_list):
-    return core.update_gruop(group_id, members_list)
+def handle_exceptions(func):
+    if asyncio.iscoroutinefunction(func):
+        async def wrapper(*args, **kwargs):
+            try:
+                return await func(*args, **kwargs)
+            except Exception as e:
+                error_message = f"An error occurred in {func.__name__}:\n"
+                error_message += traceback.format_exc()
+                logging.error(error_message)
+                return str(e)
+    else:
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                error_message = f"An error occurred in {func.__name__}:\n"
+                error_message += traceback.format_exc()
+                logging.error(error_message)
+                return str(e)
+    return wrapper
+
+@handle_exceptions
+def format_token():
+
+    get_token()
+
+    return 'success'
+
+@handle_exceptions
+async def format_test1(qq_id, osuname):
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    username = userstruct["username"]
+
+    raw = await get_interbot_test1(username)
+
+    if "王者" in raw:
+        raw = raw.replace("王者","老登")
+
+    return raw
 
 
-async def get_choke(osuname):
+@handle_exceptions
+async def format_test2(qq_id, osuname):
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    username = userstruct["username"]
 
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
+    raw = await get_interbot_test2(username)
 
-    fixed_pp_sum, origin_pp_sum, total_lost_pp, chokeid_list, choke_num, weight_total_lost_pp = await core.calculate_choke_pp(osuid)
+    return raw
 
-    choke = ""
+@handle_exceptions
+async def format_bpsim(qq_id, osuname, pp_range):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    await get_bpstruct(user_id)
+
+    raw = calculate_bpsim(user_id,pp_range)
+
+    result_text = f'{raw[0]["user_data"]["username"]}与其他玩家的bp相似度\nPP段:+-{pp_range}pp'
+    for i in raw[1:11]:
+        result_text += f'\n{i["sim_count"]}张 --> {i["user_data"]["username"]}'
+
+    return result_text
+
+@handle_exceptions
+async def format_joindate(qq_id, group_id, osuname, pp_range,group_member_list):
+
+    if group_member_list is not None:
+        format_job_update_group_list(group_id,group_member_list)
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username= userstruct["username"]
+
+    raw = calculate_joindate(user_id, group_id, pp_range)
+
+    result_text1 = f'{username}的注册日期在本群\nPP段:+-{pp_range}pp\n'
     count = 0
-    for i in chokeid_list:
-        for key, value in i.items():
-            value = round(value)
-            if count % 2 == 0:
-                choke += f'\nbp{key}: {value}'
-            else:
-                choke += f'  bp{key}: {value}'
-            count += 1
+    result_text2 = ''
+    total_count = len(raw)
+    user_rank = None
+
+    for i in raw:
+        joindate_format = i["user_data"]["join_date"][:10] #截取时间格式
+        result_text2 += f'\n{joindate_format} --> {i["user_data"]["username"]}'
+        if user_id == i["user_data"]["id"]:
+            result_text2 += f' <--你在这里 '
+            user_rank = raw[count]["joindate_rank"]
+        count += 1
+
+    if user_rank is not None:
+        result_text1 += f'#{user_rank}/{total_count}'
+    else:
+        result_text1 += '#?/{total_count}'
+
+    return result_text1+result_text2
+
+@handle_exceptions
+async def format_avgpp(qq_id, osuname, pp_range):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    bpstruct = await get_bpstruct(user_id)
+
+    raw = calculate_avg_pp(user_id, pp_range)
+
+    count = round(raw[0]["count"])
+    avgbp1 = round(raw[0]["avgbp1"])
+    avgbp2 = round(raw[0]["avgbp2"])
+    avgbp3 = round(raw[0]["avgbp3"])
+    avgbp4 = round(raw[0]["avgbp4"])
+    avgbp5 = round(raw[0]["avgbp5"])
+    avgbp100 = round(raw[0]["avgbp100"])
+
+    mypp = round(userstruct["statistics"]["pp"])
+    mybp1 = round(bpstruct["bps_pp"][0])
+    mybp2 = round(bpstruct["bps_pp"][1])
+    mybp3 = round(bpstruct["bps_pp"][2])
+    mybp4 = round(bpstruct["bps_pp"][3])
+    mybp5 = round(bpstruct["bps_pp"][4])
+    mybp100 = round(bpstruct["bps_pp"][99])
+
+    diff_bp1 = round(mybp1 - avgbp1)
+    diff_bp2 = round(mybp2 - avgbp2)
+    diff_bp3 = round(mybp3 - avgbp3)
+    diff_bp4 = round(mybp4 - avgbp4)
+    diff_bp5 = round(mybp5 - avgbp5)
+    diff_bp100 = round(mybp100 - avgbp100)
+
+    diff_top5_total = diff_bp1 + diff_bp2 + diff_bp3 + diff_bp4 + diff_bp5
+
+    result_text=f'根据亚托莉的数据库(#{count})\n{username}对比平均PP\nPP段:{mypp}(±{pp_range})pp'
+    result_text += f'\nbp1:{mybp1}pp -- {avgbp1}pp({diff_bp1})'
+    result_text += f'\nbp2:{mybp2}pp -- {avgbp2}pp({diff_bp2})'
+    result_text += f'\nbp3:{mybp3}pp -- {avgbp3}pp({diff_bp3})'
+    result_text += f'\nbp4:{mybp4}pp -- {avgbp4}pp({diff_bp4})'
+    result_text += f'\nbp5:{mybp5}pp -- {avgbp5}pp({diff_bp5})'
+    result_text += f'\nbp100:{mybp100}pp -- {avgbp100}pp({diff_bp100})'
+    result_text += f'\n前bp5共偏差:{diff_top5_total}pp'
+
+    return result_text
+
+@handle_exceptions
+async def format_avgpt(qq_id, osuname, pt_range):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    bpstruct = await get_bpstruct(user_id)
+
+    raw = calculate_avg_pt(user_id, pt_range)
+
+    pt_range = round(pt_range/60/60)
+
+    count = round(raw[0]["count"])
+    avgpp = round(raw[0]["avgpp"])
+    avgbp1 = round(raw[0]["avgbp1"])
+    avgbp2 = round(raw[0]["avgbp2"])
+    avgbp3 = round(raw[0]["avgbp3"])
+    avgbp4 = round(raw[0]["avgbp4"])
+    avgbp5 = round(raw[0]["avgbp5"])
+    avgbp100 = round(raw[0]["avgbp100"])
+
+    mypt = round(userstruct["statistics"]["play_time"]/60/60)
+    mypp = round(userstruct["statistics"]["pp"])
+    mybp1 = round(bpstruct["bps_pp"][0])
+    mybp2 = round(bpstruct["bps_pp"][1])
+    mybp3 = round(bpstruct["bps_pp"][2])
+    mybp4 = round(bpstruct["bps_pp"][3])
+    mybp5 = round(bpstruct["bps_pp"][4])
+    mybp100 = round(bpstruct["bps_pp"][99])
+
+    diff_pp = round(mypp - avgpp)
+    diff_bp1 = round(mybp1 - avgbp1)
+    diff_bp2 = round(mybp2 - avgbp2)
+    diff_bp3 = round(mybp3 - avgbp3)
+    diff_bp4 = round(mybp4 - avgbp4)
+    diff_bp5 = round(mybp5 - avgbp5)
+    diff_bp100 = round(mybp100 - avgbp100)
+
+    diff_top5_total = diff_bp1 + diff_bp2 + diff_bp3 + diff_bp4 + diff_bp5
+
+    result_text = f'根据亚托莉的数据库(#{count})\n{username}对比平均游玩时间\nPT段:{mypt}(±{pt_range})h'
+    result_text += f'\nPP:{mypp}pp -- {avgpp}pp({diff_pp})'
+    result_text += f'\nbp1:{mybp1}pp -- {avgbp1}pp({diff_bp1})'
+    result_text += f'\nbp2:{mybp2}pp -- {avgbp2}pp({diff_bp2})'
+    result_text += f'\nbp3:{mybp3}pp -- {avgbp3}pp({diff_bp3})'
+    result_text += f'\nbp4:{mybp4}pp -- {avgbp4}pp({diff_bp4})'
+    result_text += f'\nbp5:{mybp5}pp -- {avgbp5}pp({diff_bp5})'
+    result_text += f'\nbp100:{mybp100}pp -- {avgbp100}pp({diff_bp100})'
+    result_text += f'\n前bp5共偏差:{diff_top5_total}pp'
+
+    return result_text
+
+@handle_exceptions
+async def format_avgtth(qq_id, osuname, tth_range):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    bpstruct = await get_bpstruct(user_id)
+
+    raw = calculate_avg_tth(user_id, tth_range)
+
+    tth_range = round(tth_range/1000)
+
+    count = round(raw[0]["count"])
+    avgpp = round(raw[0]["avgpp"])
+    avgbp1 = round(raw[0]["avgbp1"])
+    avgbp2 = round(raw[0]["avgbp2"])
+    avgbp3 = round(raw[0]["avgbp3"])
+    avgbp4 = round(raw[0]["avgbp4"])
+    avgbp5 = round(raw[0]["avgbp5"])
+    avgbp100 = round(raw[0]["avgbp100"])
+
+    mytth = round(userstruct["statistics"]["total_hits"] / 1000)
+    mypp = round(userstruct["statistics"]["pp"])
+    mybp1 = round(bpstruct["bps_pp"][0])
+    mybp2 = round(bpstruct["bps_pp"][1])
+    mybp3 = round(bpstruct["bps_pp"][2])
+    mybp4 = round(bpstruct["bps_pp"][3])
+    mybp5 = round(bpstruct["bps_pp"][4])
+    mybp100 = round(bpstruct["bps_pp"][99])
+
+    diff_pp = round(mypp - avgpp)
+    diff_bp1 = round(mybp1 - avgbp1)
+    diff_bp2 = round(mybp2 - avgbp2)
+    diff_bp3 = round(mybp3 - avgbp3)
+    diff_bp4 = round(mybp4 - avgbp4)
+    diff_bp5 = round(mybp5 - avgbp5)
+    diff_bp100 = round(mybp100 - avgbp100)
+
+    diff_top5_total = diff_bp1 + diff_bp2 + diff_bp3 + diff_bp4 + diff_bp5
+
+    result_text = f'根据亚托莉的数据库(#{count})\n{username}对比平均游玩时间\nTTH段:{mytth}(±{tth_range})w'
+    result_text += f'\nPP:{mypp}pp -- {avgpp}pp({diff_pp})'
+    result_text += f'\nbp1:{mybp1}pp -- {avgbp1}pp({diff_bp1})'
+    result_text += f'\nbp2:{mybp2}pp -- {avgbp2}pp({diff_bp2})'
+    result_text += f'\nbp3:{mybp3}pp -- {avgbp3}pp({diff_bp3})'
+    result_text += f'\nbp4:{mybp4}pp -- {avgbp4}pp({diff_bp4})'
+    result_text += f'\nbp5:{mybp5}pp -- {avgbp5}pp({diff_bp5})'
+    result_text += f'\nbp100:{mybp100}pp -- {avgbp100}pp({diff_bp100})'
+    result_text += f'\n前bp5共偏差:{diff_top5_total}pp'
+
+    return result_text
+
+@handle_exceptions
+async def format_choke(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    await get_bpstruct(user_id)
+
+    raw = await calculate_choke_pp(user_id)
+
+    mypp = round(userstruct["statistics"]["pp"])
+    weighted_fixed_result_total_pp = round(raw["weighted_fixed_result_total_pp"])
+    total_lost_pp = round(raw["total_lost_pp"])
+    total_lost_pp_plus = round(raw["total_lost_pp_plus"])
+
+    result_text = f'{username}\'s ≤1miss choke'
+    result_text += f'\n现在的pp:{mypp}pp({total_lost_pp})'
+    result_text += f'\n如果不choke:{weighted_fixed_result_total_pp}pp'
+    result_text += f'\n累加丢失的pp:{total_lost_pp_plus}pp\n'
+
+    result_dict = sort_dict_by_value(raw["choke_dict"])
 
-    origin_pp_sum = round(origin_pp_sum, 2)
-    fixed_pp_sum = round(fixed_pp_sum, 2)
-    total_lost_pp = round(total_lost_pp, 2)
-    weight_total_lost_pp = round(weight_total_lost_pp, 2)
-
-    data = f'{osuname}\'s ≤1miss choke\n总pp: {origin_pp_sum}pp({weight_total_lost_pp})\n如果不choke: {fixed_pp_sum}pp\n累加丢失的pp: {total_lost_pp}pp\n共choke:{choke_num}张\nchoke排行:{choke}'
-
-    return data
-
-
-async def get_rank_based_pp(pp):
-    return f'#{await core.get_rank_based_on_pp(pp)}'
-
-
-async def get_pp_based_rank(rank):
-    return await core.get_rank_based_on_rank(rank)
-
-
-async def get_if_add_pp(osuname, pp_list):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    now_pp, new_pp_sum, original_rank, new_rank = await core.calculate_if_get_pp(
-        osuid, pp_list)
-
-    now_pp = round(now_pp, 2)
-    new_pp_sum = round(new_pp_sum, 2)
-
-    diff = round(new_pp_sum - now_pp, 2)
-
-    diff_rank = original_rank - new_rank
-
-    data = f'{osuname}\n现在的pp: {now_pp}pp\n如果加入这些pp: {new_pp_sum}pp\n增加了: {diff}pp\n\n现在的rank: #{original_rank}\n新rank: #{new_rank} (↑{diff_rank})'
-
-    return data
-
-
-async def get_avg_pp(osuname, pp_range):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    avgbp1, avgbp2, avgbp3, avgbp4, avgbp5, avgbp100, diffbp1, diffbp2, diffbp3, diffbp4, diffbp5, diffbp100, users_amount, start_pp, end_pp, user_origin_bp1, user_origin_bp2, user_origin_bp3, user_origin_bp4, user_origin_bp5, user_origin_bp100, total_diff = core.calculate_avg_pp(
-        osuid, pp_range)
-
-    avgbp1 = round(avgbp1)
-    avgbp2 = round(avgbp2)
-    avgbp3 = round(avgbp3)
-    avgbp4 = round(avgbp4)
-    avgbp5 = round(avgbp5)
-    avgbp100 = round(avgbp100)
-
-    user_origin_bp1 = round(user_origin_bp1)
-    user_origin_bp2 = round(user_origin_bp2)
-    user_origin_bp3 = round(user_origin_bp3)
-    user_origin_bp4 = round(user_origin_bp4)
-    user_origin_bp5 = round(user_origin_bp5)
-    user_origin_bp100 = round(user_origin_bp100)
-
-    diffbp1 = round(diffbp1)
-    diffbp2 = round(diffbp2)
-    diffbp3 = round(diffbp3)
-    diffbp4 = round(diffbp4)
-    diffbp5 = round(diffbp5)
-    diffbp100 = round(diffbp100)
-
-    total_diff = round(total_diff)
-
-    start_pp = round(start_pp)
-    end_pp = round(end_pp)
-
-    data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}对比平均bp\n当前pp段{start_pp}pp ~ {end_pp}pp\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
-
-    return data
-
-
-async def get_avg_tth(osuname, tth_range):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    avgbp1, avgbp2, avgbp3, avgbp4, avgbp5, avgbp100, diffbp1, diffbp2, diffbp3, diffbp4, diffbp5, diffbp100, users_amount, start_tth, end_tth, user_origin_bp1, user_origin_bp2, user_origin_bp3, user_origin_bp4, user_origin_bp5, user_origin_bp100, total_diff, avgtotalpp, user_now_pp = core.calculate_avg_tth(
-        osuid, tth_range)
-
-    avgbp1 = round(avgbp1)
-    avgbp2 = round(avgbp2)
-    avgbp3 = round(avgbp3)
-    avgbp4 = round(avgbp4)
-    avgbp5 = round(avgbp5)
-    avgbp100 = round(avgbp100)
-
-    user_origin_bp1 = round(user_origin_bp1)
-    user_origin_bp2 = round(user_origin_bp2)
-    user_origin_bp3 = round(user_origin_bp3)
-    user_origin_bp4 = round(user_origin_bp4)
-    user_origin_bp5 = round(user_origin_bp5)
-    user_origin_bp100 = round(user_origin_bp100)
-
-    diffbp1 = round(diffbp1)
-    diffbp2 = round(diffbp2)
-    diffbp3 = round(diffbp3)
-    diffbp4 = round(diffbp4)
-    diffbp5 = round(diffbp5)
-    diffbp100 = round(diffbp100)
-
-    total_diff = round(total_diff)
-
-    start_tth = round(start_tth / 10000)
-    end_tth = round(end_tth / 10000)
-
-    avgtotalpp = round(avgtotalpp, 2)
-    user_now_pp = round(user_now_pp, 2)
-
-    total_diff_total_pp = user_now_pp - avgtotalpp
-
-    total_diff_total_pp = round(total_diff_total_pp)
-
-    data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}对比平均总打击数\n当前tth段{start_tth}w ~ {end_tth}w\npp: {user_now_pp}pp -- {avgtotalpp}pp({total_diff_total_pp})\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
-
-    return data
-
-
-async def get_avg_pt(osuname, pt_range):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    avgbp1, avgbp2, avgbp3, avgbp4, avgbp5, avgbp100, diffbp1, diffbp2, diffbp3, diffbp4, diffbp5, diffbp100, users_amount, start_pt, end_pt, user_origin_bp1, user_origin_bp2, user_origin_bp3, user_origin_bp4, user_origin_bp5, user_origin_bp100, total_diff, avgtotalpp, user_now_pp = core.calculate_avg_pt(
-        osuid, pt_range)
-
-    avgbp1 = round(avgbp1)
-    avgbp2 = round(avgbp2)
-    avgbp3 = round(avgbp3)
-    avgbp4 = round(avgbp4)
-    avgbp5 = round(avgbp5)
-    avgbp100 = round(avgbp100)
-
-    user_origin_bp1 = round(user_origin_bp1)
-    user_origin_bp2 = round(user_origin_bp2)
-    user_origin_bp3 = round(user_origin_bp3)
-    user_origin_bp4 = round(user_origin_bp4)
-    user_origin_bp5 = round(user_origin_bp5)
-    user_origin_bp100 = round(user_origin_bp100)
-
-    diffbp1 = round(diffbp1)
-    diffbp2 = round(diffbp2)
-    diffbp3 = round(diffbp3)
-    diffbp4 = round(diffbp4)
-    diffbp5 = round(diffbp5)
-    diffbp100 = round(diffbp100)
-
-    total_diff = round(total_diff)
-
-    start_pt = round(start_pt / 3600)
-    end_pt = round(end_pt / 3600)
-
-    avgtotalpp = round(avgtotalpp, 2)
-    user_now_pp = round(user_now_pp, 2)
-
-    total_diff_total_pp = user_now_pp - avgtotalpp
-
-    total_diff_total_pp = round(total_diff_total_pp)
-
-    data = f'根据亚托莉的数据库(#{users_amount})\n{osuname}对比平均游玩时间\n当前pt段{start_pt}h ~ {end_pt}h\npp: {user_now_pp}pp -- {avgtotalpp}pp({total_diff_total_pp})\nbp1: {user_origin_bp1}pp -- {avgbp1}pp({diffbp1})\nbp2: {user_origin_bp2}pp -- {avgbp2}pp({diffbp2})\nbp3: {user_origin_bp3}pp -- {avgbp3}pp({diffbp3})\nbp4: {user_origin_bp4}pp -- {avgbp4}pp({diffbp4})\nbp5: {user_origin_bp5}pp -- {avgbp5}pp({diffbp5})\nbp100: {user_origin_bp100}pp -- {avgbp100}pp({diffbp100})\n总计前5bp偏差:{total_diff}pp'
-
-    return data
-
-# async def get_avg_all(osuname, pp_range):
-
-#     osuid = await get_user(osuname)
-#     await get_bplists(osuname)
-
-
-async def get_bpsim(osuname, pp_range):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    sim_list, start_pp, end_pp = core.calculate_bpsim(
-        osuid, pp_range)
-
-    sim = ""
-
-    for i in sim_list:
-        for key, value in i.items():
-            sim += f'\n{value}张 -> {key}'
-
-    start_pp = round(start_pp)
-    end_pp = round(end_pp)
-
-    data = f'{osuname}的bp相似度\n当前pp段{start_pp}pp ~ {end_pp}pp{sim}'
-
-    return data
-
-
-async def get_bpsim_group(group_id, osuname, pp_range):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    sim_list, start_pp, end_pp = core.calculate_bpsim_group(group_id,
-                                                            osuid, pp_range)
-
-    sim = ""
-
-    for i in sim_list:
-        for key, value in i.items():
-            sim += f'\n{key}: {value}张'
-
-    start_pp = round(start_pp)
-    end_pp = round(end_pp)
-
-    data = f'{osuname}在本群的bp相似度\n当前pp段{start_pp}pp ~ {end_pp}pp{sim}'
-
-    return data
-
-
-async def get_bpsimvs(osuname, vs_name):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    vs_osuid = await get_user(vs_name)
-    await get_bplists(vs_name)
-
-    if osuid == vs_osuid:
-        return '干什么！'
-
-    index_dict, user1_bps_pp_list, user2_bps_pp_list = core.calculate_bpsim_vs(
-        osuid, vs_osuid)
-
-    simvs = ""
-    total_diff = 0
-    amount_diff = 0
-
-    simvs += f'{osuname} vs {vs_name}的bp对比'
-
-    for i in index_dict:
-        for key, value in i.items():
-            user1_pp_value = round(user1_bps_pp_list[key - 1])
-            user2_pp_value = round(user2_bps_pp_list[value - 1])
-            diff = round(user1_pp_value - user2_pp_value)
-            total_diff += diff
-            amount_diff += 1
-            if key < 10:
-                key = str(key) + "  "
-            if value < 10:
-                value = str(value) + "  "
-
-            simvs += f'\nbp{key}: {user1_pp_value}pp -- {user2_pp_value}pp ->bp{value}({diff})'
-    data = f'{simvs}\n总计偏差:{total_diff}pp  共有{amount_diff}张同样的bp'
-
-    if index_dict == []:
-        data = f'{osuname}和{vs_name}没有一样的bp'
-    return data
-
-
-async def get_join_date(group_id, osuname, pp_range):
-
-    osuid = await get_user(osuname)
-
-    calculate_join_date, index, start_pp, end_pp = core.calculate_join_date_group(
-        group_id, osuid, pp_range)
-
-    start_pp = round(start_pp)
-    end_pp = round(end_pp)
-
-    rank = ""
-
-    rank += f'{osuname}注册日期在本群{index}/{len(calculate_join_date)}\n当前pp段{start_pp}pp ~ {end_pp}pp'
-
-    count = 1
-    start_count = index - 5
-    end_count = index + 5
-
-    for i in calculate_join_date:
-        for key, value in i.items():
-            if count >= start_count and count <= end_count:
-                rank += f'\n{value[:10]} -> {key}'
-                if count == index:
-                    rank += " <- 你在这里"
-            count += 1
-
-    return rank
-
-
-async def get_group_ppmap(group_id, osuname, pp_range):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    sorted_count_dict, pp_dict, amount_user, start_pp, end_pp = core.calculate_group_ppmap(
-        group_id, osuid, pp_range)
-
-    ppmap = ''
     count = 0
+    for key,value in result_dict.items():
+        result_text += f'bp{key}:{round(value)}  '
+        if (count+1) % 2 == 0:
+            result_text += f'\n'
+        count += 1
 
-    for key, value in sorted_count_dict.items():
-        if count < 10:
-            percent = round((value / amount_user) * 100)
-            ppmap += f'\n{percent}%的人 -- m{key}'
-            pp = pp_dict[key]
-            pp = round(pp)
-            if pp != 0:
-                ppmap += f'你已刷{pp}pp'
-            count += 1
-        else:
-            break
+    return result_text
 
-    start_pp = round(start_pp)
-    end_pp = round(end_pp)
+@handle_exceptions
+async def format_addpp(qq_id, osuname,pp_lists):
 
-    result = f'根据亚托莉的数据库(#{amount_user})\n{osuname}\n在本群的最多人刷进bp的图中\n当前pp段{start_pp}pp ~ {end_pp}pp{ppmap}'
-    return result
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    await get_bpstruct(user_id)
 
+    raw = await calculate_if_get_pp(user_id,pp_lists)
 
-async def get_ptt_pp(osuname):
+    nowpp = round(raw["now_pp"],2)
+    newpp = round(raw["new_pp_sum"],2)
+    diff_pp = round(newpp - nowpp,2)
 
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
+    diff_rank = int(raw["original_rank"]) - int(raw["new_rank"])
 
-    bps_ptt_pp, now_pp = core.calculate_ptt_pp(osuid)
+    result_text = f'{username}'
+    result_text += f'\n现在的pp:{nowpp}pp'
+    result_text += f'\n如果加入这些pp:{newpp}pp'
+    result_text += f'\n增加了:{diff_pp}pp\n'
+    result_text += f'\n变化前的排名:#{int(raw["original_rank"]):,}'
+    result_text += f'\n变化后的排名:#{int(raw["new_rank"]):,}(↑{int(diff_rank):,})'
 
-    bps_ptt_pp = round(bps_ptt_pp, 2)
+    return result_text
 
-    data = f'{osuname}\n现在的pp: {now_pp}pp\n预测潜力pp: {bps_ptt_pp}pp'
+@handle_exceptions
+async def format_pttpp(qq_id, osuname, pp_range):
 
-    return data
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    await get_bpstruct(user_id)
 
+    raw = calculate_ptt_pp(user_id,pp_range)
 
-async def get_pr(osuname):
+    nowpp = round(raw['now_pp'],2)
+    pttpp = round(raw['ptt_pp'],2)
 
-    osuid = await get_user(osuname)
+    result_text = f'{username}\n'
+    result_text += f'现在的pp:{nowpp}pp\n'
+    result_text += f'预测的pp:{pttpp}pp'
 
-    data = await core.calculate_pr_score(osuid)
-
-    if data is None:
-        return f'未查询到{osuname}最近pass的成绩'
-
-    return data
-
-
-async def get_tdba(osuname):
-
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-
-    data = core.calculate_tdba(osuid)
-
-    return data
+    return result_text
 
 
-async def get_tdbavs(osuname, vsname):
+@handle_exceptions
+async def format_brk_up(beatmap_id,group_id):
 
-    osuid = await get_user(osuname)
-    await get_bplists(osuname)
-    vsid = await get_user(vsname)
-    await get_bplists(vsname)
+    raw = await calculate_beatmapranking_update(beatmap_id,group_id)
 
-    data = core.calculate_tdbavs(osuid, vsid)
-
-    return data
+    return raw
 
 
-async def get_brk(osuname, group_id, beatmap_id, mods_list):
+@handle_exceptions
+async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list):
 
-    osuid = await get_user(osuname)
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
 
-    data = await core.calculate_beatmapranking(osuid, group_id=group_id, beatmap_id=beatmap_id, mods_list=mods_list)
+    raw = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list)
 
-    return data
-
-
-async def get_brkup(beatmap_id, group_id):
-
-    data = await core.calculate_beatmapranking_update(beatmap_id=beatmap_id, group_id=group_id)
-
-    return data
+    return raw
 
 
-async def get_interbot_test3(osuname):
-    return await core.get_interbot_test3(osuname)
+@handle_exceptions
+async def format_pr(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    raw = await calculate_pr_score(user_id)
+
+    return raw
+
+@handle_exceptions
+async def format_tdba(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+
+    await get_bpstruct(user_id)
+
+    raw = calculate_tdba(user_id)
+
+    return raw
 
 
-async def get_interbot_test4(osuname):
-    return await core.get_interbot_test4(osuname)
+@handle_exceptions
+async def format_score(qq_id, osuname,beatmapid):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+
+    raw = await calculate_score(user_id,beatmapid)
+
+    return raw
 
 
-def return_all_userids():
-    return core.return_all_userids()
+@handle_exceptions
+async def format_tdba_sim(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+
+    raw = calculate_tdba_sim(user_id)
+
+    result_text = f'{username}的tdba相似度的相似度'
+
+    for i in raw[:10]:
+        similarity = round(i['cosineSimilarity'],2)
+        result_text += f'\n{similarity} --> {i["user_data"]["username"]}'
+
+    return result_text
+
+@handle_exceptions
+async def format_calculate_rank(pp):
+    raw = await calculate_rank(pp)
+    result_text = f'{pp}pp对应的排名为\n#{raw:,}'
+
+    return result_text
+
+@handle_exceptions
+async def format_calculate_pp(rank):
+    raw = await calculate_pp(rank)
+
+    result_text = f'#{rank:,}对应的pp为\n{raw}pp'
+
+    return result_text
 
 
-async def jobs_update_users_info():
-    return await core.jobs_update_users_info()
+@handle_exceptions
+async def format_job_update_all_bind_users_info():
+
+    raw = await job_update_all_bind_user_info()
+
+    return raw
+
+@handle_exceptions
+async def format_job_update_all_users_info():
+
+    raw = await job_update_all_user_info()
+
+    return raw
+
+@handle_exceptions
+async def format_job_update_all_users_bp():
+
+    raw = await job_update_all_user_bp()
+
+    return raw
 
 
-async def jobs_update_users_bps():
-    return await core.jobs_update_users_bps()
+
+@handle_exceptions
+async def format_job_update_all_bind_users_bp():
+
+    raw = await job_update_all_bind_user_bps()
+
+    return raw
+
+
+@handle_exceptions
+def format_job_compress_score_database():
+
+    raw = job_compress_score_database()
+
+    diff_time = raw['diff_time']
+    count = raw['count']
+
+    result_text = f'共清理{count}个重复成绩\n用时{diff_time}'
+
+    return result_text
+
+
+@handle_exceptions
+def format_job_update_group_list(group_id,group_members_list):
+
+    raw = update_group_info(group_id,group_members_list)
+
+    return raw
+
+
+@handle_exceptions
+def format_bind(qq_id, osuname):
+
+    raw = update_bind_info(qq_id,osuname)
+
+    return raw
+
+
+
+
+
+

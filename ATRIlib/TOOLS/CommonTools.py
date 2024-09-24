@@ -73,8 +73,11 @@ def sort_by_firstkey(list_of_dicts):
 
 
 def sort_dict_by_value_reverse(mydict):
-    sorted_dict = dict(sorted(mydict.items(), reverse=True,
-                              key=operator.itemgetter(1)))
+    sorted_dict = dict(sorted(mydict.items(), reverse=True,key=operator.itemgetter(1)))
+    return sorted_dict
+
+def sort_dict_by_value(mydict):
+    sorted_dict = dict(sorted(mydict.items(), key=operator.itemgetter(1)))
     return sorted_dict
 
 

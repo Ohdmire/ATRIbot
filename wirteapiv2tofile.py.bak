@@ -1,0 +1,10 @@
+from ATRIlib.API.PPYapiv2 import get_token, get_beatmap_info
+import json
+import asyncio
+
+get_token()
+
+result = asyncio.run(get_beatmap_info(4547644))
+
+with open('beatmap.json', 'w', encoding='utf-8') as f:
+    f.write(json.dumps(result, indent=4))

@@ -1,14 +1,10 @@
-# from PPYapiv2 import PPYapiv2
-# from Mongodb import Mongodb
-# from Rosu import Rosu
 
-from . import PPYapiv2
-from .Mongodb import Mongodb
-from . import Rosu
-from . import Jobs
-from . import Mtools
-from ATRIlib.Dtools import ResultScreen, TDBA, BeatmapRankingscreeen
-from ATRIlib.CommonTool import sort_by_firstkey, sort_by_firstvalue, sort_by_givenkey_reverse, sort_dict_by_value_reverse, sorted_by_firstvalue_reverse
+from .API import PPYapiv2
+from ATRIlib.DB.Mongodb import Mongodb
+from .PP import Rosu
+from .TASKS import Jobs
+from .TOOLS import Mtools
+from ATRIlib.TOOLS.CommonTools import sort_by_firstkey, sort_by_firstvalue, sort_by_givenkey_reverse, sort_dict_by_value_reverse, sorted_by_firstvalue_reverse
 
 import numpy as np
 import datetime
@@ -29,10 +25,6 @@ class ATRICore:
 
         self.weight_list = [1.0, 0.95, 0.9025, 0.8573749999999998, 0.8145062499999999, 0.7737809374999998, 0.7350918906249998, 0.6983372960937497, 0.6634204312890623, 0.6302494097246091, 0.5987369392383787, 0.5688000922764597, 0.5403600876626367, 0.5133420832795048, 0.4876749791155295, 0.46329123015975304, 0.44012666865176536, 0.4181203352191771, 0.3972143184582182, 0.3773536025353073, 0.3584859224085419, 0.34056162628811476, 0.323533544973709, 0.3073568677250236, 0.2919890243387724, 0.27738957312183377, 0.26352009446574204, 0.2503440897424549, 0.23782688525533216, 0.22593554099256555, 0.21463876394293727, 0.2039068257457904, 0.19371148445850087, 0.18402591023557582, 0.174824614723797, 0.16608338398760714, 0.1577792147882268, 0.14989025404881545, 0.14239574134637467, 0.13527595427905592, 0.12851215656510312, 0.12208654873684796, 0.11598222130000556, 0.11018311023500528, 0.10467395472325501, 0.09944025698709226, 0.09446824413773763, 0.08974483193085075, 0.0852575903343082, 0.0809947108175928, 0.07694497527671315, 0.07309772651287749,
                             0.06944284018723361, 0.06597069817787193, 0.06267216326897833, 0.05953855510552941, 0.056561627350252934, 0.053733545982740286, 0.051046868683603266, 0.048494525249423104, 0.046069798986951946, 0.043766309037604346, 0.041577993585724136, 0.03949909390643792, 0.03752413921111602, 0.03564793225056022, 0.033865535638032206, 0.03217225885613059, 0.030563645913324066, 0.029035463617657863, 0.027583690436774964, 0.026204505914936217, 0.024894280619189402, 0.023649566588229934, 0.02246708825881844, 0.02134373384587751, 0.020276547153583634, 0.01926271979590445, 0.01829958380610923, 0.017384604615803767, 0.01651537438501358, 0.0156896056657629, 0.014905125382474753, 0.014159869113351013, 0.013451875657683464, 0.012779281874799289, 0.012140317781059324, 0.011533301892006359, 0.01095663679740604, 0.010408804957535737, 0.00988836470965895, 0.009393946474176, 0.008924249150467202, 0.00847803669294384, 0.008054134858296648, 0.007651428115381815, 0.007268856709612724, 0.006905413874132088, 0.006560143180425483, 0.006232136021404208]
-
-        self.result = ResultScreen()
-        self.ranking = BeatmapRankingscreeen()
-        self.tdba = TDBA()
 
         print("初始化")
 
@@ -114,7 +106,7 @@ class ATRICore:
 
     # 数据模块-更新玩家成绩信息
     async def update_scores_info(self, user_id, beatmap_id):
-        socresdata = await PPYapiv2.get_user_socres_info(user_id, beatmap_id)
+        socresdata = await PPYapiv2.get_user_scores_info(user_id, beatmap_id)
 
         for score in socresdata:
             # 加入beatmap_id
@@ -850,7 +842,7 @@ class ATRICore:
             x_list.append(hours)
             y_list.append(list1[i])
 
-        data = self.tdba.draw(sum_pp_per_hour, per_time,
+        data = Dtools.draw_tdba(sum_pp_per_hour, per_time,
                               x_list, y_list, osuname)
 
         return data
@@ -918,7 +910,7 @@ class ATRICore:
             user2_x_list.append(hours)
             user2_y_list.append(user2_rawpp_list[i])
 
-        data = self.tdba.drawvs(user1_sum_pp_per_hour, user2_sum_pp_per_hour, per_time,
+        data = Dtools.draw_tdba_vs(user1_sum_pp_per_hour, user2_sum_pp_per_hour, per_time,
                                 user1_x_list, user1_y_list, user2_x_list, user2_y_list, osuname, vsname)
 
         return data
@@ -942,13 +934,13 @@ class ATRICore:
             ppresult = await Rosu.calculate_pp_if_all(
                 data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
 
-        result = await self.result.draw(data, ppresult)
+        result = await Dtools.draw_result_screen(data, ppresult)
 
         return result
 
     async def calculate_score(self, user_id, beatmap_id):
 
-        data = await PPYapiv2.get_user_socres_info(user_id, beatmap_id)
+        data = await PPYapiv2.get_user_scores_info(user_id, beatmap_id)
         data = data[0]
 
         if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
@@ -965,7 +957,7 @@ class ATRICore:
             ppresult = await Rosu.calculate_pp_if_all(
                 data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
 
-        result = await self.result.draw(data, ppresult)
+        result = await Dtools.draw_result_screen(data, ppresult)
 
         return result
 
@@ -1071,7 +1063,7 @@ class ATRICore:
             except:
                 print(f'error {sorted_other}')
 
-        result = await self.ranking.draw(user_best_score, final_sorted_others, beatmapinfo, mods_list)
+        result = await Dtools.draw_beatmap_rank_screen(user_best_score, final_sorted_others, beatmapinfo, mods_list)
 
         return result
 

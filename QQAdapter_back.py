@@ -90,7 +90,7 @@ async def qq_get_bpsim(qq_id, pp_range, osuname=None):
     if osuname is None:
         return "请先绑定输入 !getbind 你的osu用户名"
 
-    return await ATRIproxy.get_bpsim(osuname, pp_range)
+    return await ATRIproxy.format_bpsim(osuname, pp_range)
 
 
 async def qq_get_bpsim_group(group_id, qq_id, pp_range, osuname=None):

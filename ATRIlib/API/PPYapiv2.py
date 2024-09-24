@@ -1,15 +1,16 @@
 import requests
 import aiohttp
 
-from .Config import osuclientid, osuclientsecret
+from ATRIlib.config import osuclientid, osuclientsecret
 
 client_id = osuclientid
 client_secret = osuclientsecret
 
 # 获取访问令牌
-
+token = None
 
 def get_token():
+    global token
     url = 'https://osu.ppy.sh/oauth/token'
     data = {
         'client_id': client_id,
@@ -19,15 +20,13 @@ def get_token():
     }
     response = requests.post(url, data=data)
     token = response.json()['access_token']
-    return token
 
-
-token = get_token()
+get_token()
 
 
 # 获取玩家信息id
-async def get_user_info(osu_name):
-    url = f'https://osu.ppy.sh/api/v2/users/{osu_name}/osu?key=username'
+async def get_user_info(osuname):
+    url = f'https://osu.ppy.sh/api/v2/users/{osuname}/osu?key=username'
     headers = {'Authorization': f'Bearer {token}'}
 
     async with aiohttp.ClientSession() as session:
@@ -63,7 +62,7 @@ async def get_user_best_all_info(user_id):
 
 
 # 获取socres
-async def get_user_socres_info(user_id, beatmap_id):
+async def get_user_scores_info(user_id, beatmap_id):
     url = f'https://osu.ppy.sh/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all?mode=osu'
     headers = {'Authorization': f'Bearer {token}'}
 

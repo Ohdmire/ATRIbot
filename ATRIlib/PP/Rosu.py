@@ -1,51 +1,20 @@
 import rosu_pp_py as rosu
-
 from pathlib import Path
 
-from . import Download
+from ATRIlib.TOOLS.Download import fetch_beatmap_file_async_one
+from ATRIlib.TOOLS.Download import beatmaps_path,beatmaps_path_tmp
 
-
-beatmaps_path = Path('./data/beatmaps/')
-beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
-
-# 获取单个谱面(ranked or unranked)
-
-
-async def get_beatmap_file_async_one(beatmap_id, Temp=True):
-    if Temp:
-        filepath = beatmaps_path_tmp / f'{beatmap_id}.osu'
-    else:
-        filepath = beatmaps_path / f'{beatmap_id}.osu'
-    if filepath.exists():
-        return
-    else:
-        beatmap_ids = [beatmap_id]
-    await Download.download_osu_async(beatmap_ids, Temp=Temp)
-
-# 批量获取谱面(ranked or unranked)
-
-
-async def get_beatmap_file_async_all(beatmap_id_list, Temp=False):
-    beatmap_ids = []
-    for beatmap_id in beatmap_id_list:
-        file_path = beatmaps_path / f'{beatmap_id}.osu'
-        if file_path.exists():
-            pass
-        else:
-            beatmap_ids.append(beatmap_id)
-
-    await Download.download_osu_async(beatmap_ids, Temp=Temp)
+# beatmaps_path = Path('./data/beatmaps/')
+# beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
 
 # 计算pp(ranked or unranked)
-
-
 async def calculate_pp_if_all(beatmap_id, mods, acc, combo, Temp=True):
 
     mods_int = calculate_mod_int(mods)
 
     result = {}
 
-    await get_beatmap_file_async_one(beatmap_id, Temp=Temp)
+    await fetch_beatmap_file_async_one(beatmap_id, Temp=Temp)
 
     if Temp:
         file_path = beatmaps_path_tmp / f'{beatmap_id}.osu'
