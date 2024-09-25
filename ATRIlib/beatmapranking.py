@@ -36,7 +36,7 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list=None
             user_record = record
             break
     if user_record is None:
-        user_record = {"top_score": {"user_id" : user_id}}
+        user_record = {"top_score": {"user_id" : user_id , "score" : -1}}
 
     result = await draw_beatmap_rank_screen(user_record, raw, beatmapinfo, mods_list)
 

@@ -289,7 +289,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
         if img.exists() is True:
             pass
         else:
-            avatar_id_list.append(i['user_id'])
+            avatar_id_list.append(i["top_score"]['user_id'])
             avatar_url_list.append(i['user_info']['avatar_url'])
 
     await Download.download_avatar_async(avatar_url_list, avatar_id_list)

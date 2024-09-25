@@ -77,6 +77,12 @@ def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist
                 "user_info.avatar_url": 1,
                 "top_score": 1
             }
+        },
+        # 7. 按照 top_score 中的 score 字段排序
+        {
+            "$sort": {
+                "top_score.score": -1  # -1 表示降序排序
+            }
         }
     ]
 
