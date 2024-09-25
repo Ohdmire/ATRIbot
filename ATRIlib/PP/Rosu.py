@@ -74,71 +74,41 @@ async def calculate_pp_if_all(beatmap_id, mods, acc, combo, Temp=True):
     return result
 
 # 计算mod_int
-
-
 def calculate_mod_int(modlists):
+    Mods_Value={
+        'NF': 1,
+        'EZ': 2,
+        'TD': 4,
+        'HD': 8,
+        'HR': 16,
+        'SD': 32,
+        'DT': 64,
+        'RX': 128,
+        'HT': 256,
+        'NC': 512,
+        'FL': 1024,
+        'AT': 2048,
+        'SO': 4096,
+        'AP': 8192,
+        'PF': 16384,
+        '4K': 32768,
+        '5K': 65536,
+        '6K': 131072,
+        '7K': 262144,
+        '8K': 524288,
+        'FI': 1048576,
+        'RD': 2097152,
+        'CM': 4194304,
+        'TG': 8388608,
+        '9K': 16777216,
+        'CO': 33554432,
+        '1K': 67108864,
+        '3K': 134217728,
+        '2K': 268435456,
+        'V2': 536870912,
+        'MR': 1073741824
+    }
     mods_int = 0
     for i in modlists:
-        if i == "NF":
-            mods_int += 1
-        if i == "EZ":
-            mods_int += 2
-        if i == "TD":
-            mods_int += 4
-        if i == "HD":
-            mods_int += 8
-        if i == "HR":
-            mods_int += 16
-        if i == "SD":
-            mods_int += 32
-        if i == "DT":
-            mods_int += 64
-        if i == "RX":
-            mods_int += 128
-        if i == "HT":
-            mods_int += 256
-        if i == "NC":
-            mods_int += 576
-        if i == "FL":
-            mods_int += 1024
-        if i == "AT":
-            mods_int += 2048
-        if i == "SO":
-            mods_int += 4096
-        if i == "AP":
-            mods_int += 8192
-        if i == "PF":
-            mods_int += 16416
-        if i == "4K":
-            mods_int += 32768
-        if i == "5K":
-            mods_int += 65536
-        if i == "6K":
-            mods_int += 131072
-        if i == "7K":
-            mods_int += 262144
-        if i == "8K":
-            mods_int += 524288
-        if i == "FI":
-            mods_int += 1048576
-        if i == "RD":
-            mods_int += 2097152
-        if i == "CM":
-            mods_int += 4194304
-        if i == "TP":
-            mods_int += 8388608
-        if i == "9K":
-            mods_int += 16777216
-        if i == "CO":
-            mods_int += 33554432
-        if i == "1K":
-            mods_int += 67108864
-        if i == "3K":
-            mods_int += 134217728
-        if i == "2K":
-            mods_int += 268435456
-        if i == "V2":
-            mods_int += 536870912
-        if i == "MR":
-            mods_int += 1073741824
+        mods_int += Mods_Value[i]
     return mods_int
