@@ -7,3 +7,4 @@ data/
 *test*.py
 frame.png
 frame.svg
+logs/

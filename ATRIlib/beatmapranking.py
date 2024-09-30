@@ -22,9 +22,11 @@ async def calculate_beatmapranking_update(beatmap_id, group_id):
 
     return result
 
-async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list=None):
-    if mods_list == ['NM']:
+async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list):
+    if "NM" in mods_list:
         mods_list = []
+    if "None" in mods_list:
+        mods_list = None
 
     beatmapinfo = await get_beatmap_info(beatmap_id)
 

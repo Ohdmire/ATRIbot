@@ -1,4 +1,4 @@
-from ATRIlib.DB.Mongodb import db_bind, update_db_bind
+from ATRIlib.DB.Mongodb import db_bind, update_db_bind, db_user
 
 
 # 查找绑定
@@ -20,7 +20,8 @@ def delete_bind(qq_id):
 def update_bind(qq_id,userdata):
     bind_info = db_bind.find_one({'id': qq_id})
     if bind_info is not None:
-        return f'你已绑定{bind_info["username"]}如需解绑请联系管理员'
+        userstruct = db_user.find_one({'id': bind_info["user_id"]})
+        return f'你已绑定{userstruct["username"]}如需解绑请联系管理员'
     else:
         bind_info = db_bind.find_one({'user_id': userdata["id"]})
         if bind_info is not None:

@@ -60,3 +60,5 @@ def is_choke(user_id,count,beatmap_maxcombo):
     misscount = bpstruct["bps_statistics"][count]["count_miss"]
     if misscount == 1 or (maxcombo / beatmap_maxcombo <0.72 and misscount == 0):
         return True
+    else:
+        return False

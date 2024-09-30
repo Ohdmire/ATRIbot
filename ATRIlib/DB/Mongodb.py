@@ -46,6 +46,8 @@ db_bind = Mongodb('localhost', 27017, 'osu', 'bind')
 db_score = Mongodb('localhost', 27017, 'osu', 'score')
 db_bp = Mongodb('localhost', 27017, 'osu', 'bp')
 db_group = Mongodb('localhost', 27017, 'osu', 'group')
+db_medal = Mongodb('localhost', 27017, 'osu', 'medal')
+db_solution = Mongodb('localhost', 27017, 'osu', 'solution')
 
 # 写入用户信息
 def update_db_user(userdata):
@@ -53,14 +55,6 @@ def update_db_user(userdata):
         {"id": userdata["id"]},  # 查询条件
         {"$set": userdata},  # 插入的数据
         upsert=True  # 如果不存在则插入
-    )
-
-# 写入bp到user表
-def update_db_user_from_ba(user_id,otherdata):
-    db_user.update(
-        {"id": user_id},  # 查询条件
-        {"$set": otherdata},  # 插入的数据
-        upsert=False  # 如果不存在则不插入
     )
 
 # 写入到bp表
@@ -75,7 +69,7 @@ def update_db_bp(user_id,bpdata):
 def update_db_bind(qq_id, userdata):
     db_bind.update(
         {"id": qq_id},  # 查询条件
-        {"$set": {"id": qq_id, "user_id": userdata['user_id']}},  # 插入的数据
+        {"$set": {"id": qq_id, "user_id": userdata['id']}},  # 插入的数据
         upsert=True  # 如果不存在则插入
     )
 

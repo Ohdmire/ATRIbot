@@ -19,7 +19,7 @@ def get_beatmapranking_up_list_from_db(group_id):
 
     return result
 
-def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist=[]):
+def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist):
     group_member_list = db_group.find_one({'id': group_id})['qq_id_list']
 
     # 聚合查询
@@ -49,19 +49,31 @@ def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist
                 "from": "score",
                 "let": {"user_id": "$user_id", "beatmap_id": beatmap_id},
                 "pipeline": [
-                    {
-                        "$match": {
-                            "$expr": {
-                                "$and": [
-                                    {"$eq": ["$user_id", "$$user_id"]},
-                                    {"$eq": ["$beatmap_id", "$$beatmap_id"]},
-                                ]
-                            }
-                        }
-                    },
-                    {"$sort": {"score": -1}},
-                    {"$limit": 1}
-                ],
+                            {
+                                "$match": {
+                                    "$expr": {
+                                        "$and": [
+                                            {"$eq": ["$user_id", "$$user_id"]},
+                                            {"$eq": ["$beatmap_id", "$$beatmap_id"]},
+                                        ]
+                                    }
+                                }
+                            },
+                        ] + (
+                            [
+                                # 如果modslist不为None，则添加以下$match条件
+                                {
+                                    "$match": {
+                                        "$expr": {
+                                            "$setEquals": ["$mods", modslist]
+                                        }
+                                    }
+                                }
+                            ] if modslist is not None else []
+                        ) + [
+                            {"$sort": {"score": -1}},
+                            {"$limit": 1}
+                        ],
                 "as": "top_score"
             }
         },

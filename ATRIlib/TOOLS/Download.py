@@ -6,6 +6,7 @@ beatmaps_path = Path('./data/beatmaps/')
 beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
 avatar_path = Path('./data/avatar/')
 cover_path = Path('./data/cover/')
+medal_path = Path('./assets/medal/')
 semaphore = asyncio.Semaphore(16)
 
 
@@ -60,6 +61,23 @@ async def download_cover(cover_url, beatmapset_id):
                             break
                         file.write(chunk)
 
+# 下载奖牌
+async def download_medal(session, medal_url, medalid):
+    url = medal_url
+    async with semaphore:
+        async with session.get(url) as response:
+            if response.status == 200:  # 检查状态码是否为200
+                medal_file = medal_path / f'{medalid}.png'
+                with open(medal_file, 'wb') as file:
+                    while True:
+                        chunk = await response.content.read(1024)
+                        if not chunk:
+                            break
+                        file.write(chunk)
+            else:
+                print(
+                    f'Error: {response.status} {response.reason} - {url}')
+
 # 批量下载谱面
 async def download_osu_async(beatmap_ids, Temp=True):
     async with aiohttp.ClientSession() as session:
@@ -72,6 +90,13 @@ async def download_avatar_async(avatar_urls, user_ids):
     async with aiohttp.ClientSession() as session:
         tasks = [download_avatar_file(session, avatar_url, user_id)
                  for avatar_url, user_id in zip(avatar_urls, user_ids)]
+        await asyncio.gather(*tasks)
+
+# 批量下载奖章
+async def download_medal_async(medal_urls, medal_ids):
+    async with aiohttp.ClientSession() as session:
+        tasks = [download_medal(session, medal_url, medal_id)
+                 for medal_url, medal_id in zip(medal_urls, medal_ids)]
         await asyncio.gather(*tasks)
 
 

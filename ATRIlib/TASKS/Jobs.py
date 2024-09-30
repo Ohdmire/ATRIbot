@@ -83,7 +83,16 @@ async def multi_update_users_info_async(users_id_lists):
 
     fail_count = total_users - success_users
 
-    return f'失败{fail_count}个 共更新{total_users}个用户info 用时{total_time}s'
+    result_text = f'共遍历{total_users}个用户info'
+
+    if fail_count != 0:
+        result_text += f'\n失败{fail_count}个'
+    else:
+        result_text += f'\n全部成功'
+
+    result_text += f'\n用时{total_time}s'
+
+    return result_text
 
 
 async def multi_update_users_bps_async(users_id_lists):
@@ -100,7 +109,16 @@ async def multi_update_users_bps_async(users_id_lists):
 
     fail_count = total_users - success_users
 
-    return f'失败{fail_count}个 共更新{total_users}个用户bp 用时{total_time}s'
+    result_text = f'共遍历{total_users}个用户bp'
+
+    if fail_count != 0:
+        result_text += f'\n失败{fail_count}个'
+    else:
+        result_text += f'\n全部成功'
+
+    result_text += f'\n用时{total_time}s'
+
+    return result_text
 
 
 async def multi_update_users_beatmap_score_async(beatmap_id, users_lists):
@@ -117,4 +135,13 @@ async def multi_update_users_beatmap_score_async(beatmap_id, users_lists):
 
     fail_count = total_users - success_users
 
-    return f'失败{fail_count}个 共遍历{total_users}个用户score 用时{total_time}s'
+    result_text = f'共遍历{total_users}个用户score'
+
+    if fail_count != 0:
+        result_text += f'\n失败{fail_count}个'
+    else:
+        result_text += f'\n全部成功'
+
+    result_text += f'\n用时{total_time}s'
+
+    return result_text

@@ -48,15 +48,7 @@ def get_joindate_group_list_from_db(base_user_id,group_id,pp_range):
             "$sort": {
                 "user_data.join_date": 1  # 按重合数量降序排序
             }
-        },
-        {
-            "$setWindowFields": {
-                "sortBy": {"user_data.join_date": 1},
-                "output": {
-                    "joindate_rank": {"$rank": {}}
-                }
-            }
-        },
+        }
     ]
 
     result = list(db_bind.aggregate(pipeline))

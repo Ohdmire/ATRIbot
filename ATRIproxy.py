@@ -7,7 +7,7 @@ from ATRIlib.choke import calculate_choke_pp
 from utils import get_userstruct_automatically,get_bpstruct
 from ATRIlib.TOOLS.CommonTools import sort_dict_by_value
 from ATRIlib.addpp import calculate_if_get_pp
-from ATRIlib.score import calculate_pr_score,calculate_score
+from ATRIlib.score import calculate_pr_score,calculate_score,update_scores_to_db
 from ATRIlib.pttpp import calculate_ptt_pp
 from ATRIlib.tdba import calculate_tdba
 from ATRIlib.tdba import calculate_tdba_sim
@@ -26,6 +26,9 @@ from ATRIlib.interbot import get_interbot_test1,get_interbot_test2
 from ATRIlib.API.PPYapiv2 import get_token
 from ATRIlib.whatif import calculate_pp,calculate_rank
 
+from ATRIlib.medal import calculate_medal, download_all_medals, calculate_medal_pr
+
+from ATRIlib.help import get_help
 
 import traceback
 import asyncio
@@ -35,22 +38,41 @@ def handle_exceptions(func):
     if asyncio.iscoroutinefunction(func):
         async def wrapper(*args, **kwargs):
             try:
-                return await func(*args, **kwargs)
+                s_result = await func(*args, **kwargs)
+                logging.info(f'[{func.__name__}]\n{s_result}')
+                return s_result
             except Exception as e:
                 error_message = f"An error occurred in {func.__name__}:\n"
                 error_message += traceback.format_exc()
                 logging.error(error_message)
-                return str(e)
+                if type(e) == ValueError:
+                    return str(e)
+                else:
+                    logging.error("Unexpected error")
+                    return "发生了预期外的错误"
     else:
         def wrapper(*args, **kwargs):
             try:
-                return func(*args, **kwargs)
+                s_result = func(*args, **kwargs)
+                logging.info(s_result)
+                return s_result
             except Exception as e:
                 error_message = f"An error occurred in {func.__name__}:\n"
                 error_message += traceback.format_exc()
                 logging.error(error_message)
-                return str(e)
+                if type(e) == ValueError:
+                    return str(e)
+                else:
+                    logging.error("Unexpected error")
+                    return "发生了预期外的错误"
     return wrapper
+
+@handle_exceptions
+def format_help():
+
+    raw = get_help()
+
+    return raw
 
 @handle_exceptions
 def format_token():
@@ -99,7 +121,7 @@ async def format_bpsim(qq_id, osuname, pp_range):
 @handle_exceptions
 async def format_joindate(qq_id, group_id, osuname, pp_range,group_member_list):
 
-    if group_member_list is not None:
+    if group_member_list:
         format_job_update_group_list(group_id,group_member_list)
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -109,25 +131,34 @@ async def format_joindate(qq_id, group_id, osuname, pp_range,group_member_list):
     raw = calculate_joindate(user_id, group_id, pp_range)
 
     result_text1 = f'{username}的注册日期在本群\nPP段:+-{pp_range}pp\n'
-    count = 0
+    index = 0
     result_text2 = ''
     total_count = len(raw)
     user_rank = None
 
     for i in raw:
-        joindate_format = i["user_data"]["join_date"][:10] #截取时间格式
-        result_text2 += f'\n{joindate_format} --> {i["user_data"]["username"]}'
-        if user_id == i["user_data"]["id"]:
-            result_text2 += f' <--你在这里 '
-            user_rank = raw[count]["joindate_rank"]
-        count += 1
-
-    if user_rank is not None:
-        result_text1 += f'#{user_rank}/{total_count}'
+        if i["user_data"]["id"] == user_id:
+            user_rank = index + 1
+            break
+        index += 1
+    if user_rank is None:
+        return f'没有在本群找到你哦'
     else:
-        result_text1 += '#?/{total_count}'
+        start_index = user_rank - 5
+        end_index = user_rank +5
+        if start_index < 0:
+            start_index = 0
+        for i in raw[start_index:end_index]:
+            joindate_format = i["user_data"]["join_date"][:10] #截取时间格式
+            result_text2 += f'\n{joindate_format} --> {i["user_data"]["username"]}'
+            if user_id == i["user_data"]["id"]:
+                result_text2 += f' <--你在这里 '
 
-    return result_text1+result_text2
+    result_text1 += f'你的排名是{user_rank}/{total_count}'
+
+    result_text = result_text1 + result_text2
+
+    return result_text
 
 @handle_exceptions
 async def format_avgpp(qq_id, osuname, pp_range):
@@ -303,7 +334,7 @@ async def format_choke(qq_id, osuname):
 
     count = 0
     for key,value in result_dict.items():
-        result_text += f'bp{key}:{round(value)}  '
+        result_text += f'bp{key + 1}:{round(value)}  '
         if (count+1) % 2 == 0:
             result_text += f'\n'
         count += 1
@@ -369,7 +400,34 @@ async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
 
+    await update_scores_to_db(user_id, beatmap_id)
+
     raw = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list)
+
+    return raw
+
+@handle_exceptions
+async def format_medal(medalid):
+
+    # userstruct = await get_userstruct_automatically(qq_id, osuname)
+    # user_id = userstruct["id"]
+    raw = calculate_medal(medalid)
+
+    return raw
+
+@handle_exceptions
+async def format_medal_pr(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    raw = await calculate_medal_pr(user_id)
+
+    return raw
+
+@handle_exceptions
+async def format_download_medal():
+
+    raw = await download_all_medals()
 
     return raw
 

@@ -40,7 +40,6 @@ async def calculate_choke_pp(user_id):
         count += 1
 
     # 获取整个fixed后的原始pp
-    fixedpp_list.sort(reverse=True) # fixed后降序排序
     fixed_original_total_pp = np.array(fixedpp_list)
     list_weight = np.array(WEIGHT_LIST)
     weighted_fixed_original_total_pp = np.sum(fixed_original_total_pp * list_weight)

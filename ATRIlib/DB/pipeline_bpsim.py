@@ -120,6 +120,4 @@ def get_sim_list_from_db(base_user_id,pp_range):
 
     result = list(db_bind.aggregate(pipeline))
 
-    print(result)
-
     return result
