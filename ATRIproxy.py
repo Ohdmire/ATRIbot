@@ -16,6 +16,8 @@ from ATRIlib.beatmapranking import calculate_beatmapranking,calculate_beatmapran
 
 from ATRIlib.myjobs import job_update_all_bind_user_info,job_compress_score_database,job_update_all_bind_user_bps
 from ATRIlib.myjobs import job_update_all_user_info,job_update_all_user_bp
+from ATRIlib.myjobs import job_shift_database
+from ATRIlib.myjobs import job_update_group_user_bps
 
 from ATRIlib.group import update_group_info
 
@@ -29,6 +31,10 @@ from ATRIlib.whatif import calculate_pp,calculate_rank
 from ATRIlib.medal import calculate_medal, download_all_medals, calculate_medal_pr
 
 from ATRIlib.help import get_help
+
+from ATRIlib.most_played import get_most_played
+
+from ATRIlib.finddiff import find_diff
 
 import traceback
 import asyncio
@@ -117,6 +123,13 @@ async def format_bpsim(qq_id, osuname, pp_range):
         result_text += f'\n{i["sim_count"]}张 --> {i["user_data"]["username"]}'
 
     return result_text
+
+@handle_exceptions
+def format_job_shift_database():
+
+    raw = job_shift_database()
+
+    return raw
 
 @handle_exceptions
 async def format_joindate(qq_id, group_id, osuname, pp_range,group_member_list):
@@ -494,6 +507,37 @@ async def format_calculate_pp(rank):
     raw = await calculate_pp(rank)
 
     result_text = f'#{rank:,}对应的pp为\n{raw}pp'
+
+    return result_text
+
+
+@handle_exceptions
+async def format_most_played_beatmap(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+
+    raw = await get_most_played(user_id)
+
+    return raw
+
+@handle_exceptions
+async def format_finddiff(group_id):
+
+    await job_update_group_user_bps(group_id)
+
+    raw = find_diff(group_id)
+
+    if raw == []:
+        return '今日还没有杂鱼哦'
+
+    result_text = '今日杂鱼排行榜'
+
+    for i in raw:
+
+        total_pp_difference = round(i["total_pp_difference"],2)
+
+        result_text += f'\n{total_pp_difference}pp --> {i["username"]}'
 
     return result_text
 

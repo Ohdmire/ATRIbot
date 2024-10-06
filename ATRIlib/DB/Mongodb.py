@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 
 
 class Mongodb:
@@ -40,6 +40,9 @@ class Mongodb:
     def drop(self):
         self.collection.drop()
 
+    def bulk_write(self, operations):
+        return self.collection.bulk_write(operations)
+
 
 db_user = Mongodb('localhost', 27017, 'osu', 'user')
 db_bind = Mongodb('localhost', 27017, 'osu', 'bind')
@@ -48,6 +51,8 @@ db_bp = Mongodb('localhost', 27017, 'osu', 'bp')
 db_group = Mongodb('localhost', 27017, 'osu', 'group')
 db_medal = Mongodb('localhost', 27017, 'osu', 'medal')
 db_solution = Mongodb('localhost', 27017, 'osu', 'solution')
+db_mostplayed = Mongodb('localhost', 27017, 'osu', 'mostplayed')
+db_yesterday = Mongodb('localhost', 27017, 'osu', 'yesterday')
 
 # 写入用户信息
 def update_db_user(userdata):
@@ -90,6 +95,14 @@ def update_db_group(group_id,members_list):
         upsert=True  # 如果不存在则插入
     )
 
+# 写入游玩记录
+def update_db_mostplayed(user_id,mostplayed_list):
+    db_mostplayed.update(
+        {"id": user_id},  # 查询条件
+        {"$set": {"id": user_id, "mostplayed_list": mostplayed_list}},  # 插入的数据
+        upsert=True  # 如果不存在则插入
+    )
+
 # a=MongoDB('localhost',27017,'osu','username')
 
 
@@ -112,3 +125,13 @@ def update_db_group(group_id,members_list):
 # for i in b:
 #     print(i)
 # print(b)
+
+def bulk_update_db_score(processed_bps):
+    bulk_operations = [
+        UpdateOne(
+            {'id': bp['id'], 'beatmap_id': bp['beatmap_id']},
+            {'$set': bp},
+            upsert=True
+        ) for bp in processed_bps
+    ]
+    db_score.bulk_write(bulk_operations)

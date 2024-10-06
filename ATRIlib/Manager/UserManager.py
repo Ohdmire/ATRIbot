@@ -1,4 +1,4 @@
-from ATRIlib.DB.Mongodb import update_db_user, update_db_bind, update_db_score,update_db_bp
+from ATRIlib.DB.Mongodb import update_db_user, update_db_bind, bulk_update_db_score, update_db_bp
 
 # 更新用户信息
 def update_user(userdata):
@@ -13,53 +13,37 @@ def update_bind(qq_id, userdata):
 
 # 更新用户bp
 def update_bp(bpdatas):
-    bpscoreid_list = []
-    bpspp_list = []
-    bpsbeatmapid_list = []
-    bpscreatedate_list = []
-    bpsstatistics_list = []
-    bpsmaxcombo_list = []
-    bpsacc_list = []
-    bpsmods_list = []
     user_id = bpdatas[0]['user']['id']
 
-        # 格式化bp 然后导入score表 同时获取一个特别的列表 导入user表便于查询
-    for bpdata in bpdatas:
+    # 使用列表推导式构建数据
+    processed_bps = [{
+        'id': user_id,
+        'beatmap_id': bp['beatmap']['id'],
+        'pp': bp['pp'],
+        'created_at': bp['created_at'],
+        'statistics': bp['statistics'],
+        'max_combo': bp['max_combo'],
+        'accuracy': bp['accuracy'],
+        'mods': bp['mods'],
+        **{k: v for k, v in bp.items() if k not in ['beatmap', 'user', 'beatmapset', 'weight']}
+    } for bp in bpdatas]
 
-        beatmapid = bpdata['beatmap']['id']
-        scoreid = bpdata['id']
-        scorepp = bpdata['pp']
-        scorebeatmapid = bpdata['beatmap']['id']
-        createdate = bpdata['created_at']
-        statistics = bpdata['statistics']
-        maxcombo = bpdata['max_combo']
-        acc = bpdata['accuracy']
-        mods = bpdata['mods']
-        bpscoreid_list.append(scoreid)
-        bpspp_list.append(scorepp)
-        bpsbeatmapid_list.append(scorebeatmapid)
-        bpscreatedate_list.append(createdate)
-        bpsstatistics_list.append(statistics)
-        bpsmaxcombo_list.append(maxcombo)
-        bpsacc_list.append(acc)
-        bpsmods_list.append(mods)
+    # 构建最终的 BP 数据
+    final_bp_data = {
+        'bps': [bp['id'] for bp in bpdatas],
+        'bps_pp': [bp['pp'] for bp in bpdatas],
+        'bps_beatmapid': [bp['beatmap']['id'] for bp in bpdatas],
+        'bps_createdate': [bp['created_at'] for bp in bpdatas],
+        'bps_statistics': [bp['statistics'] for bp in bpdatas],
+        'bps_maxcombo': [bp['max_combo'] for bp in bpdatas],
+        'bps_acc': [bp['accuracy'] for bp in bpdatas],
+        'bps_mods': [bp['mods'] for bp in bpdatas]
+    }
 
-        # 加上beatmap_id,id去除...
-        bpdata.update({'id': user_id})
-        bpdata.update({'beatmap_id': beatmapid})
+    # 批量更新 score 表
+    bulk_update_db_score(processed_bps)
 
-        bpdata.pop("beatmap", None)
-        bpdata.pop("user", None)
-        bpdata.pop("beatmapset", None)
-        bpdata.pop("weight", None)
-
-        update_db_score(bpdata)
-
-    final_bp_data = {'bps': bpscoreid_list, 'bps_pp': bpspp_list,
-                  'bps_beatmapid': bpsbeatmapid_list, 'bps_createdate': bpscreatedate_list ,
-                     'bps_statistics':bpsstatistics_list, 'bps_maxcombo': bpsmaxcombo_list,
-                     'bps_acc':bpsacc_list, 'bps_mods':bpsmods_list}
-
-    update_db_bp(user_id,final_bp_data)
+    # 更新 user 表中的 BP 数据
+    update_db_bp(user_id, final_bp_data)
 
     return final_bp_data

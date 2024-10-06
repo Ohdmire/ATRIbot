@@ -2,8 +2,7 @@ from datetime import datetime
 from multiprocessing.pool import worker
 
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse    
 
 from contextlib import asynccontextmanager
 
@@ -51,11 +50,20 @@ async def app_lifespan(app: FastAPI):
     logging.info("亚托莉，启动!")
     scheduler.add_job(job_fetch_token,
                       trigger="interval", seconds=3600) #定时获取token
+    scheduler.add_job(job_shift_database,
+                      trigger="cron", hour=4) #定时转移数据库
+    scheduler.add_job(job_update_bind_all,
+                      trigger="cron", hour=4,minute=2) #定时更新绑定用户所有
     scheduler.start()
     yield
     logging.info("亚托莉，关闭!")
 
 app = FastAPI(lifespan=app_lifespan)
+
+@app.api_route("/qq/mostplayed", methods=["GET", "POST"])
+async def fetch_test2(item:IName):
+    result = await ATRIproxy.format_most_played_beatmap(item.qq_id,item.osuname)
+    return str(result)
 
 
 @app.api_route("/help", methods=["GET", "POST"])
@@ -93,9 +101,14 @@ def job_fetch_token():
     result = ATRIproxy.format_token()
     return str(result)
 
+@app.api_route("/job/shift", methods=["GET", "POST"])
+def job_shift_database():
+    result = ATRIproxy.format_job_shift_database()
+    return str(result)
+
 @app.api_route("/job/updategroup", methods=["GET", "POST"])
 async def job_fetch_group_info(item:ItemN):
-    result = await ATRIproxy.format_job_update_group_list(item.group_id, item.group_member_list)
+    result = ATRIproxy.format_job_update_group_list(item.group_id, item.group_member_list)
     return str(result)
 
 @app.api_route("/job/compress", methods=["GET", "POST"])
@@ -112,7 +125,6 @@ async def job_update_info_all():
 async def job_update_info_all():
     result = await ATRIproxy.format_job_update_all_users_bp()
     return str(result)
-
 
 @app.api_route("/job/update_info_bind", methods=["GET", "POST"])
 async def job_update_info_all():
@@ -222,6 +234,16 @@ async def fetch_avgpt(item:IName):
 async def fetch_avgtth(item:IName):
     result = await ATRIproxy.format_avgtth(item.qq_id, item.osuname, item.tth_range)
     return str(result)
+
+@app.api_route("/qq/finddiff", methods=["GET", "POST"])
+async def fetch_finddiff(item:ItemN):
+    result = await ATRIproxy.format_finddiff(item.group_id)
+    return str(result)
+
+async def job_update_bind_all():
+    task1 = await ATRIproxy.format_job_update_all_bind_users_info()
+    task2 = await ATRIproxy.format_job_update_all_bind_users_bp()
+    return str(task1 + task2)
 
 
 if __name__ == '__main__':

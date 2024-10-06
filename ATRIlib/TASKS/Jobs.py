@@ -7,6 +7,8 @@ from ATRIlib.API.PPYapiv2 import get_user_info_fromid,get_user_best_all_info,get
 from ATRIlib.Manager.UserManager import update_user,update_bp
 from ATRIlib.Manager.ScoreManager import update_score_many
 
+import aiohttp
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 semaphore = asyncio.Semaphore(100)
 
 
-def rate_limited(retries=3, delay=1, backoff=2):
+def rate_limited(retries=3, delay=0, backoff=1):
     """
     Retry decorator with exponential backoff and rate limiting for async functions.
 
@@ -28,6 +30,7 @@ def rate_limited(retries=3, delay=1, backoff=2):
     def decorator(func):
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
+            start_time = time.time()
             attempt = 0
             current_delay = delay
             async with semaphore:
@@ -42,6 +45,10 @@ def rate_limited(retries=3, delay=1, backoff=2):
                         current_delay *= backoff  # Increase delay time
                         attempt += 1
                         logger.warning(f"Retrying {func.__name__} due to {e}... Attempt {attempt + 1}")
+
+            end_time = time.time()
+            total_time = round(end_time - start_time, 2)
+            logger.info(f"{func.__name__} 用时 {total_time}s")
 
         return wrapper
 
