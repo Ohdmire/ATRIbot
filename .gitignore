@@ -1,4 +1,3 @@
-*.ini
 __pycache__
 *.json
 data/
@@ -8,3 +7,4 @@ data/
 frame.png
 frame.svg
 logs/
+.env

@@ -1,3 +1,44 @@
+import asyncio
+from functools import wraps
+import time
+
+# 在文件顶部添加以下代码
+
+def throttle(seconds=300):
+    def decorator(func):
+        last_run = 0
+        running = False
+        results = None
+
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            nonlocal last_run, running, results
+
+            current_time = time.time()
+            if current_time - last_run < seconds:
+                if running:
+                    # 如果函数正在运行,等待它完成并返回结果
+                    while running:
+                        await asyncio.sleep(0.1)
+                    return "success"
+                elif results is not None:
+                    # 如果在冷却时间内且有之前的结果,直接返回"success"
+                    return "success"
+
+            if not running:
+                running = True
+                last_run = current_time
+                results = None
+                try:
+                    results = await func(*args, **kwargs)
+                finally:
+                    running = False
+
+            return results
+
+        return wrapper
+    return decorator
+
 from ATRIlib.TASKS.Jobs import multi_update_users_info_async,multi_update_users_bps_async
 from ATRIlib.DB.Mongodb import db_bind,db_user
 from ATRIlib.DB.pipeline_compress_score import remove_non_max_score_docs
@@ -6,6 +47,7 @@ from ATRIlib.DB.pipeline_getgroupusers import get_group_users_id_list
 import datetime
 
 # 更新所有用户信息
+@throttle()
 async def job_update_all_user_info():
     all_bind_users = db_user.find('')
     users_id_list = []
@@ -18,6 +60,7 @@ async def job_update_all_user_info():
     return raw
 
 # 更新所有用户bps
+@throttle()
 async def job_update_all_user_bp():
     all_bind_users = db_user.find('')
     users_id_list = []
@@ -30,6 +73,7 @@ async def job_update_all_user_bp():
     return raw
 
 # 更新所有绑定用户信息
+@throttle()
 async def job_update_all_bind_user_info():
     all_bind_users = db_bind.find('')
     users_id_list = []
@@ -42,6 +86,7 @@ async def job_update_all_bind_user_info():
     return raw
 
 # 更新所有绑定用户bps
+@throttle()
 async def job_update_all_bind_user_bps():
     all_bind_users = db_bind.find('')
     users_id_list = []
@@ -54,11 +99,22 @@ async def job_update_all_bind_user_bps():
     return raw
 
 # 更新群里用户的bps
+@throttle()
 async def job_update_group_user_bps(group_id):
     
     users_id_list = get_group_users_id_list(group_id)
 
     raw = await multi_update_users_bps_async(users_id_list)
+
+    return raw
+
+# 更新群里用户信息
+@throttle()
+async def job_update_group_user_info(group_id):
+
+    users_id_list = get_group_users_id_list(group_id)
+
+    raw = await multi_update_users_info_async(users_id_list)
 
     return raw
 

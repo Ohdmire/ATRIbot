@@ -1,20 +1,12 @@
-import configparser
 import os
 
 osuclientid = os.getenv('OSU_CLIENT_ID')
 osuclientsecret = os.getenv('OSU_CLIENT_SECRET')
-# mongoDB 应该可以直接用 url 的方式连接 ?
-mongodb = os.getenv('MONGO_URI')
+mongodb_uri = os.getenv('MONGO_URI')
 
-if osuclientid and osuclientsecret:
-    print('从环境变量获取')
-else:
-    print('从配置文件获取')
+# 确保所有必要的配置都已设置
+assert osuclientid, "OSU Client ID 未设置"
+assert osuclientsecret, "OSU Client Secret 未设置"
+assert mongodb_uri, "MongoDB URI 未设置"
 
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-
-    if not osuclientid:
-        osuclientid = config['OSUAPI']['client_id']
-    if not osuclientsecret:
-        osuclientsecret = config['OSUAPI']['client_secret']
+print(f"MongoDB URI: {mongodb_uri}")

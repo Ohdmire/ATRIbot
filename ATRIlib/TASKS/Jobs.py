@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 semaphore = asyncio.Semaphore(100)
 
 
-def rate_limited(retries=3, delay=0, backoff=1):
+def rate_limited(retries=3, delay=0, backoff=1, semaphore_value=100):
     """
     Retry decorator with exponential backoff and rate limiting for async functions.
 
@@ -25,21 +25,25 @@ def rate_limited(retries=3, delay=0, backoff=1):
     retries (int): Number of attempts.
     delay (int/float): Initial delay between attempts.
     backoff (int/float): Multiplier to increase the delay for each attempt.
+    semaphore_value (int): The value for the semaphore (default 100).
     """
 
     def decorator(func):
+        # 为每个装饰的函数创建一个专用的信号量
+        func_semaphore = asyncio.Semaphore(semaphore_value)
+
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
             start_time = time.time()
             attempt = 0
             current_delay = delay
-            async with semaphore:
+            async with func_semaphore:
                 while attempt < retries:
                     try:
                         return await func(*args, **kwargs)
                     except Exception as e:
                         if attempt == retries - 1:
-                            logger.error(f"Final attempt failed for {func.__name__} with args {args}, {kwargs}: {e}")
+                            logger.error(f"Final attempt failed for {func.__name__} with args:<{args}>\n kwargs:<{kwargs}>\n")
                             return None
                         await asyncio.sleep(current_delay)
                         current_delay *= backoff  # Increase delay time
@@ -62,7 +66,7 @@ async def single_update_user(osuid):
     return userdata['id']
 
 
-@rate_limited()
+@rate_limited(retries=3, delay=3, backoff=1, semaphore_value=50)  # 这里将信号量值设置为10，您可以根据需要调整
 async def single_update_user_bps(osuid):
     bpdata = await get_user_best_all_info(osuid)
     update_bp(bpdata)

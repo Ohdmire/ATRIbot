@@ -18,7 +18,7 @@ token = None
 # 定义一个全局信号量
 semaphore = asyncio.Semaphore(1000)
 
-def rate_limited(retries=3, delay=0.1, backoff=1):
+def rate_limited(retries=3, delay=1, backoff=1):
     """
     Retry decorator with exponential backoff and rate limiting for async functions.
 
@@ -39,7 +39,7 @@ def rate_limited(retries=3, delay=0.1, backoff=1):
                         return await func(*args, **kwargs)
                     except Exception as e:
                         if attempt == retries - 1:
-                            logger.error(f"Final attempt failed for {func.__name__} with args {args}, {kwargs}: {e}")
+                            logger.error(f"Final attempt failed for {func.__name__} with args:<{args}>\n kwargs:<{kwargs}>\n")
                             raise ValueError(f"API访问失败,请稍后再试")
                         await asyncio.sleep(current_delay)
                         current_delay *= backoff  # Increase delay time

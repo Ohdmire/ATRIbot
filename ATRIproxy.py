@@ -16,8 +16,8 @@ from ATRIlib.beatmapranking import calculate_beatmapranking,calculate_beatmapran
 
 from ATRIlib.myjobs import job_update_all_bind_user_info,job_compress_score_database,job_update_all_bind_user_bps
 from ATRIlib.myjobs import job_update_all_user_info,job_update_all_user_bp
-from ATRIlib.myjobs import job_shift_database
-from ATRIlib.myjobs import job_update_group_user_bps
+
+from ATRIlib.myjobs import job_shift_database,job_update_group_user_info,job_update_group_user_bps
 
 from ATRIlib.group import update_group_info
 
@@ -34,7 +34,9 @@ from ATRIlib.help import get_help
 
 from ATRIlib.most_played import get_most_played
 
-from ATRIlib.finddiff import find_diff
+from ATRIlib.finddiff import find_diff,find_diff_details
+
+from ATRIlib.activity import get_activity
 
 import traceback
 import asyncio
@@ -45,10 +47,10 @@ def handle_exceptions(func):
         async def wrapper(*args, **kwargs):
             try:
                 s_result = await func(*args, **kwargs)
-                logging.info(f'[{func.__name__}]\n{s_result}')
+                logging.info(f'[{func.__name__}] <args:{args}>\n <kwargs:{kwargs}>\n{s_result}')
                 return s_result
             except Exception as e:
-                error_message = f"An error occurred in {func.__name__}:\n"
+                error_message = f"An error occurred in {func.__name__}:\n <args:{args}>\n <kwargs:{kwargs}>\n"
                 error_message += traceback.format_exc()
                 logging.error(error_message)
                 if type(e) == ValueError:
@@ -422,8 +424,6 @@ async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list):
 @handle_exceptions
 async def format_medal(medalid):
 
-    # userstruct = await get_userstruct_automatically(qq_id, osuname)
-    # user_id = userstruct["id"]
     raw = calculate_medal(medalid)
 
     return raw
@@ -522,9 +522,14 @@ async def format_most_played_beatmap(qq_id, osuname):
     return raw
 
 @handle_exceptions
-async def format_finddiff(group_id):
+async def format_finddiff(group_id,group_member_list):
+
+    if group_member_list:
+        format_job_update_group_list(group_id,group_member_list)
 
     await job_update_group_user_bps(group_id)
+
+    # await job_update_all_bind_user_bps()
 
     raw = find_diff(group_id)
 
@@ -533,14 +538,53 @@ async def format_finddiff(group_id):
 
     result_text = '今日杂鱼排行榜'
 
-    for i in raw:
+    for i in raw[:15]:
 
         total_pp_difference = round(i["total_pp_difference"],2)
 
-        result_text += f'\n{total_pp_difference}pp --> {i["username"]}'
+        total_diff_len = len(i["details"])
+
+        result_text += f'\n{total_pp_difference}pp --> {i["username"]} ({total_diff_len}张)'
+    
+    if len(raw) > 15:
+        result_text += f'\n......还有{len(raw)-15}个杂鱼哦'
 
     return result_text
 
+@handle_exceptions
+async def format_finddiff_details(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    username = userstruct["username"]
+    user_id = userstruct["id"]
+    await get_bpstruct(user_id)
+
+    raw = find_diff_details(user_id)
+
+    if raw == []:
+        return f'{username}才不是杂鱼呢'
+
+    result_text = f'杂鱼~{username}'
+
+    for i in raw:
+        diff_pp = round(i["pp_difference"],2)
+        current_pp = round(i["current_pp"],2)
+        result_text += f'\nb{i["beatmap_id"]} --> {current_pp}pp({diff_pp})'
+
+    return result_text
+
+@handle_exceptions
+async def format_activity(group_id,group_member_list):
+
+    if group_member_list:
+        format_job_update_group_list(group_id,group_member_list)
+
+    # await job_update_group_user_info(group_id)
+    # await job_update_group_user_bps(group_id)
+
+    raw = get_activity(group_id)
+
+    return raw
 
 @handle_exceptions
 async def format_job_update_all_bind_users_info():

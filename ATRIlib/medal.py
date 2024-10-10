@@ -1,4 +1,3 @@
-from ATRIlib.Core import ATRICore
 from ATRIlib.DB.pipeline_medal import get_medal_list_from_db,get_user_medal_list_from_db
 from ATRIlib.DRAW.draw_medal import draw_medal,draw_medal_pr
 from ATRIlib.DB.Mongodb import db_medal,db_user

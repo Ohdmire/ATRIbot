@@ -1,14 +1,13 @@
 from pymongo import MongoClient, UpdateOne
+import os
+from ATRIlib.config import mongodb_uri
 
 
 class Mongodb:
-    def __init__(self, host, port, db_name, collection_name):
-
-        self.client = MongoClient(host, port)
-        self.db = self.client[db_name]
+    def __init__(self, collection_name):
+        self.client = MongoClient(mongodb_uri)
+        self.db = self.client.get_database()
         self.collection = self.db[collection_name]
-
-        # self.collection.create_index('userid', unique=True)
 
     def insert(self, data):
         self.collection.insert_one(data)
@@ -44,15 +43,17 @@ class Mongodb:
         return self.collection.bulk_write(operations)
 
 
-db_user = Mongodb('localhost', 27017, 'osu', 'user')
-db_bind = Mongodb('localhost', 27017, 'osu', 'bind')
-db_score = Mongodb('localhost', 27017, 'osu', 'score')
-db_bp = Mongodb('localhost', 27017, 'osu', 'bp')
-db_group = Mongodb('localhost', 27017, 'osu', 'group')
-db_medal = Mongodb('localhost', 27017, 'osu', 'medal')
-db_solution = Mongodb('localhost', 27017, 'osu', 'solution')
-db_mostplayed = Mongodb('localhost', 27017, 'osu', 'mostplayed')
-db_yesterday = Mongodb('localhost', 27017, 'osu', 'yesterday')
+# 使用新的初始化方式
+db_user = Mongodb('user')
+db_bind = Mongodb('bind')
+db_score = Mongodb('score')
+db_bp = Mongodb('bp')
+db_group = Mongodb('group')
+db_medal = Mongodb('medal')
+db_solution = Mongodb('solution')
+db_mostplayed = Mongodb('mostplayed')
+db_yesterday = Mongodb('yesterday')
+db_beatmaptype = Mongodb('beatmaptype')
 
 # 写入用户信息
 def update_db_user(userdata):

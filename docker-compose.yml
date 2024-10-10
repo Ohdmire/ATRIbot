@@ -1,22 +1,27 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  database:
-    container_name: ATRI_DB
-    image: mongo
-    restart: always
-    volumes:
-      - ./data_db:/data/db
-  bot:
-    container_name: ATRI_SERVER
-    environment:
-      - OSU_CLIENT_ID=
-      - OSU_CLIENT_SECRET=
-    build:
-      context: .
-      args:
-        - MONGO_URL==mongodb://database
+  app:
+    build: .
     ports:
-      - "9999:8008"
+      - "8008:8008"
     depends_on:
-     - database
+      - mongodb
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+      - ./assets:/app/assets
+      - ./data:/app/data
+
+  mongodb:
+    # 不支持AVX的MongoDB版本
+    # image: mongo:4.4.29-ubuntu2004
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

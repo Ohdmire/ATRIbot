@@ -5,6 +5,17 @@
 
 目前已经进行重构，~~welcome to the new era.~~
 
+# 部署
+
+## 环境变量
+
+```bash
+# .env
+OSU_CLIENT_ID=your_osu_client_id
+OSU_CLIENT_SECRET=your_osu_client_secret
+MONGO_URI=mongodb://mongodb:27017/osu
+```
+
 ## 基础建设
 
 ATRIlib里面的文件夹功能比较独立 处理逻辑一般在外面的文件单独

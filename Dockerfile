@@ -1,29 +1,27 @@
-FROM python:3.10-alpine
-LABEL authors="ATRIbot"
+# 使用Python 3.12作为基础镜像
+FROM python:3.12-slim
 
+# 设置工作目录
 WORKDIR /app
 
-COPY requirements.txt /app/
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    inkscape \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install\
-    -i https://pypi.tuna.tsinghua.edu.cn/simple\
-    --trusted-host pypi.tuna.tsinghua.edu.cn\
-    --default-timeout=60\
-    --no-cache-dir\
-    -r requirements.txt
+# 复制requirements.txt文件
+COPY requirements.txt .
 
-COPY . /app/
+# 安装Python依赖
+RUN pip install --no-cache-dir -r requirements.txt
 
-ARG PORT=8008
-ARG MONGO_URI
-ARG OSU_CLIENT_ID
-ARG OSU_CLIENT_SECRET
+# 复制项目文件到工作目录
+COPY . .
 
-ENV PORT=${PORT}
-ENV MONGO_URI=${MONGO_URI}
-ENV OSU_CLIENT_ID=${OSU_CLIENT_ID}
-ENV OSU_CLIENT_SECRET=${OSU_CLIENT_SECRET}
+# 暴露端口8008
+EXPOSE 8008
 
-EXPOSE ${PORT}
-
-ENTRYPOINT ["python", "main.py"]
+# 启动命令
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8008"]

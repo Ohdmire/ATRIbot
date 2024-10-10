@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from cairosvg.image import image
 from lxml import etree
 from copy import deepcopy
 import datetime
@@ -8,8 +7,6 @@ import subprocess
 from io import BytesIO
 import os
 from ATRIlib.TOOLS import Download
-
-from ATRIproxy_back import return_all_userids
 
 def warp_text(text,max_chars_per_line):
 

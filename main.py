@@ -20,6 +20,8 @@ import uvicorn
 
 import logging
 
+import asyncio
+import os
 
 class IName(BaseModel):
     qq_id: int
@@ -48,6 +50,28 @@ scheduler = AsyncIOScheduler()
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     logging.info("亚托莉，启动!")
+    
+    # 定义需要创建的目录结构
+    directories = [
+        "data",
+        "data/beatmaps",
+        "data/beatmaps_tmp",
+        "data/cover",
+        "data/avatar",
+        "logs",
+        "data/tmp",
+        "data/tmp/brk",
+        "data/tmp/pr",
+        "data/tmp/medal",
+        "data/tmp/medal_pr"
+    ]
+    
+    # 检查并创建目录
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            logging.info(f"创建了 {directory} 目录")
+    
     scheduler.add_job(job_fetch_token,
                       trigger="interval", seconds=3600) #定时获取token
     scheduler.add_job(job_shift_database,
@@ -237,12 +261,28 @@ async def fetch_avgtth(item:IName):
 
 @app.api_route("/qq/finddiff", methods=["GET", "POST"])
 async def fetch_finddiff(item:ItemN):
-    result = await ATRIproxy.format_finddiff(item.group_id)
+    result = await ATRIproxy.format_finddiff(item.group_id,item.group_member_list)
     return str(result)
 
+@app.api_route("/qq/finddiff/details", methods=["GET", "POST"])
+async def fetch_finddiff_details(item:IName):
+    result = await ATRIproxy.format_finddiff_details(item.qq_id, item.osuname)
+    return str(result)
+
+@app.api_route("/qq/activity", methods=["GET", "POST"])
+async def fetch_activity(item:ItemN):
+    img_bytes = await ATRIproxy.format_activity(item.group_id,item.group_member_list)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+
+@app.api_route("/job/update_bind_all", methods=["GET", "POST"])
 async def job_update_bind_all():
-    task1 = await ATRIproxy.format_job_update_all_bind_users_info()
-    task2 = await ATRIproxy.format_job_update_all_bind_users_bp()
+    task1 = await ATRIproxy.format_job_update_all_bind_users_bp()
+    # 延迟1min
+    await asyncio.sleep(60)
+    task2 = await ATRIproxy.format_job_update_all_bind_users_info()
     return str(task1 + task2)
 
 
