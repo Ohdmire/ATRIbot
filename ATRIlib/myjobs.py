@@ -39,26 +39,13 @@ def throttle(seconds=300):
         return wrapper
     return decorator
 
-from ATRIlib.TASKS.Jobs import multi_update_users_info_async,multi_update_users_bps_async,multi_update_beatmap_type
+from ATRIlib.TASKS.Jobs import multi_update_users_info_async,multi_update_users_bps_async
 from ATRIlib.DB.Mongodb import db_bind,db_user
 from ATRIlib.DB.pipeline_compress_score import remove_non_max_score_docs
 from ATRIlib.DB.pipeline_shiftdatabase import pipeline_shiftdatabase
 from ATRIlib.DB.pipeline_getgroupusers import get_group_users_id_list
-from ATRIlib.DB.Mongodb import db_bp
 
 import datetime
-
-# 更新用户bp的beatmaptype
-@throttle()
-async def job_update_user_beatmap_type(user_id):
-
-    bpinfo = db_bp.find_one({"id": user_id})
-
-    bps_beatmap_id_list = bpinfo["bps_beatmapid"]
-
-    raw = await multi_update_beatmap_type(bps_beatmap_id_list)
-
-    return raw
 
 # 更新所有用户信息
 @throttle()

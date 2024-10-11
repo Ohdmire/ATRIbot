@@ -4,11 +4,9 @@ import logging
 import time
 
 from ATRIlib.API.PPYapiv2 import get_user_info_fromid,get_user_best_all_info,get_user_scores_info
-from ATRIlib.API.Customapi import get_beatmap_type
 
 from ATRIlib.Manager.UserManager import update_user,update_bp
 from ATRIlib.Manager.ScoreManager import update_score_many
-from ATRIlib.Manager.BeatmapTypeManager import update_beatmap_attributes
 
 import aiohttp
 
@@ -61,13 +59,6 @@ def rate_limited(retries=3, delay=0, backoff=1, semaphore_value=100):
 
     return decorator
 
-# 更新beatmaptype
-@rate_limited()
-async def single_update_beatmap_type(beatmap_id):
-    beatmaptype_data = await get_beatmap_type(beatmap_id)
-    update_beatmap_attributes(beatmap_id, beatmaptype_data)
-    return beatmap_id
-
 @rate_limited()
 async def single_update_user(osuid):
     userdata = await get_user_info_fromid(osuid)
@@ -87,10 +78,6 @@ async def single_update_score(osuid, beatmap_id):
     scoredatas = await get_user_scores_info(osuid, beatmap_id)
     update_score_many(beatmap_id,scoredatas)
     return beatmap_id # 返回beatmap_id?
-
-async def multi_update_beatmap_type(beatmap_id_lists):
-    tasks = [single_update_beatmap_type(beatmap_id) for beatmap_id in beatmap_id_lists]
-    await asyncio.gather(*tasks)
 
 
 async def multi_update_users_info_async(users_id_lists):

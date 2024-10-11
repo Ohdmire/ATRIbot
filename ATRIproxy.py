@@ -39,7 +39,6 @@ from ATRIlib.finddiff import find_diff,find_diff_details
 from ATRIlib.activity import get_activity
 
 from ATRIlib.beatmaptype import calculate_beatmap_type_ba
-from ATRIlib.myjobs import job_update_user_beatmap_type
 
 from ATRIlib.profile import calculate_profile
 
@@ -583,14 +582,17 @@ async def format_beatmap_type_ba(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
+    username = userstruct["username"]
     await get_bpstruct(user_id)
 
-    # 提取获取谱面类型
-    await job_update_user_beatmap_type(user_id)
+    raw = await calculate_beatmap_type_ba(user_id)
 
-    raw = calculate_beatmap_type_ba(user_id)
-
-    return raw
+    result_text = f'{username}的bp类型'
+    result_text += f'\nAim:{raw["aim_total"]:.2f}% ({raw["aim_count"]}张)'
+    result_text += f'\nStream:{raw["stream_total"]:.2f}% ({raw["stream_count"]}张)'
+    result_text += f'\nTech:{raw["tech_total"]:.2f}% ({raw["tech_count"]}张)'
+    result_text += f'\nAlt:{raw["alt_total"]:.2f}% ({raw["alt_count"]}张)'
+    return result_text
 
 @handle_exceptions
 async def format_profile(qq_id, osuname):
