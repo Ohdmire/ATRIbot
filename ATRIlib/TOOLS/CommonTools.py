@@ -1,5 +1,5 @@
 import operator
-
+import base64
 
 def calc_diff_color(star):
     bottom, top = None, None
@@ -93,3 +93,10 @@ def color_to_hex(color0, color1, s, gamma):
         return "0" + result
     else:
         return result
+
+def get_base64_encoded_data(content, mime_type):
+    """
+    将内容转换为base64编码的字符串
+    """
+    encoded_string = base64.b64encode(content).decode("utf-8")
+    return f"data:{mime_type};base64,{encoded_string}"

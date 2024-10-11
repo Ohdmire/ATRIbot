@@ -1,6 +1,11 @@
 import aiohttp
 import asyncio
 from pathlib import Path
+from PIL import Image
+from io import BytesIO
+import logging
+
+logger = logging.getLogger(__name__)
 
 beatmaps_path = Path('./data/beatmaps/')
 beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
@@ -8,6 +13,36 @@ avatar_path = Path('./data/avatar/')
 cover_path = Path('./data/cover/')
 medal_path = Path('./assets/medal/')
 semaphore = asyncio.Semaphore(16)
+
+
+# 下载ppy的资源(图片)
+async def download_resource(session, url):
+    """
+    异步下载资源并保存到内存中，对图片进行压缩
+    """
+    try:
+        async with session.get(url, timeout=10) as response:
+            if response.status == 200:
+                content = await response.read()
+                content_type = response.headers.get('Content-Type', '')
+                
+                # 如果是图片，进行压缩
+                if content_type.startswith('image'):
+                    img = Image.open(BytesIO(content))
+                    img_io = BytesIO()
+                    img.save(img_io, format='JPEG', quality=100, optimize=True)
+                    content = img_io.getvalue()
+                
+                logging.info(f"成功下载: {url}")
+                return url, content
+    except Exception as e:
+        logging.warning(f"下载 {url} 时发生错误: {str(e)}")
+    return url, None
+        
+async def download_resource_async(resources_to_download):
+    async with aiohttp.ClientSession() as session:
+        tasks = [download_resource(session, url) for url, _, _ in resources_to_download]
+        return await asyncio.gather(*tasks)
 
 
 # 下载谱面

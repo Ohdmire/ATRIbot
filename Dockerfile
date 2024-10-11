@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     inkscape \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    wkhtmltopdf \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制requirements.txt文件

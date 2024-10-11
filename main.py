@@ -63,7 +63,8 @@ async def app_lifespan(app: FastAPI):
         "data/tmp/brk",
         "data/tmp/pr",
         "data/tmp/medal",
-        "data/tmp/medal_pr"
+        "data/tmp/medal_pr",
+        "data/tmp/profile"
     ]
     
     # 检查并创建目录
@@ -93,6 +94,19 @@ async def fetch_test2(item:IName):
 @app.api_route("/help", methods=["GET", "POST"])
 async def fetch_help():
     img_bytes = ATRIproxy.format_help()
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+    
+@app.api_route("/qq/beatmaptype/all", methods=["GET", "POST"])
+async def fetch_beatmaptype_all(item:IName):
+    result = await ATRIproxy.format_beatmap_type_ba(item.qq_id,item.osuname)
+    return str(result)
+
+@app.api_route("/qq/profile", methods=["GET", "POST"])
+async def fetch_profile(item:IName):
+    img_bytes = await ATRIproxy.format_profile(item.qq_id,item.osuname)
     if type(img_bytes) is BytesIO:
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:

@@ -38,6 +38,11 @@ from ATRIlib.finddiff import find_diff,find_diff_details
 
 from ATRIlib.activity import get_activity
 
+from ATRIlib.beatmaptype import calculate_beatmap_type_ba
+from ATRIlib.myjobs import job_update_user_beatmap_type
+
+from ATRIlib.profile import calculate_profile
+
 import traceback
 import asyncio
 
@@ -572,6 +577,27 @@ async def format_finddiff_details(qq_id, osuname):
         result_text += f'\nb{i["beatmap_id"]} --> {current_pp}pp({diff_pp})'
 
     return result_text
+
+@handle_exceptions
+async def format_beatmap_type_ba(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    await get_bpstruct(user_id)
+
+    # 提取获取谱面类型
+    await job_update_user_beatmap_type(user_id)
+
+    raw = calculate_beatmap_type_ba(user_id)
+
+    return raw
+
+@handle_exceptions
+async def format_profile(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    return await calculate_profile(user_id)
 
 @handle_exceptions
 async def format_activity(group_id,group_member_list):
