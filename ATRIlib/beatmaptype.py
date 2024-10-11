@@ -5,6 +5,8 @@ from ATRIlib.Manager.BeatmapTypeManager import update_beatmap_attributes
 
 async def calculate_beatmap_type_ba(user_id):
 
+    count_bp = 0
+
     bpinfo = db_bp.find_one({"id": user_id})
     bps_beatmap_id_list = bpinfo["bps_beatmapid"]
 
@@ -27,18 +29,22 @@ async def calculate_beatmap_type_ba(user_id):
         # 如果存在且不为0
         if beatmap_type:
             if "aim" in beatmap_type:
+                count_bp += 1
                 raw["aim_total"] += beatmap_type["aim"]
                 if beatmap_type["aim"] >0.5:
                     raw["aim_count"] += 1
             if "stream" in beatmap_type:
+                count_bp += 1
                 raw["stream_total"] += beatmap_type["stream"]
                 if beatmap_type["stream"] >0.5:
                     raw["stream_count"] += 1
             if "tech" in beatmap_type:
+                count_bp += 1
                 raw["tech_total"] += beatmap_type["tech"]
                 if beatmap_type["tech"] >0.5:
                     raw["tech_count"] += 1
             if "alt" in beatmap_type:
+                count_bp += 1
                 raw["alt_total"] += beatmap_type["alt"]
                 if beatmap_type["alt"] >0.5:
                     raw["alt_count"] += 1
@@ -50,20 +56,24 @@ async def calculate_beatmap_type_ba(user_id):
         for beatmap_id,beatmap_type in get_beatmap_type_data.items():
             update_beatmap_attributes(beatmap_id,beatmap_type)
             if "aim" in beatmap_type:
+                count_bp += 1
                 raw["aim_total"] += beatmap_type["aim"]
                 if beatmap_type["aim"] >0.5:
                     raw["aim_count"] += 1
             if "stream" in beatmap_type:
+                count_bp += 1
                 raw["stream_total"] += beatmap_type["stream"]
                 if beatmap_type["stream"] >0.5:
                     raw["stream_count"] += 1
             if "tech" in beatmap_type:
+                count_bp += 1
                 raw["tech_total"] += beatmap_type["tech"]
                 if beatmap_type["tech"] >0.5:
                     raw["tech_count"] += 1
             if "alt" in beatmap_type:
+                count_bp += 1
                 raw["alt_total"] += beatmap_type["alt"]
                 if beatmap_type["alt"] >0.5:
                     raw["alt_count"] += 1
 
-    return raw
+    return raw,count_bp

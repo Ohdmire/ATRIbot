@@ -40,17 +40,18 @@ async def process_html(html_string):
 
     # 更新HTML中的链接
     for (url, tag, attr), (_, content) in zip(resources_to_download, results):
-        if content:
+        if content is not None:
             mime_type, _ = mimetypes.guess_type(url)
             base64_data = get_base64_encoded_data(content, mime_type)
             tag[attr] = base64_data
             logger.warning(f"更新链接: {url}")
         else:
-            logger.warning(f"无法下载: {url}")
+            # 如果content为None（可能是SVG），保留原始URL
+            logger.warning(f"保留原始链接: {url}")
 
     return str(soup)
 
-async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max_body_width=1650, avatar_url=None, username=None,user_id=None):
+async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=None, username=None,user_id=None):
     """
     将HTML字符串渲染成图片，写入文件，然后返回BytesIO对象
     :param html_string: HTML内容
@@ -94,6 +95,8 @@ async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max
             max-height: {max_img_height}px;
             width: auto;
             height: auto;
+            display: block;  /* 添加这行 */
+            margin: 0 auto;  /* 添加这行来使图片居中 */
         }}
 
         /* 修改后的 CSS */
@@ -132,6 +135,31 @@ async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max
         a[rel="nofollow"] {{
             color: #90EE90;  /* 浅绿色 */
         }}
+
+        /* Wells */
+        .well {{
+            min-height: 20px;
+            padding: 19px;
+            margin-bottom: 20px;
+            background-color: #394146;  /* 更改为新的背景颜色 */
+            border: 1px solid #4a5258;  /* 稍微调亮的边框颜色 */
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+            color: #ffffff;  /* 确保文字在深色背景上可见 */
+            text-align: left;  /* 添加这行来保持well内容左对齐 */
+        }}
+        .well blockquote {{
+            border-color: #4a5258;
+            border-color: rgba(255, 255, 255, 0.15);
+        }}
+        .well-lg {{
+            padding: 24px;
+            border-radius: 6px;
+        }}
+        .well-sm {{
+            padding: 9px;
+            border-radius: 3px;
+        }}
     </style>
     """
     
@@ -154,7 +182,7 @@ async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max
         'format': 'jpeg',
         'encoding': "UTF-8",
         'quality': 100,
-        'width': max_body_width + 50,  # 添加一些额外的宽度以适应内边距
+        'width': max_body_width + 50,  # 加一些额外的宽度以适应内边距
     }
     try:
         imgkit.from_string(html_with_css, f"{profile_result_path}/{user_id}.jpg", options=options)
@@ -170,5 +198,5 @@ async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max
         return img_bytes
 
 async def draw_profile(html_content, avatar_url, username,user_id):
-    result = await html_to_image(html_content, max_img_width=1600, max_img_height=800, max_body_width=1650, avatar_url=avatar_url, username=username,user_id=user_id)
+    result = await html_to_image(html_content, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=avatar_url, username=username,user_id=user_id)
     return result

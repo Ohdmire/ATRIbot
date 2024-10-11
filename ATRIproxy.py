@@ -585,13 +585,15 @@ async def format_beatmap_type_ba(qq_id, osuname):
     username = userstruct["username"]
     await get_bpstruct(user_id)
 
-    raw = await calculate_beatmap_type_ba(user_id)
+    raw,count_bp = await calculate_beatmap_type_ba(user_id)
 
     result_text = f'{username}的bp类型'
     result_text += f'\nAim:{raw["aim_total"]:.2f}% ({raw["aim_count"]}张)'
     result_text += f'\nStream:{raw["stream_total"]:.2f}% ({raw["stream_count"]}张)'
     result_text += f'\nTech:{raw["tech_total"]:.2f}% ({raw["tech_count"]}张)'
     result_text += f'\nAlt:{raw["alt_total"]:.2f}% ({raw["alt_count"]}张)'
+    if count_bp != 100:
+        result_text += f'\n(只计算了{count_bp}张bp之后再试试吧)'
     return result_text
 
 @handle_exceptions

@@ -4,6 +4,7 @@ from pathlib import Path
 from PIL import Image
 from io import BytesIO
 import logging
+import base64
 
 logger = logging.getLogger(__name__)
 
@@ -18,24 +19,31 @@ semaphore = asyncio.Semaphore(16)
 # 下载ppy的资源(图片)
 async def download_resource(session, url):
     """
-    异步下载资源并保存到内存中，对图片进行压缩
+    异步下载资源并保存到内存中，对图片进行压缩，跳过SVG文件
     """
     try:
         async with session.get(url, timeout=10) as response:
             if response.status == 200:
-                content = await response.read()
                 content_type = response.headers.get('Content-Type', '')
                 
-                # 如果是图片，进行压缩
+                # 如果是SVG，直接返回None
+                if content_type == 'image/svg+xml':
+                    with open("./logs/svg.txt", "wb") as f:
+                        f.write(await response.read())
+                    return url, None
+                
+                content = await response.read()
+                
+                # 如果是其他类型的图片，进行压缩
                 if content_type.startswith('image'):
                     img = Image.open(BytesIO(content))
                     img_io = BytesIO()
                     img.save(img_io, format='JPEG', quality=100, optimize=True)
                     content = img_io.getvalue()
-                    
+                
                 return url, content
     except Exception as e:
-        pass
+        logger.error(f"下载资源时出错: {url}, 错误: {str(e)}")
     return url, None
         
 async def download_resource_async(resources_to_download):
