@@ -64,7 +64,7 @@ async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max
     # 处理外部资源
     html_string = await process_html(html_string)
 
-    # 添加头像和用户名
+    # 添加头像和用户
     avatar_html = ""
     if avatar_url:
         avatar_html = f'<div style="text-align: center;"><img src="{avatar_url}" style="width: 200px; height: 200px; border-radius: 50%; margin-bottom: 10px;"></div>'
@@ -77,6 +77,7 @@ async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max
     css = f"""
     <style>
         body {{
+            font-family: 'CustomFont', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             font-size: 36px;
             max-width: {max_body_width}px;
             margin: 0 auto;
@@ -155,8 +156,10 @@ async def html_to_image(html_string, max_img_width=1600, max_img_height=800, max
         'quality': 100,
         'width': max_body_width + 50,  # 添加一些额外的宽度以适应内边距
     }
-    
-    imgkit.from_string(html_with_css, f"{profile_result_path}/{user_id}.jpg", options=options)
+    try:
+        imgkit.from_string(html_with_css, f"{profile_result_path}/{user_id}.jpg", options=options)
+    except Exception as e:
+        logger.warning(f"生成图片失败: {str(e)}")
     
     with open(f"{profile_result_path}/{user_id}.jpg", 'rb') as f:
         img_bytes = BytesIO(f.read())

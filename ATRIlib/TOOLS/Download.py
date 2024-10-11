@@ -32,11 +32,10 @@ async def download_resource(session, url):
                     img_io = BytesIO()
                     img.save(img_io, format='JPEG', quality=100, optimize=True)
                     content = img_io.getvalue()
-                
-                logging.info(f"成功下载: {url}")
+                    
                 return url, content
     except Exception as e:
-        logging.warning(f"下载 {url} 时发生错误: {str(e)}")
+        pass
     return url, None
         
 async def download_resource_async(resources_to_download):
