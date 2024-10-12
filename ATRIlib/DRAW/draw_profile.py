@@ -228,10 +228,6 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
     ]
     subprocess.run(inkscape_command, check=True)
 
-    # 记录生成的PNG文件大小
-    png_file_size = os.path.getsize(png_output_path)
-    logger.info(f"生成的PNG文件大小: {png_file_size / 1024 / 1024:.2f} MB")
-
     # 压缩PNG文件并转换为JPEG
     with Image.open(png_output_path) as img:
         # 确保图片尺寸不超过65000x65000
@@ -246,20 +242,10 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
             img = img.convert('RGB')
 
         img_byte_arr = io.BytesIO()
-        quality = 95  # 初始质量设置
+        img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
         
-        while True:
-            img_byte_arr.seek(0)
-            img_byte_arr.truncate(0)
-            img.save(img_byte_arr, format='JPEG', quality=quality, optimize=True)
-            img_size = len(img_byte_arr.getvalue())
-            
-            if img_size <= 30 * 1024 * 1024 or quality <= 70:  # 30MB in bytes
-                break
-            
-            quality -= 5  # 每次降低5%的质量
-
-        logger.info(f"压缩后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: {quality}%")
+        img_size = len(img_byte_arr.getvalue())
+        logger.info(f"压缩后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: 95%")
 
     # 清理临时文件
     os.remove(svg_output_path)
