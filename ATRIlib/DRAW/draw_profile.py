@@ -207,6 +207,7 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         'encoding': "UTF-8",
         'quality': 100,
         'width': max_body_width + 50,  # 加一些额外的宽度以适应内边距
+        "transparent": ""
     }
     svg_output_path = f"{profile_result_path}/{user_id}.svg"
     png_output_path = f"{profile_result_path}/{user_id}.png"
