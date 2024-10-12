@@ -116,7 +116,6 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         p {{ font-size: 20px; }}
         img {{
             max-width: {max_img_width}px;
-            max-height: {max_img_height}px;
             width: auto;
             height: auto;
             display: block;
@@ -129,9 +128,26 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         }}
 
         .bbcode-spoilerbox__body {{
-            display: block;  /* 默认显示内容 */
+            display: block;  /* 保持原有的块级显示 */
             margin-top: 10px;
             padding-left: 40px;
+        }}
+
+        .bbcode-spoilerbox__body img {{
+            max-width: calc(50% - 10px);  /* 两列布局，留出间隔 */
+            width: auto;
+            height: auto;
+            display: inline-block;  /* 允许图片并排显示 */
+            vertical-align: top;  /* 顶部对齐 */
+            margin: 0 5px 20px;  /* 左右间隔5px，底部间隔20px */
+        }}
+
+        @media (max-width: 800px) {{
+            .bbcode-spoilerbox__body img {{
+                max-width: 100%;  /* 在较窄的屏幕上切换到单列 */
+                margin-left: 0;
+                margin-right: 0;
+            }}
         }}
 
         .bbcode-spoilerbox__link {{
@@ -231,7 +247,7 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
     # 压缩PNG文件并转换为JPEG
     with Image.open(png_output_path) as img:
         # 确保图片尺寸不超过65000x65000
-        max_size = 12000
+        max_size = 24000
         if img.width > max_size or img.height > max_size:
             ratio = min(max_size / img.width, max_size / img.height)
             new_size = (int(img.width * ratio), int(img.height * ratio))
