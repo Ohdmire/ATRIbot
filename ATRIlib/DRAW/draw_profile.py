@@ -178,20 +178,20 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
     html_with_css = f"<html><head>{css}{js}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
     
     options = {
-        'format': 'jpeg',
+        'format': 'png',
         'encoding': "UTF-8",
         'quality': 100,
         'width': max_body_width + 50,  # 加一些额外的宽度以适应内边距
     }
     try:
-        imgkit.from_string(html_with_css, f"{profile_result_path}/{user_id}.jpg", options=options)
+        imgkit.from_string(html_with_css, f"{profile_result_path}/{user_id}.png", options=options)
     except Exception as e:
         logger.warning(f"生成图片失败: {str(e)}")
     
-    with open(f"{profile_result_path}/{user_id}.jpg", 'rb') as f:
+    with open(f"{profile_result_path}/{user_id}.png", 'rb') as f:
         img_bytes = BytesIO(f.read())
 
-        os.remove(f"{profile_result_path}/{user_id}.jpg")
+        os.remove(f"{profile_result_path}/{user_id}.png")
 
         img_bytes.seek(0)
         return img_bytes
