@@ -128,25 +128,26 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         }}
 
         .bbcode-spoilerbox__body {{
-            display: block;  /* 保持原有的块级显示 */
+            display: block;
             margin-top: 10px;
             padding-left: 40px;
+            text-align: center; // 添加这行
         }}
 
         .bbcode-spoilerbox__body img {{
-            max-width: calc(50% - 10px);  /* 两列布局，留出间隔 */
+            max-width: 80%; // 修改这行
             width: auto;
             height: auto;
-            display: inline-block;  /* 允许图片并排显示 */
-            vertical-align: top;  /* 顶部对齐 */
-            margin: 0 5px 20px;  /* 左右间隔5px，底部间隔20px */
+            display: inline-block;
+            vertical-align: top;
+            margin: 0 auto 20px; // 修改这行
         }}
 
         @media (max-width: 800px) {{
             .bbcode-spoilerbox__body img {{
-                max-width: 100%;  /* 在较窄的屏幕上切换到单列 */
-                margin-left: 0;
-                margin-right: 0;
+                max-width: 100%;
+                margin-left: auto; // 修改这行
+                margin-right: auto; // 修改这行
             }}
         }}
 
