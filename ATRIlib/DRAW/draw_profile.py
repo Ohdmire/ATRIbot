@@ -131,7 +131,6 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
             display: block;
             margin-top: 10px;
             padding-left: 40px;
-            text-align: center; // 添加这行
         }}
 
         .bbcode-spoilerbox__body img {{
