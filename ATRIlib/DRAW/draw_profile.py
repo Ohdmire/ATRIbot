@@ -231,7 +231,7 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
     # 压缩PNG文件并转换为JPEG
     with Image.open(png_output_path) as img:
         # 确保图片尺寸不超过65000x65000
-        max_size = 65000
+        max_size = 24000
         if img.width > max_size or img.height > max_size:
             ratio = min(max_size / img.width, max_size / img.height)
             new_size = (int(img.width * ratio), int(img.height * ratio))
