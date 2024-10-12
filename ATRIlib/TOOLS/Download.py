@@ -5,6 +5,7 @@ from PIL import Image
 from io import BytesIO
 import logging
 import base64
+import mimetypes
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,13 @@ async def download_resource(session, url):
                     content_type = response.headers.get('Content-Type', '')
                     content = await response.read()
                     
-                    # 如果是图片，进行压缩
+                    # 检查是否为SVG文件
+                    mime_type, _ = mimetypes.guess_type(url)
+                    if mime_type == 'image/svg+xml' or content_type.startswith('image/svg+xml'):
+                        logger.info(f"下载了SVG文件: {url}")
+                        return url, content
+                    
+                    # 如果是其他类型的图片，进行压缩
                     if content_type.startswith('image'):
                         img = Image.open(BytesIO(content))
                         if img.mode in ('RGBA', 'P'):

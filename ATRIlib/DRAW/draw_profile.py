@@ -31,11 +31,11 @@ async def process_html(html_string):
     resources_to_download = []
 
     # 收集所有需要下载的资源
-    for tag in soup.find_all(['img', 'link', 'script']):
-        if tag.name == 'img':
-            src = tag.get('src')
+    for tag in soup.find_all(['img', 'link', 'script', 'svg']):
+        if tag.name in ['img', 'svg']:
+            src = tag.get('src') or tag.get('data')
             if src and src.startswith(('http://', 'https://')):
-                resources_to_download.append((src, tag, 'src'))
+                resources_to_download.append((src, tag, 'src' if tag.name == 'img' else 'data'))
         elif tag.name == 'link' and tag.get('rel') == ['stylesheet']:
             href = tag.get('href')
             if href and href.startswith(('http://', 'https://')):
@@ -56,13 +56,22 @@ async def process_html(html_string):
     for (url, tag, attr), (_, content) in zip(resources_to_download, results):
         if content:
             mime_type, _ = mimetypes.guess_type(url)
-            base64_data = get_base64_encoded_data(content, mime_type)
-            tag[attr] = base64_data
+            if mime_type == 'image/svg+xml':
+                # 对于SVG，我们直接将内容嵌入到HTML中
+                svg_content = content.decode('utf-8')
+                new_tag = soup.new_tag('svg')
+                new_tag.append(BeautifulSoup(svg_content, 'html.parser'))
+                tag.replace_with(new_tag)
+            else:
+                base64_data = get_base64_encoded_data(content, mime_type)
+                tag[attr] = base64_data
             logger.warning(f"更新链接: {url}")
         else:
             logger.warning(f"无法下载: {url}")
             if tag.name == 'img':
                 tag[attr] = error_image_base64
+            elif tag.name == 'svg':
+                tag.decompose()  # 如果无法下载SVG，则移除该标签
                 
     return str(soup)
 
@@ -110,8 +119,8 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
             max-height: {max_img_height}px;
             width: auto;
             height: auto;
-            display: block;  /* 添加这行 */
-            margin: 0 auto;  /* 添加这行来使图片居中 */
+            display: block;
+            margin: 20px auto;
         }}
 
         /* 修改后的 CSS */
