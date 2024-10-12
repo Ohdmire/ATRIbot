@@ -183,18 +183,23 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         'quality': 100,
         'width': max_body_width + 50,  # 加一些额外的宽度以适应内边距
     }
+    output_path = f"{profile_result_path}/{user_id}.png"
     try:
-        imgkit.from_string(html_with_css, f"{profile_result_path}/{user_id}.png", options=options)
+        imgkit.from_string(html_with_css, output_path, options=options)
+        
+        # 记录生成的PNG文件大小
+        file_size = os.path.getsize(output_path)
+        logger.info(f"生成的PNG文件大小: {file_size / 1024 / 1024:.2f} MB")
     except Exception as e:
         logger.warning(f"生成图片失败: {str(e)}")
     
-    with open(f"{profile_result_path}/{user_id}.png", 'rb') as f:
+    with open(output_path, 'rb') as f:
         img_bytes = BytesIO(f.read())
 
-        os.remove(f"{profile_result_path}/{user_id}.png")
+    os.remove(output_path)
 
-        img_bytes.seek(0)
-        return img_bytes
+    img_bytes.seek(0)
+    return img_bytes
 
 async def draw_profile(html_content, avatar_url, username,user_id):
     result = await html_to_image(html_content, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=avatar_url, username=username,user_id=user_id)
