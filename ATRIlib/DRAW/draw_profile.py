@@ -40,14 +40,13 @@ async def process_html(html_string):
 
     # 更新HTML中的链接
     for (url, tag, attr), (_, content) in zip(resources_to_download, results):
-        if content is not None:
+        if content:
             mime_type, _ = mimetypes.guess_type(url)
             base64_data = get_base64_encoded_data(content, mime_type)
             tag[attr] = base64_data
             logger.warning(f"更新链接: {url}")
         else:
-            # 如果content为None（可能是SVG），保留原始URL
-            logger.warning(f"保留原始链接: {url}")
+            logger.warning(f"无法下载: {url}")
 
     return str(soup)
 
