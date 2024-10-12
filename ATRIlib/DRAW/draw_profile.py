@@ -6,13 +6,22 @@ import mimetypes
 from io import BytesIO
 from pathlib import Path
 import os
-import time
 import logging
+import subprocess
+from PIL import Image
+import io
+
+Image.MAX_IMAGE_PIXELS = None
 
 logger = logging.getLogger(__name__)
 
 profile_result_path = Path('./data/tmp/profile')
 
+default_image_path = Path('./assets/error')
+
+
+# 添加默认错误图片的路径
+ERROR_IMAGE_PATH = Path('./assets/error/error-404.png')
 
 async def process_html(html_string):
     """
@@ -38,6 +47,11 @@ async def process_html(html_string):
 
     results = await download_resource_async(resources_to_download)
 
+    # 预先加载错误图片的 base64 编码
+    with open(ERROR_IMAGE_PATH, 'rb') as f:
+        error_image_content = f.read()
+    error_image_base64 = get_base64_encoded_data(error_image_content, 'image/png')
+
     # 更新HTML中的链接
     for (url, tag, attr), (_, content) in zip(resources_to_download, results):
         if content:
@@ -47,7 +61,9 @@ async def process_html(html_string):
             logger.warning(f"更新链接: {url}")
         else:
             logger.warning(f"无法下载: {url}")
-
+            if tag.name == 'img':
+                tag[attr] = error_image_base64
+                
     return str(soup)
 
 async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=None, username=None,user_id=None):
@@ -178,28 +194,70 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
     html_with_css = f"<html><head>{css}{js}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
     
     options = {
-        'format': 'png',
+        'format': 'svg',
         'encoding': "UTF-8",
         'quality': 100,
         'width': max_body_width + 50,  # 加一些额外的宽度以适应内边距
     }
-    output_path = f"{profile_result_path}/{user_id}.png"
+    svg_output_path = f"{profile_result_path}/{user_id}.svg"
+    png_output_path = f"{profile_result_path}/{user_id}.png"
     try:
-        imgkit.from_string(html_with_css, output_path, options=options)
-        
-        # 记录生成的PNG文件大小
-        file_size = os.path.getsize(output_path)
-        logger.info(f"生成的PNG文件大小: {file_size / 1024 / 1024:.2f} MB")
+        imgkit.from_string(html_with_css, svg_output_path, options=options)
     except Exception as e:
         logger.warning(f"生成图片失败: {str(e)}")
-    
-    with open(output_path, 'rb') as f:
-        img_bytes = BytesIO(f.read())
+        
+    # 记录生成的SVG文件大小
+    svg_file_size = os.path.getsize(svg_output_path)
+    logger.info(f"生成的SVG文件大小: {svg_file_size / 1024 / 1024:.2f} MB")
 
-    os.remove(output_path)
+    # 使用Inkscape将SVG转换为PNG
+    inkscape_command = [
+        "inkscape",
+        "--export-type=png",
+        f"--export-filename={png_output_path}",
+        svg_output_path
+    ]
+    subprocess.run(inkscape_command, check=True)
 
-    img_bytes.seek(0)
-    return img_bytes
+    # 记录生成的PNG文件大小
+    png_file_size = os.path.getsize(png_output_path)
+    logger.info(f"生成的PNG文件大小: {png_file_size / 1024 / 1024:.2f} MB")
+
+    # 压缩PNG文件并转换为JPEG
+    with Image.open(png_output_path) as img:
+        # 确保图片尺寸不超过65000x65000
+        max_size = 65000
+        if img.width > max_size or img.height > max_size:
+            ratio = min(max_size / img.width, max_size / img.height)
+            new_size = (int(img.width * ratio), int(img.height * ratio))
+            img = img.resize(new_size, Image.LANCZOS)
+
+        # 转换图像模式为RGB
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+
+        img_byte_arr = io.BytesIO()
+        quality = 95  # 初始质量设置
+        
+        while True:
+            img_byte_arr.seek(0)
+            img_byte_arr.truncate(0)
+            img.save(img_byte_arr, format='JPEG', quality=quality, optimize=True)
+            img_size = len(img_byte_arr.getvalue())
+            
+            if img_size <= 30 * 1024 * 1024 or quality <= 70:  # 30MB in bytes
+                break
+            
+            quality -= 5  # 每次降低5%的质量
+
+        logger.info(f"压缩后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: {quality}%")
+
+    # 清理临时文件
+    os.remove(svg_output_path)
+    os.remove(png_output_path)
+
+    img_byte_arr.seek(0)
+    return img_byte_arr
 
 async def draw_profile(html_content, avatar_url, username,user_id):
     result = await html_to_image(html_content, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=avatar_url, username=username,user_id=user_id)

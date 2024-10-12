@@ -11,6 +11,14 @@ RUN echo "deb https://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free
 
 # 安装系统依赖
 RUN apt-get update && apt-get install -y \
+    libfreetype6-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libwebp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装Inkscape
+RUN apt-get update && apt-get install -y \
     inkscape \
     libgl1-mesa-glx \
     libglib2.0-0 \

@@ -32,8 +32,10 @@ async def download_resource(session, url):
                     # 如果是图片，进行压缩
                     if content_type.startswith('image'):
                         img = Image.open(BytesIO(content))
+                        if img.mode in ('RGBA', 'P'):
+                            img = img.convert('RGB')
                         img_io = BytesIO()
-                        img.save(img_io, format='JPEG', quality=100, optimize=True)
+                        img.save(img_io, format='JPEG', quality=95, optimize=True)
                         content = img_io.getvalue()
                         logger.info(f"下载资源 {url} 成功，压缩后大小为 {len(content)} 字节")
                     return url, content
