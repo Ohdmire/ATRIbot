@@ -11,9 +11,12 @@ async def get_lazer_update():
     proxy_url = []
     
     for asset in data['assets']:
-        if re.search(pattern, asset['name'], re.IGNORECASE):
-            # 在下载链接前添加代理前缀
-            proxy_url.append(f"https://ghp.ci/{asset['browser_download_url']}")
+        match = re.search(pattern, asset['name'], re.IGNORECASE)
+        if match:
+            file_type = match.group(1).lower()
+            prefix = "Windows" if file_type == "exe" else "Android" if file_type == "apk" else ""
+            # 在下载链接前添加代理前缀和文件类型前缀
+            proxy_url.append(f"{prefix}: https://ghp.ci/{asset['browser_download_url']}")
 
     data['proxy_url'] = proxy_url
 
