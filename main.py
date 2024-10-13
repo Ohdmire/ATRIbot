@@ -301,4 +301,4 @@ async def job_update_bind_all():
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='0.0.0.0', port=8008,log_config="log_config.ini", reload=True, workers=4)
+    uvicorn.run('main:app', host='0.0.0.0', port=8008, log_config="log_config.ini", reload=True, timeout_keep_alive=120)
