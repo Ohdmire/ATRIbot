@@ -42,6 +42,8 @@ from ATRIlib.beatmaptype import calculate_beatmap_type_ba
 
 from ATRIlib.profile import calculate_profile
 
+from ATRIlib.lazerupdate import get_lazer_update
+
 import traceback
 import asyncio
 
@@ -602,6 +604,19 @@ async def format_profile(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
     return await calculate_profile(user_id)
+
+@handle_exceptions
+async def format_lazer_update():
+
+    raw = await get_lazer_update()
+
+    result_text = f'Lazer最新版本号{raw["tag_name"]}'
+    result_text += f'\n发布时间:{raw["published_at"]}'
+    result_text += f'\n镜像下载链接:'
+    for i in raw['proxy_url']:
+        result_text += f'\n{i}'
+
+    return result_text
 
 @handle_exceptions
 async def format_activity(group_id,group_member_list):

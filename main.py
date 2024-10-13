@@ -111,6 +111,11 @@ async def fetch_profile(item:IName):
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
         return str(img_bytes)
+    
+@app.api_route("/lazer/update", methods=["GET", "POST"])
+async def fetch_lazer_update():
+    result = await ATRIproxy.format_lazer_update()
+    return str(result)
 
 @app.api_route("/qq/medal", methods=["GET", "POST"])
 async def fetch_medal(item:ItemN):
