@@ -73,6 +73,14 @@ async def process_html(html_string):
             elif tag.name == 'svg':
                 tag.decompose()  # 如果无法下载SVG，则移除该标签
                 
+    # 在更新HTML中的链接之后，添加以下代码
+    for spoiler_body in soup.select('.bbcode-spoilerbox__body'):
+        images = spoiler_body.find_all('img')
+        if images:
+            container = soup.new_tag('div', attrs={'class': 'image-container'})
+            for img in images:
+                img.wrap(container)
+
     return str(soup)
 
 async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=None, username=None,user_id=None):
@@ -131,22 +139,27 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
             display: block;
             margin-top: 10px;
             padding-left: 40px;
+            text-align: left;  // 确保文字左对齐
+        }}
+
+        .bbcode-spoilerbox__body .image-container {{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
         }}
 
         .bbcode-spoilerbox__body img {{
-            max-width: 80%; // 修改这行
+            max-width: 80%; // 限制单个图片最大宽度
             width: auto;
             height: auto;
-            display: inline-block;
-            vertical-align: top;
-            margin: 0 auto 20px; // 修改这行
+            margin: 5px;  // 给图片之间添加一些间距
         }}
 
         @media (max-width: 800px) {{
             .bbcode-spoilerbox__body img {{
                 max-width: 100%;
-                margin-left: auto; // 修改这行
-                margin-right: auto; // 修改这行
             }}
         }}
 
@@ -222,7 +235,7 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         'format': 'svg',
         'encoding': "UTF-8",
         'quality': 100,
-        'width': max_body_width + 50,  # 加一些额外的宽度以适应内边距
+        'width': max_body_width + 50,  # 加一些额外的宽度以适应内距
     }
     svg_output_path = f"{profile_result_path}/{user_id}.svg"
     png_output_path = f"{profile_result_path}/{user_id}.png"
