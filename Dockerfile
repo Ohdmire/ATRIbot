@@ -9,7 +9,7 @@ RUN echo "deb https://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free
     echo "deb https://mirrors.ustc.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
     echo "deb https://mirrors.ustc.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware" >> /etc/apt/sources.list
 
-# 安装系统依赖、Chrome、Inkscape、curl
+# 安装系统依赖、Chrome、Inkscape、curl 和 Playwright 依赖
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg-dev \
@@ -20,10 +20,6 @@ RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
     curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# 安装 Playwright 依赖
-RUN apt-get update && apt-get install -y \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
