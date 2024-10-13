@@ -10,6 +10,7 @@ from ATRIlib.TOOLS.CommonTools import get_base64_encoded_data
 import hashlib
 from urllib.parse import urlparse
 import shutil
+import mimetypes
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -51,20 +52,50 @@ async def process_html(html_string):
     results = await download_resource_async(resources_to_download)
 
     # 更新HTML的链接
-    for (url, tag, attr), (_, content) in zip(resources_to_download, results):
+    for (url, tag, attr), (_, content, file_type) in zip(resources_to_download, results):
         if content:
-            # 使用URL的哈希值作为文件名
-            file_ext = os.path.splitext(urlparse(url).path)[1] or '.bin'
-            filename = hashlib.md5(url.encode()).hexdigest() + file_ext
-            local_path = resource_dir / filename
-            
-            # 保存文件到本地
-            with open(local_path, 'wb') as f:
-                f.write(content)
-            
-            # 更新标签的属性为相对路径
-            tag[attr] = f"resources/{filename}"
-            logger.warning(f"更新链接: {url} -> resources/{filename}")
+            logger.info(f"处理资源: {url}, 文件类型: {file_type}")
+
+            if file_type == 'svg':
+                # SVG 处理
+                try:
+                    svg_content = content.decode('utf-8')
+                    svg_soup = BeautifulSoup(svg_content, 'html.parser')
+                    svg_tag = svg_soup.find('svg')
+                    if svg_tag:
+                        # 保存原始 img 标签的属性
+                        original_attrs = dict(tag.attrs)
+                        # 将原来的 img 标签替换为 svg 标签
+                        tag.name = 'svg'
+                        # 合并原始属性和 SVG 属性，保留 img 的样式
+                        tag.attrs.update(svg_tag.attrs)
+                        # 确保保留原始的 class 和 style 属性
+                        for attr in ['class', 'style']:
+                            if attr in original_attrs:
+                                tag[attr] = original_attrs[attr]
+                        # 添加 SVG 内容
+                        tag.clear()
+                        tag.extend(svg_tag.contents)
+                        logger.info(f"IMG替换为SVG并保留样式: {tag}")
+                    else:
+                        logger.warning(f"SVG内容中未找到SVG标签: {url}")
+                        tag[attr] = url  # 保留原始URL
+                except Exception as e:
+                    logger.error(f"处理SVG时出错: {str(e)}")
+                    # 如果处理失败，保留原始URL
+                    logger.info(f"保留原始SVG URL: {url}")
+                    tag[attr] = url
+            else:
+                # 其他资源的处理
+                file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
+                filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+                local_path = resource_dir / filename
+                
+                with open(local_path, 'wb') as f:
+                    f.write(content)
+                
+                tag[attr] = f"resources/{filename}"
+                logger.info(f"更新链接: {url} -> resources/{filename}")
         else:
             logger.warning(f"无法下载: {url}")
             if tag.name == 'img':

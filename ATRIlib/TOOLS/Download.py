@@ -21,7 +21,7 @@ semaphore_small = asyncio.Semaphore(8)
 # 下载ppy的资源(图片)
 async def download_resource(session, url):
     """
-    异步下载资源并保存到内存中，对图片进行压缩
+    异步下载资源并保存到内存中，对图片进行压缩，并返回文件类型
     """
     try:
         async with semaphore_small:
@@ -34,7 +34,7 @@ async def download_resource(session, url):
                     mime_type, _ = mimetypes.guess_type(url)
                     if mime_type == 'image/svg+xml' or content_type.startswith('image/svg+xml'):
                         logger.info(f"下载了SVG文件: {url}")
-                        return url, content
+                        return url, content, 'svg'
                     
                     # 如果是其他类型的图片，进行压缩
                     if content_type.startswith('image'):
@@ -45,10 +45,11 @@ async def download_resource(session, url):
                         img.save(img_io, format='JPEG', quality=95, optimize=True)
                         content = img_io.getvalue()
                         logger.info(f"下载资源 {url} 成功，压缩后大小为 {len(content)} 字节")
-                    return url, content
+                        return url, content, 'image'
+                    return url, content, 'other'
     except Exception as e:
         logger.error(f"下载资源时出错: {url}, 错误: {str(e)}")
-    return url, None
+    return url, None, None
         
 async def download_resource_async(resources_to_download):
     async with aiohttp.ClientSession() as session:
