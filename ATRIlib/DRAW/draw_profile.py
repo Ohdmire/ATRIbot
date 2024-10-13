@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import os
 import logging
-from PIL import Image
+from PIL import Image, ImageSequence
 import io
 from playwright.async_api import async_playwright
 from ATRIlib.TOOLS.Download import download_resource_async
@@ -18,6 +18,23 @@ logger = logging.getLogger(__name__)
 
 profile_result_path = Path('./data/tmp/profile')
 ERROR_IMAGE_PATH = Path('./assets/error/error-404.png')
+
+def extract_last_frame_from_gif(gif_content):
+    """从GIF内容中提取最后一帧"""
+    with Image.open(io.BytesIO(gif_content)) as img:
+        # 如果不是GIF,直接返回原图
+        if not getattr(img, "is_animated", False):
+            return gif_content
+        
+        # 获取最后一帧
+        last_frame = None
+        for frame in ImageSequence.Iterator(img):
+            last_frame = frame.copy()
+        
+        # 将最后一帧转换为bytes
+        output = io.BytesIO()
+        last_frame.save(output, format='PNG')
+        return output.getvalue()
 
 async def process_html(html_string):
     """
@@ -76,7 +93,7 @@ async def process_html(html_string):
                         # 添加 SVG 内容
                         tag.clear()
                         tag.extend(svg_tag.contents)
-                        logger.info(f"IMG替换为SVG并保留样式: {tag}")
+                        logger.info(f"IMG替换SVG保留样式: {tag}")
                     else:
                         logger.warning(f"SVG内容中未找到SVG标签: {url}")
                         tag[attr] = url  # 保留原始URL
@@ -85,6 +102,18 @@ async def process_html(html_string):
                     # 如果处理失败，保留原始URL
                     logger.info(f"保留原始SVG URL: {url}")
                     tag[attr] = url
+            elif file_type == 'gif':
+                # GIF 处理
+                content = extract_last_frame_from_gif(content)
+                file_ext = '.png'
+                filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+                local_path = resource_dir / filename
+                
+                with open(local_path, 'wb') as f:
+                    f.write(content)
+                
+                tag[attr] = f"resources/{filename}"
+                logger.info(f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)")
             else:
                 # 其他资源的处理
                 file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
@@ -102,14 +131,26 @@ async def process_html(html_string):
                 tag[attr] = "resources/error-404.png"
 
     # 处理spoiler box
-    for spoiler_body in soup.select('.bbcode-spoilerbox__body'):
-        images = spoiler_body.find_all('img')
+    for spoiler_box in soup.select('.bbcode-spoilerbox'):
+        process_spoiler_box(spoiler_box, soup)
+
+    return str(soup)
+
+def process_spoiler_box(spoiler_box, soup):
+    spoiler_body = spoiler_box.select_one('.bbcode-spoilerbox__body')
+    if spoiler_body:
+        images = spoiler_body.find_all('img', recursive=False)
         if images:
             container = soup.new_tag('div', attrs={'class': 'image-container'})
             for img in images:
-                img.wrap(container)
-
-    return str(soup)
+                img.extract()
+                container.append(img)
+            spoiler_body.append(container)
+        
+        # 递归处理嵌套的 spoiler box
+        nested_spoilers = spoiler_body.select('.bbcode-spoilerbox')
+        for nested_spoiler in nested_spoilers:
+            process_spoiler_box(nested_spoiler, soup)
 
 async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, avatar_url=None, username=None, user_id=None):
     """
@@ -118,7 +159,7 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
     # 简单处理HTML，不下载外部资源
     html_string = await process_html(html_string)
 
-    # 添加头像和用户
+    # 添加头像和户
     avatar_html = ""
     if avatar_url:
         avatar_html = f'<div style="text-align: center;"><img src="{avatar_url}" style="width: 200px; height: 200px; border-radius: 50%; margin-bottom: 10px;"></div>'
@@ -156,24 +197,17 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             --link-icon: '\f107';  /* fa-angle-down */
         }}
 
-        .bbcode-spoilerbox__body {{
-            display: block;
+        .bbcode-spoilerbox__body .image-container {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-top: 10px;
-            padding-left: 40px;
-            text-align: left;  // 确保文字左对齐
         }}
 
-        .bbcode-spoilerbox__body img {{
-            max-width: 80%; // 限制单个图片最大宽度
-            width: auto;
+        .bbcode-spoilerbox__body .image-container img {{
+            max-width: 100%;
             height: auto;
-            margin: 5px;  // 给图片之间添加一些间距
-        }}
-
-        @media (max-width: 800px) {{
-            .bbcode-spoilerbox__body img {{
-                max-width: 100%;
-            }}
+            object-fit: contain;
         }}
 
         .bbcode-spoilerbox__link {{
@@ -211,7 +245,7 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             border: 1px solid #4a5258;  /* 稍微调亮的边框颜色 */
             border-radius: 4px;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
-            color: #ffffff;  /* 确保文字在深色背景上可见 */
+            color: #ffffff;  /* 确保文字在色背景上可见 */
             text-align: left;  /* 添加这行来保持well内容左对齐 */
         }}
         .well blockquote {{
@@ -225,6 +259,35 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
         .well-sm {{
             padding: 9px;
             border-radius: 3px;
+        }}
+
+        .bbcode-spoilerbox {{
+            margin-bottom: 10px;
+        }}
+
+        .bbcode-spoilerbox__body {{
+            padding-left: 20px;
+        }}
+
+        .bbcode-spoilerbox__body .image-container {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            margin-left: -20px;  /* 抵消父元素的 padding-left */
+            width: calc(100% + 20px);  /* 确保宽度正确 */
+        }}
+
+        .bbcode-spoilerbox__body .image-container img {{
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }}
+
+        /* 嵌套的 spoiler box 特殊处理 */
+        .bbcode-spoilerbox .bbcode-spoilerbox {{
+            margin-left: -20px;
+            width: calc(100% + 20px);
         }}
     </style>
     """

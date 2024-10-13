@@ -36,6 +36,11 @@ async def download_resource(session, url):
                         logger.info(f"下载了SVG文件: {url}")
                         return url, content, 'svg'
                     
+                    # 检查是否为GIF文件
+                    if mime_type == 'image/gif' or content_type.startswith('image/gif'):
+                        logger.info(f"下载了GIF文件: {url}")
+                        return url, content, 'gif'
+                    
                     # 如果是其他类型的图片，进行压缩
                     if content_type.startswith('image'):
                         img = Image.open(BytesIO(content))

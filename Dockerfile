@@ -35,8 +35,6 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 Playwright
-RUN pip install playwright && playwright install chromium
 
 # 复制requirements.txt文件
 COPY requirements.txt .
@@ -44,6 +42,9 @@ COPY requirements.txt .
 # 使用pip镜像并安装Python依赖
 RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple \
     && pip install --no-cache-dir -r requirements.txt
+
+# 安装 Playwright
+RUN pip install playwright && playwright install chromium
 
 # 复制项目文件到工作目录
 COPY . .
