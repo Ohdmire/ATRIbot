@@ -256,10 +256,10 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         svg_output_path
     ]
     try:
-        subprocess.run(inkscape_command, check=True, timeout=10)  # 设置30秒超时
+        subprocess.run(inkscape_command, check=True, timeout=30)  # 设置30秒超时
     except subprocess.TimeoutExpired:
         logger.warning("Inkscape转换超时")
-        raise ValueError(f'Inkscape转换超时,文件大小:{svg_file_size}')
+        raise ValueError(f'Inkscape转换超时,SVG文件大小: {svg_file_size / 1024 / 1024:.2f} MB')
     except subprocess.CalledProcessError as e:
         logger.warning(f"Inkscape转换失败: {str(e)}")
         raise ValueError("Inkscape转换失败")
