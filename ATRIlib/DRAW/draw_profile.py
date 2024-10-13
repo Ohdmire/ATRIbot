@@ -1,34 +1,37 @@
-from ATRIlib.TOOLS.Download import download_resource_async
-from ATRIlib.TOOLS.CommonTools import get_base64_encoded_data
-import imgkit
 from bs4 import BeautifulSoup
-import mimetypes
-from io import BytesIO
 from pathlib import Path
 import os
 import logging
-import subprocess
 from PIL import Image
 import io
+from playwright.async_api import async_playwright
+from ATRIlib.TOOLS.Download import download_resource_async
+from ATRIlib.TOOLS.CommonTools import get_base64_encoded_data
+import hashlib
+from urllib.parse import urlparse
+import shutil
 
 Image.MAX_IMAGE_PIXELS = None
 
 logger = logging.getLogger(__name__)
 
 profile_result_path = Path('./data/tmp/profile')
-
-default_image_path = Path('./assets/error')
-
-
-# 添加默认错误图片的路径
 ERROR_IMAGE_PATH = Path('./assets/error/error-404.png')
 
 async def process_html(html_string):
     """
-    处理HTML，异步下载外部资源并更新链接
+    处理HTML，下载资源并更新链接为相对路径
     """
     soup = BeautifulSoup(html_string, 'html.parser')
     resources_to_download = []
+
+    # 确保资源目录存在
+    resource_dir = profile_result_path / 'resources'
+    resource_dir.mkdir(parents=True, exist_ok=True)
+
+    # 复制错误图片到资源目录
+    error_image_dest = resource_dir / 'error-404.png'
+    shutil.copy(ERROR_IMAGE_PATH, error_image_dest)
 
     # 收集所有需要下载的资源
     for tag in soup.find_all(['img', 'link', 'script', 'svg']):
@@ -47,33 +50,27 @@ async def process_html(html_string):
 
     results = await download_resource_async(resources_to_download)
 
-    # 预先加载错误图片的 base64 编码
-    with open(ERROR_IMAGE_PATH, 'rb') as f:
-        error_image_content = f.read()
-    error_image_base64 = get_base64_encoded_data(error_image_content, 'image/png')
-
-    # 更新HTML中的链接
+    # 更新HTML的链接
     for (url, tag, attr), (_, content) in zip(resources_to_download, results):
         if content:
-            mime_type, _ = mimetypes.guess_type(url)
-            if mime_type == 'image/svg+xml':
-                # 对于SVG，我们直接将内容嵌入到HTML中
-                svg_content = content.decode('utf-8')
-                new_tag = soup.new_tag('svg')
-                new_tag.append(BeautifulSoup(svg_content, 'html.parser'))
-                tag.replace_with(new_tag)
-            else:
-                base64_data = get_base64_encoded_data(content, mime_type)
-                tag[attr] = base64_data
-            logger.warning(f"更新链接: {url}")
+            # 使用URL的哈希值作为文件名
+            file_ext = os.path.splitext(urlparse(url).path)[1] or '.bin'
+            filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+            local_path = resource_dir / filename
+            
+            # 保存文件到本地
+            with open(local_path, 'wb') as f:
+                f.write(content)
+            
+            # 更新标签的属性为相对路径
+            tag[attr] = f"resources/{filename}"
+            logger.warning(f"更新链接: {url} -> resources/{filename}")
         else:
             logger.warning(f"无法下载: {url}")
             if tag.name == 'img':
-                tag[attr] = error_image_base64
-            elif tag.name == 'svg':
-                tag.decompose()  # 如果无法下载SVG，则移除该标签
-                
-    # 在更新HTML中的链接之后，添加以下代码
+                tag[attr] = "resources/error-404.png"
+
+    # 处理spoiler box
     for spoiler_body in soup.select('.bbcode-spoilerbox__body'):
         images = spoiler_body.find_all('img')
         if images:
@@ -83,18 +80,11 @@ async def process_html(html_string):
 
     return str(soup)
 
-async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=None, username=None,user_id=None):
+async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, avatar_url=None, username=None, user_id=None):
     """
     将HTML字符串渲染成图片，写入文件，然后返回BytesIO对象
-    :param html_string: HTML内容
-    :param max_img_width: 图片最大宽度(像素)
-    :param max_img_height: 图片最大高度(像素)
-    :param max_body_width: 整体内容最大宽度(像素)
-    :param avatar_url: 头像的URL
-    :param username: 用户名
-    :return: BytesIO对象，包含生成的图片数据
     """
-    # 处理外部资源
+    # 简单处理HTML，不下载外部资源
     html_string = await process_html(html_string)
 
     # 添加头像和用户
@@ -140,14 +130,6 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
             margin-top: 10px;
             padding-left: 40px;
             text-align: left;  // 确保文字左对齐
-        }}
-
-        .bbcode-spoilerbox__body .image-container {{
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
         }}
 
         .bbcode-spoilerbox__body img {{
@@ -231,40 +213,58 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
     # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标签
     html_with_css = f"<html><head>{css}{js}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
     
-    options = {
-        'format': 'svg',
-        'encoding': "UTF-8",
-        'quality': 100,
-        'width': max_body_width + 50,  # 加一些额外的宽度以适应内距
-    }
-    svg_output_path = f"{profile_result_path}/{user_id}.svg"
-    png_output_path = f"{profile_result_path}/{user_id}.png"
-    try:
-        imgkit.from_string(html_with_css, svg_output_path, options=options)
-    except Exception as e:
-        logger.warning(f"生成图片失败: {str(e)}")
-        
-    # 记录生成的SVG文件大小
-    svg_file_size = os.path.getsize(svg_output_path)
-    logger.info(f"生成的SVG文件大小: {svg_file_size / 1024 / 1024:.2f} MB")
+    # 将HTML内容写入临时文件
+    temp_html_path = profile_result_path / f"{user_id}_temp.html"
+    with open(temp_html_path, 'w', encoding='utf-8') as f:
+        f.write(html_with_css)
+    
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        context = await browser.new_context(viewport={'width': max_body_width, 'height': 1080})
+        page = await context.new_page()
+        await page.goto(f"file://{temp_html_path.absolute()}")
 
-    # 使用Inkscape将SVG转换为PNG
-    inkscape_command = [
-        "inkscape",
-        "--export-type=png",
-        f"--export-filename={png_output_path}",
-        svg_output_path
-    ]
-    try:
-        subprocess.run(inkscape_command, check=True, timeout=10)  # 设置30秒超时
-    except subprocess.TimeoutExpired:
-        logger.warning("Inkscape转换超时")
-        raise ValueError(f'Inkscape转换超时,SVG文件大小: {svg_file_size / 1024 / 1024:.2f} MB')
-    except subprocess.CalledProcessError as e:
-        logger.warning(f"Inkscape转换失败: {str(e)}")
-        raise ValueError("Inkscape转换失败")
+        # 等待所有图片加载完成，设置超时时间为10秒
+        try:
+            await page.evaluate("""
+                () => Promise.race([
+                    Promise.all(
+                        Array.from(document.images)
+                            .filter(img => !img.complete)
+                            .map(img => new Promise((resolve, reject) => {
+                                img.onload = resolve;
+                                img.onerror = reject;
+                            }))
+                    ),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Image loading timeout')), 10000))
+                ])
+            """)
+        except Exception as e:
+            logger.warning(f"图片加载超时或发生错误: {str(e)}")
 
-    # 压缩PNG文件并转换为JPEG
+        # 获取页面高度
+        page_height = await page.evaluate("""
+            () => Math.max(
+                document.body.scrollHeight,
+                document.body.offsetHeight,
+                document.documentElement.clientHeight,
+                document.documentElement.scrollHeight,
+                document.documentElement.offsetHeight
+            )
+        """)
+
+        # 调整页面大小并截图
+        await page.set_viewport_size({"width": max_body_width, "height": page_height + 100})
+        png_output_path = profile_result_path / f"{user_id}.png"
+        await page.screenshot(path=str(png_output_path), full_page=True)
+
+        await browser.close()
+
+    # 记录生成的PNG文件大小
+    png_file_size = os.path.getsize(png_output_path)
+    logger.info(f"生成的PNG文件大小: {png_file_size / 1024 / 1024:.2f} MB")
+
+    # 将PNG转换为JPEG
     with Image.open(png_output_path) as img:
         # 确保图片尺寸不超过65000x65000
         max_size = 24000
@@ -281,15 +281,17 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
         
         img_size = len(img_byte_arr.getvalue())
-        logger.info(f"压缩后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: 95%")
+        logger.info(f"转换后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: 95%")
 
     # 清理临时文件
-    os.remove(svg_output_path)
     os.remove(png_output_path)
+    os.remove(temp_html_path)
+    for file in (profile_result_path / 'resources').glob('*'):
+        os.remove(file)
 
     img_byte_arr.seek(0)
     return img_byte_arr
 
-async def draw_profile(html_content, avatar_url, username,user_id):
-    result = await html_to_image(html_content, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=avatar_url, username=username,user_id=user_id)
+async def draw_profile(html_content, avatar_url, username, user_id):
+    result = await html_to_image(html_content, max_img_width=1400, max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
     return result

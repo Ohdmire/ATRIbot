@@ -47,3 +47,4 @@ tzlocal==5.2
 urllib3==2.2.3
 uvicorn==0.31.0
 yarl==1.13.1
+playwright==1.47.0
