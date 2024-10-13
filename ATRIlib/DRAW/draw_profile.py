@@ -255,7 +255,14 @@ async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max
         f"--export-filename={png_output_path}",
         svg_output_path
     ]
-    subprocess.run(inkscape_command, check=True)
+    try:
+        subprocess.run(inkscape_command, check=True, timeout=10)  # 设置30秒超时
+    except subprocess.TimeoutExpired:
+        logger.warning("Inkscape转换超时")
+        raise ValueError("Inkscape转换超时")
+    except subprocess.CalledProcessError as e:
+        logger.warning(f"Inkscape转换失败: {str(e)}")
+        raise ValueError("Inkscape转换失败")
 
     # 压缩PNG文件并转换为JPEG
     with Image.open(png_output_path) as img:
