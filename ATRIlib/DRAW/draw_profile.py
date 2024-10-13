@@ -75,7 +75,7 @@ async def process_html(html_string):
                 
     return str(soup)
 
-async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, avatar_url=None, username=None,user_id=None):
+async def html_to_image(html_string, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=None, username=None,user_id=None):
     """
     将HTML字符串渲染成图片，写入文件，然后返回BytesIO对象
     :param html_string: HTML内容
@@ -134,16 +134,19 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
         }}
 
         .bbcode-spoilerbox__body img {{
-            width: 100%;
-            max-width: 1650px;
+            max-width: 80%; // 修改这行
+            width: auto;
             height: auto;
-            display: block;
-            margin: 0 auto 20px;
+            display: inline-block;
+            vertical-align: top;
+            margin: 0 auto 20px; // 修改这行
         }}
 
-        @media (max-width: {max_body_width}px) {{
+        @media (max-width: 800px) {{
             .bbcode-spoilerbox__body img {{
                 max-width: 100%;
+                margin-left: auto; // 修改这行
+                margin-right: auto; // 修改这行
             }}
         }}
 
@@ -268,5 +271,5 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
     return img_byte_arr
 
 async def draw_profile(html_content, avatar_url, username,user_id):
-    result = await html_to_image(html_content, max_img_width=1650, max_body_width=1650, avatar_url=avatar_url, username=username,user_id=user_id)
+    result = await html_to_image(html_content, max_img_width=1400, max_img_height=800, max_body_width=1650, avatar_url=avatar_url, username=username,user_id=user_id)
     return result
