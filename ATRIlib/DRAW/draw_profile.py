@@ -245,6 +245,14 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             top: 0;
             left: 0;
         }}
+
+        /* 添加 .bbcode-spoilerbox__body 的样式 */
+        .bbcode-spoilerbox__body {{
+            margin-left: 20px;  /* 左侧偏移 */
+            padding: 10px;  /* 内边距 */
+            border-left: 2px solid #66ccff;  /* 左侧边框，使用浅蓝色 */
+            margin-top: 5px;  /* 与标题的间距 */
+        }}
     </style>
     """
     
