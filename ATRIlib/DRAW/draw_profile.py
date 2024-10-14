@@ -344,10 +344,10 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
         # 网页等待1s
         await asyncio.sleep(1)
 
-        # 调整页面大小并截图
+        # 调整页面大小并截图，使用 scale: 'css' 选项
         await page.set_viewport_size({"width": max_body_width, "height": page_height + 100})
         png_output_path = profile_result_path / f"{user_id}.png"
-        await page.screenshot(path=str(png_output_path), full_page=True)
+        await page.screenshot(path=str(png_output_path), full_page=True, scale='css')
 
         await browser.close()
 
