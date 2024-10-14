@@ -192,7 +192,7 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             content: "↴";  /* 在开头添加向下箭头 */
             display: inline-block;
             margin-right: 5px;
-            font-size: 1.2em;  /* 稍微增大箭头大小 */
+            font-size: 1.2em;  /* 微增大箭头大小 */
             line-height: 1;  /* 确保箭头垂直对齐 */
         }}
 
@@ -248,13 +248,43 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
     </style>
     """
     
-    # 添加JavaScript来展开所有spoiler
+    # 修改 js 变量中的 JavaScript 代码
+
     js = """
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // 展开所有 spoiler
         var spoilers = document.querySelectorAll('.bbcode-spoilerbox');
         spoilers.forEach(function(spoiler) {
             spoiler.classList.add('js-spoilerbox--open');
+        });
+
+        // 居中所有图片，保持文字左对齐
+        var images = document.querySelectorAll('img');
+        images.forEach(function(img) {
+            var parent = img.parentElement;
+            if (parent) {
+                parent.style.textAlign = 'center';
+                img.style.margin = '0 auto';
+                img.style.display = 'block';
+            }
+        });
+
+        // 特别处理 proportional-container
+        var proportionalContainers = document.querySelectorAll('.proportional-container');
+        proportionalContainers.forEach(function(container) {
+            container.style.textAlign = 'center';
+            var img = container.querySelector('img');
+            if (img) {
+                img.style.margin = '0 auto';
+                img.style.display = 'block';
+            }
+        });
+
+        // 确保文字段落保持左对齐
+        var paragraphs = document.querySelectorAll('p');
+        paragraphs.forEach(function(p) {
+            p.style.textAlign = 'left';
         });
     });
     </script>
