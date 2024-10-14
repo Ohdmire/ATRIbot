@@ -93,7 +93,7 @@ async def process_html(html_string):
                         # 添加 SVG 内容
                         tag.clear()
                         tag.extend(svg_tag.contents)
-                        logger.info(f"IMG替换SVG保留样式: {tag}")
+                        logger.info(f"IMG替换SVG留样式: {tag}")
                     else:
                         logger.warning(f"SVG内容中未找到SVG标签: {url}")
                         tag[attr] = url  # 保留原始URL
@@ -169,10 +169,76 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
         h2 {{ font-size: 28px; }}
         p {{ font-size: 20px; }}
         img {{
-            max-width: {max_img_width}px;
+            max-width: 100%;  /* 改为100%，使图片适应容器宽度 */
             width: auto;
             height: auto;
             display: block;
+        }}
+
+        .bbcode-spoilerbox {{
+            margin-bottom: 10px;
+        }}
+
+        .bbcode-spoilerbox__body {{
+            padding-left: 20px;
+        }}
+
+        .bbcode-spoilerbox__body .proportional-container {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            margin-left: -20px;  /* 抵消父元素的 padding-left */
+            width: calc(100% + 20px);  /* 确保宽度正确 */
+        }}
+
+        /* 修改 .proportional-container 相关样式 */
+        .proportional-container {{
+            max-width: 100%;
+            display: inline-block;
+            vertical-align: top;
+        }}
+
+        .proportional-container__height {{
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%;  /* 16:9 比例，可以根据需要调整 */
+            overflow: hidden;
+        }}
+
+        .proportional-container__content {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }}
+
+        .proportional-container__content img {{
+            width: 100%;
+            height: 100%;  /* 改为100%，使图片填充整个容器 */
+            object-fit: contain;  /* 改为contain，确保整个图片可见 */
+        }}
+
+        /* 当内容超出容器时，允许自适应高度 */
+        .proportional-container--expanded .proportional-container__height {{
+            height: auto;
+            padding-bottom: 0;
+        }}
+
+        .proportional-container--expanded .proportional-container__content {{
+            position: relative;
+            height: auto;
+        }}
+
+        /* 为了处理可能的溢出情况 */
+        .bbcode-spoilerbox__body {{
+            overflow: visible;
+        }}
+
+        .bbcode-spoilerbox__body .proportional-container {{
+            margin-bottom: 10px;  /* 添加一些底部边距，防止内容重叠 */
         }}
 
         .bbcode-spoilerbox__link {{
@@ -225,33 +291,21 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             padding: 9px;
             border-radius: 3px;
         }}
-
-        /* 新添加的 .proportional-container 相关样式 */
-        .proportional-container {{
-            max-width: 100%;
-            display: inline-block;
-            vertical-align: top;
-        }}
-
-        .proportional-container__height {{
-            display: block;
-            position: relative;
-        }}
-
-        .proportional-container__content {{
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            top: 0;
-            left: 0;
-        }}
     </style>
     """
     
-    # 添加JavaScript来展开所有spoiler
+    # 添加JavaScript来处理proportional-container的自适应
     js = """
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        var containers = document.querySelectorAll('.proportional-container');
+        containers.forEach(function(container) {
+            var content = container.querySelector('.proportional-container__content');
+            if (content.scrollHeight > content.clientHeight) {
+                container.classList.add('proportional-container--expanded');
+            }
+        });
+
         var spoilers = document.querySelectorAll('.bbcode-spoilerbox');
         spoilers.forEach(function(spoiler) {
             spoiler.classList.add('js-spoilerbox--open');
