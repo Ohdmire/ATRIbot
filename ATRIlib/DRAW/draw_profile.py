@@ -164,13 +164,13 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             box-sizing: border-box;
             color: white;
             background-color: #5c6570;
-            overflow-x: hidden; /* 防止水平滚动 */
         }}
         h1 {{ font-size: 32px; }}
         h2 {{ font-size: 28px; }}
         p {{ font-size: 20px; }}
         img {{
-            max-width: 100%; /* 确保所有图片不超过其容器宽度 */
+            max-width: {max_img_width}px;
+            width: auto;
             height: auto;
             display: block;
         }}
@@ -226,18 +226,16 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             border-radius: 3px;
         }}
 
-        /* 修改 .proportional-container 相关样式 */
+        /* 新添加的 .proportional-container 相关样式 */
         .proportional-container {{
             max-width: 100%;
             display: inline-block;
             vertical-align: top;
-            overflow: hidden; /* 防止内容溢出 */
         }}
 
         .proportional-container__height {{
             display: block;
             position: relative;
-            width: 100%; /* 确保宽度不超过容器 */
         }}
 
         .proportional-container__content {{
