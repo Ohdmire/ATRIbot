@@ -10,7 +10,7 @@ from ATRIlib.TOOLS.CommonTools import get_base64_encoded_data
 import hashlib
 from urllib.parse import urlparse
 import shutil
-import mimetypes
+import asyncio
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -130,27 +130,7 @@ async def process_html(html_string):
             if tag.name == 'img':
                 tag[attr] = "resources/error-404.png"
 
-    # 处理spoiler box
-    for spoiler_box in soup.select('.bbcode-spoilerbox'):
-        process_spoiler_box(spoiler_box, soup)
-
     return str(soup)
-
-def process_spoiler_box(spoiler_box, soup):
-    spoiler_body = spoiler_box.select_one('.bbcode-spoilerbox__body')
-    if spoiler_body:
-        images = spoiler_body.find_all('img', recursive=False)
-        if images:
-            container = soup.new_tag('div', attrs={'class': 'image-container'})
-            for img in images:
-                img.extract()
-                container.append(img)
-            spoiler_body.append(container)
-        
-        # 递归处理嵌套的 spoiler box
-        nested_spoilers = spoiler_body.select('.bbcode-spoilerbox')
-        for nested_spoiler in nested_spoilers:
-            process_spoiler_box(nested_spoiler, soup)
 
 async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, avatar_url=None, username=None, user_id=None):
     """
@@ -159,10 +139,14 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
     # 简单处理HTML，不下载外部资源
     html_string = await process_html(html_string)
 
-    # 添加头像和户
+    # 添加头像和用户名
     avatar_html = ""
     if avatar_url:
-        avatar_html = f'<div style="text-align: center;"><img src="{avatar_url}" style="width: 200px; height: 200px; border-radius: 50%; margin-bottom: 10px;"></div>'
+        avatar_html = f'''
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+            <img src="{avatar_url}" style="width: 200px; height: 200px; border-radius: 50%;">
+        </div>
+        '''
     username_html = f'<div style="text-align: center; margin-bottom: 20px; color: white;"><strong>{username}</strong></div>' if username else ""
     
     # 添加分割线
@@ -180,34 +164,15 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             box-sizing: border-box;
             color: white;
             background-color: #5c6570;
+            overflow-x: hidden; /* 防止水平滚动 */
         }}
         h1 {{ font-size: 32px; }}
         h2 {{ font-size: 28px; }}
         p {{ font-size: 20px; }}
         img {{
-            max-width: {max_img_width}px;
-            width: auto;
+            max-width: 100%; /* 确保所有图片不超过其容器宽度 */
             height: auto;
             display: block;
-            margin: 20px auto;
-        }}
-
-        /* 修改后的 CSS */
-        .bbcode-spoilerbox {{
-            --link-icon: '\f107';  /* fa-angle-down */
-        }}
-
-        .bbcode-spoilerbox__body .image-container {{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }}
-
-        .bbcode-spoilerbox__body .image-container img {{
-            max-width: 100%;
-            height: auto;
-            object-fit: contain;
         }}
 
         .bbcode-spoilerbox__link {{
@@ -261,33 +226,26 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             border-radius: 3px;
         }}
 
-        .bbcode-spoilerbox {{
-            margin-bottom: 10px;
-        }}
-
-        .bbcode-spoilerbox__body {{
-            padding-left: 20px;
-        }}
-
-        .bbcode-spoilerbox__body .image-container {{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            margin-left: -20px;  /* 抵消父元素的 padding-left */
-            width: calc(100% + 20px);  /* 确保宽度正确 */
-        }}
-
-        .bbcode-spoilerbox__body .image-container img {{
+        /* 修改 .proportional-container 相关样式 */
+        .proportional-container {{
             max-width: 100%;
-            height: auto;
-            object-fit: contain;
+            display: inline-block;
+            vertical-align: top;
+            overflow: hidden; /* 防止内容溢出 */
         }}
 
-        /* 嵌套的 spoiler box 特殊处理 */
-        .bbcode-spoilerbox .bbcode-spoilerbox {{
-            margin-left: -20px;
-            width: calc(100% + 20px);
+        .proportional-container__height {{
+            display: block;
+            position: relative;
+            width: 100%; /* 确保宽度不超过容器 */
+        }}
+
+        .proportional-container__content {{
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
         }}
     </style>
     """
@@ -346,6 +304,9 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
                 document.documentElement.offsetHeight
             )
         """)
+
+        # 网页等待1s
+        await asyncio.sleep(1)
 
         # 调整页面大小并截图
         await page.set_viewport_size({"width": max_body_width, "height": page_height + 100})
