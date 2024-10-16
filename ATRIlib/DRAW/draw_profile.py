@@ -168,12 +168,6 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
         h1 {{ font-size: 32px; }}
         h2 {{ font-size: 28px; }}
         p {{ font-size: 20px; }}
-        img {{
-            max-width: {max_img_width}px;
-            width: auto;
-            height: auto;
-            display: block;
-        }}
 
         .bbcode-spoilerbox__link {{
             text-align: left;
@@ -196,7 +190,7 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
             line-height: 1;  /* 确保箭头垂直对齐 */
         }}
 
-        /* 新添加的规则：将 rel="nofollow" 的链接颜色改为浅绿色 */
+        /* 新添加规则：将 rel="nofollow" 的链接颜色改为浅绿色 */
         a[rel="nofollow"] {{
             color: #90EE90;  /* 浅绿色 */
         }}
@@ -236,14 +230,29 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
         .proportional-container__height {{
             display: block;
             position: relative;
+            max-width: {max_body_width}px;
+            margin: 0 auto;
+            overflow: hidden;  /* 添加这行，防止内容溢出 */
         }}
 
         .proportional-container__content {{
             position: absolute;
-            height: 100%;
-            width: 100%;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;  /* 修改这行 */
+            max-height: 100%;  /* 修改这行 */
+            object-fit: contain;
+        }}
+
+        .proportional-container img,
+        .proportional-container svg {{
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }}
 
         /* 添加 .bbcode-spoilerbox__body 的样式 */
@@ -260,42 +269,44 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
 
     js = """
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 展开所有 spoiler
-        var spoilers = document.querySelectorAll('.bbcode-spoilerbox');
-        spoilers.forEach(function(spoiler) {
-            spoiler.classList.add('js-spoilerbox--open');
-        });
-
-        // 居中所有图片，保持文字左对齐
-        var images = document.querySelectorAll('img');
-        images.forEach(function(img) {
-            var parent = img.parentElement;
-            if (parent) {
-                parent.style.textAlign = 'center';
-                img.style.margin = '0 auto';
-                img.style.display = 'block';
-            }
-        });
-
-        // 特别处理 proportional-container
-        var proportionalContainers = document.querySelectorAll('.proportional-container');
-        proportionalContainers.forEach(function(container) {
-            container.style.textAlign = 'center';
-            var img = container.querySelector('img');
-            if (img) {
-                img.style.margin = '0 auto';
-                img.style.display = 'block';
-            }
-        });
-
-        // 确保文字段落保持左对齐
-        var paragraphs = document.querySelectorAll('p');
-        paragraphs.forEach(function(p) {
-            p.style.textAlign = 'left';
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    // 处理所有图片和SVG
+    var images = document.querySelectorAll('img, svg');
+    images.forEach(function(img) {
+        var parent = img.parentElement;
+        if (parent) {
+            parent.style.textAlign = 'center';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            img.style.width = 'auto';
+            img.style.height = 'auto';
+            img.style.objectFit = 'contain';
+        }
     });
-    </script>
+
+    // 特别处理 proportional-container
+    var proportionalContainers = document.querySelectorAll('.proportional-container');
+    proportionalContainers.forEach(function(container) {
+        var content = container.querySelector('.proportional-container__content');
+        if (content) {
+            var img = content.querySelector('img, svg');
+            if (img) {
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+                img.style.objectFit = 'contain';
+            }
+        }
+    });
+
+    // 确保文字段落保持左对齐
+    var paragraphs = document.querySelectorAll('p');
+    paragraphs.forEach(function(p) {
+        p.style.textAlign = 'left';
+    });
+});
+</script>
     """
     
     # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标签
