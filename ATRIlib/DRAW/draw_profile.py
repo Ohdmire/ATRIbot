@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import os
 import logging
-from PIL import Image, ImageSequence, ImageDraw
+from PIL import Image, ImageSequence
 import io
 from playwright.async_api import async_playwright
 from ATRIlib.TOOLS.Download import download_resource_async
@@ -355,34 +355,10 @@ document.addEventListener('DOMContentLoaded', function() {
         # 网页等待1s
         await asyncio.sleep(1)
 
-        # 设置最大截图高度
-        max_screenshot_height = 32000  # 略小于32768以留有余地
-        
-        # 如果页面高度超过最大截图高度，分段截图
-        if page_height > max_screenshot_height:
-            screenshots = []
-            for start_height in range(0, page_height, max_screenshot_height):
-                end_height = min(start_height + max_screenshot_height, page_height)
-                await page.set_viewport_size({"width": max_body_width, "height": end_height - start_height})
-                await page.evaluate(f"window.scrollTo(0, {start_height})")
-                screenshot = await page.screenshot(full_page=False, scale='css')
-                screenshots.append(Image.open(io.BytesIO(screenshot)))
-            
-            # 拼接截图
-            total_height = sum(img.height for img in screenshots)
-            combined_image = Image.new('RGB', (screenshots[0].width, total_height))
-            y_offset = 0
-            for img in screenshots:
-                combined_image.paste(img, (0, y_offset))
-                y_offset += img.height
-            
-            png_output_path = profile_result_path / f"{user_id}.png"
-            combined_image.save(png_output_path, format='PNG')
-        else:
-            # 如果页面高度在限制范围内，直接截图
-            await page.set_viewport_size({"width": max_body_width, "height": page_height + 100})
-            png_output_path = profile_result_path / f"{user_id}.png"
-            await page.screenshot(path=str(png_output_path), full_page=True, scale='css')
+        # 调整页面大小并截图，使用 scale: 'css' 选项
+        await page.set_viewport_size({"width": max_body_width, "height": page_height + 100})
+        png_output_path = profile_result_path / f"{user_id}.png"
+        await page.screenshot(path=str(png_output_path), full_page=True, scale='css')
 
         await browser.close()
 
