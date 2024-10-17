@@ -66,6 +66,11 @@ async def process_html(html_string):
             if src and src.startswith(('http://', 'https://')):
                 resources_to_download.append((src, tag, 'src'))
 
+    # 处理 proportional-container
+    for span in soup.find_all('span', class_='proportional-container'):
+        if 'data-src' in span.attrs:
+            del span['data-src']
+
     results = await download_resource_async(resources_to_download)
 
     # 更新HTML的链接
@@ -130,9 +135,19 @@ async def process_html(html_string):
             if tag.name == 'img':
                 tag[attr] = "resources/error-404.png"
 
+    # # 清空所有 class="imagemap__link" 的 href 属性
+    # for link in soup.find_all('a', class_='imagemap__link'):
+    #     if 'href' in link.attrs:
+    #         del link['href']
+
+    # 清空所有 href 以 https://osu.ppy.sh/users/ 开头的链接
+    for link in soup.find_all('a', href=lambda href: href and href.startswith('https://')):
+        logger.info(f"清空链接: {link}")
+        del link['href']
+
     return str(soup)
 
-async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, avatar_url=None, username=None, user_id=None):
+async def html_to_image(html_string, max_body_width=1650, avatar_url=None, username=None, user_id=None):
     """
     将HTML字符串渲染成图片，写入文件，然后返回BytesIO对象
     """
@@ -183,7 +198,7 @@ async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, av
         }}
 
         .bbcode-spoilerbox__link::before {{
-            content: "↴";  /* 在开头添加向下箭头 */
+            content: "↴";  /* 开头添加向下箭头 */
             display: inline-block;
             margin-right: 5px;
             font-size: 1.2em;  /* 微增大箭头大小 */
@@ -355,45 +370,100 @@ document.addEventListener('DOMContentLoaded', function() {
         # 网页等待1s
         await asyncio.sleep(1)
 
-        # 调整页面大小并截图，使用 scale: 'css' 选项
-        await page.set_viewport_size({"width": max_body_width, "height": page_height + 100})
-        png_output_path = profile_result_path / f"{user_id}.png"
-        await page.screenshot(path=str(png_output_path), full_page=True, scale='css')
+        # 如果页面高度超过32768，分成两部分截图
+        if page_height > 32768:
+            first_part_height = 32768
+            second_part_height = page_height - 32768
+
+            # 截取第一部分
+            await page.set_viewport_size({"width": max_body_width, "height": first_part_height})
+            first_part_path = profile_result_path / f"{user_id}_part1.png"
+            await page.screenshot(path=str(first_part_path), full_page=False, clip={"x": 0, "y": 0, "width": max_body_width, "height": first_part_height})
+
+            # 滚动到第二部分
+            await page.evaluate(f"window.scrollTo(0, {first_part_height})")
+            
+            # 等待一段时间让页面稳定
+            await asyncio.sleep(2)
+
+            # 等待可能的动态内容加载
+            try:
+                await page.wait_for_function("""
+                    () => {
+                        const images = Array.from(document.images);
+                        return images.every(img => img.complete);
+                    }
+                """, timeout=10000)
+            except Exception as e:
+                logger.warning(f"等待图片part2加载完成时发生错误: {str(e)}")
+
+            # 截取第二部分
+            await page.set_viewport_size({"width": max_body_width, "height": second_part_height})
+            second_part_path = profile_result_path / f"{user_id}_part2.png"
+            await page.screenshot(path=str(second_part_path), full_page=False, clip={"x": 0, "y": 0, "width": max_body_width, "height": second_part_height})
+
+            # 合并两部分图片
+            with Image.open(first_part_path) as img1, Image.open(second_part_path) as img2:
+                total_height = img1.height + img2.height
+                max_allowed_height = 24000
+                
+                if total_height > max_allowed_height:
+                    # 计算缩放比例
+                    scale_factor = max_allowed_height / total_height
+                    new_width = int(max_body_width * scale_factor)
+                    new_height1 = int(img1.height * scale_factor)
+                    new_height2 = int(img2.height * scale_factor)
+                    
+                    img1 = img1.resize((new_width, new_height1), Image.LANCZOS)
+                    img2 = img2.resize((new_width, new_height2), Image.LANCZOS)
+                
+                # 创建新图像并粘贴两部分
+                combined_img = Image.new('RGB', (img1.width, img1.height + img2.height))
+                combined_img.paste(img1, (0, 0))
+                combined_img.paste(img2, (0, img1.height))
+                
+                # 保存为JPEG
+                jpeg_output_path = profile_result_path / f"{user_id}.jpg"
+                combined_img.save(jpeg_output_path, 'JPEG', quality=95, optimize=True)
+            
+            # 清理临时文件
+            # os.remove(first_part_path)
+            # os.remove(second_part_path)
+        else:
+            # 如果页面高度不超过32768，直接截图
+            await page.set_viewport_size({"width": max_body_width, "height": page_height})
+            png_output_path = profile_result_path / f"{user_id}.png"
+            await page.screenshot(path=str(png_output_path), full_page=True)
+            
+            # 转换为JPEG
+            with Image.open(png_output_path) as img:
+                if img.height > 24000:
+                    # 缩放图片
+                    scale_factor = 24000 / img.height
+                    new_size = (int(img.width * scale_factor), 24000)
+                    img = img.resize(new_size, Image.LANCZOS)
+                
+                jpeg_output_path = profile_result_path / f"{user_id}.jpg"
+                img.convert('RGB').save(jpeg_output_path, 'JPEG', quality=95, optimize=True)
+            
+            # 清理临时文件
+            os.remove(png_output_path)
 
         await browser.close()
 
-    # 记录生成的PNG文件大小
-    png_file_size = os.path.getsize(png_output_path)
-    logger.info(f"生成的PNG文件大小: {png_file_size / 1024 / 1024:.2f} MB")
-
-    # 将PNG转换为JPEG
-    with Image.open(png_output_path) as img:
-        # 确保图片尺寸不超过65000x65000
-        max_size = 24000
-        if img.width > max_size or img.height > max_size:
-            ratio = min(max_size / img.width, max_size / img.height)
-            new_size = (int(img.width * ratio), int(img.height * ratio))
-            img = img.resize(new_size, Image.LANCZOS)
-
-        # 转换图像模式为RGB
-        if img.mode in ('RGBA', 'P'):
-            img = img.convert('RGB')
-
-        img_byte_arr = io.BytesIO()
-        img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
-        
-        img_size = len(img_byte_arr.getvalue())
-        logger.info(f"转换后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: 95%")
+    # 读取生成的JPEG文件
+    with open(jpeg_output_path, 'rb') as f:
+        img_byte_arr = io.BytesIO(f.read())
 
     # 清理临时文件
-    os.remove(png_output_path)
-    os.remove(temp_html_path)
-    for file in (profile_result_path / 'resources').glob('*'):
-        os.remove(file)
+    # os.remove(jpeg_output_path)
+    # os.remove(temp_html_path)
+    # for file in (profile_result_path / 'resources').glob('*'):
+    #     os.remove(file)
 
     img_byte_arr.seek(0)
     return img_byte_arr
 
 async def draw_profile(html_content, avatar_url, username, user_id):
-    result = await html_to_image(html_content, max_img_width=1400, max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
+    result = await html_to_image(html_content, max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
     return result
