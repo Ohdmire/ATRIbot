@@ -391,35 +391,31 @@ document.addEventListener('DOMContentLoaded', function() {
         combined_image.paste(img, (0, y_offset))
         y_offset += img.height
 
-    # 保存拼接后的图片
-    png_output_path = profile_result_path / f"{user_id}.png"
-    combined_image.save(png_output_path, format='PNG')
-
-    # 记录生成的PNG文件大小
-    png_file_size = os.path.getsize(png_output_path)
-    logger.info(f"生成的PNG文件大小: {png_file_size / 1024 / 1024:.2f} MB")
-
-    # 将PNG转换为JPEG
-    img = combined_image
     # 确保图片尺寸不超过65000x65000
     max_size = 24000
-    if img.width > max_size or img.height > max_size:
-        ratio = min(max_size / img.width, max_size / img.height)
-        new_size = (int(img.width * ratio), int(img.height * ratio))
-        img = img.resize(new_size, Image.LANCZOS)
+    if combined_image.width > max_size or combined_image.height > max_size:
+        ratio = min(max_size / combined_image.width, max_size / combined_image.height)
+        new_size = (int(combined_image.width * ratio), int(combined_image.height * ratio))
+        combined_image = combined_image.resize(new_size, Image.LANCZOS)
 
-    # 转换图像模式为RGB
-    if img.mode in ('RGBA', 'P'):
-        img = img.convert('RGB')
+    # 转换图像模式为RGB（如果需要）
+    if combined_image.mode in ('RGBA', 'P'):
+        combined_image = combined_image.convert('RGB')
 
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
-    
-    img_size = len(img_byte_arr.getvalue())
-    logger.info(f"转换后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: 95%")
+    # 保存为压缩的JPEG格式
+    jpeg_output_path = profile_result_path / f"{user_id}.jpg"
+    combined_image.save(jpeg_output_path, format='JPEG', quality=95, optimize=True)
+
+    # 记录生成的JPEG文件大小
+    jpeg_file_size = os.path.getsize(jpeg_output_path)
+    logger.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
+
+    # 将文件内容读入内存
+    with open(jpeg_output_path, 'rb') as f:
+        img_byte_arr = io.BytesIO(f.read())
 
     # 清理临时文件
-    os.remove(png_output_path)
+    os.remove(jpeg_output_path)
     os.remove(temp_html_path)
     for file in (profile_result_path / 'resources').glob('*'):
         os.remove(file)
