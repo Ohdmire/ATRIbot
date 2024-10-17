@@ -97,7 +97,7 @@ async def process_html(html_string):
                         tag.name = 'svg'
                         # 合并原始属性和 SVG 属性，保留 img 的样式
                         tag.attrs.update(svg_tag.attrs)
-                        # 确���保留原始的 class 和 style 属性
+                        # 确保保留原始的 class 和 style 属性
                         for attr in ['class', 'style']:
                             if attr in original_attrs:
                                 tag[attr] = original_attrs[attr]
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 确保文字段��保持左对齐
+    // 确保文字段落保持左对齐
     var paragraphs = document.querySelectorAll('p');
     paragraphs.forEach(function(p) {
         p.style.textAlign = 'left';
@@ -353,7 +353,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         # 计算需要截取的次数和每次截图的高度
         max_height = 32000
-        num_full_screenshots = (page_height - 1) // max_height  # 减1确保始终有最后一部分
+        num_full_screenshots = page_height / max_height
+        last_screenshot_height = page_height % max_height
 
         screenshots = []
         for i in range(num_full_screenshots):
@@ -363,13 +364,13 @@ document.addEventListener('DOMContentLoaded', function() {
             screenshot = await page.screenshot(full_page=False)
             screenshots.append(Image.open(io.BytesIO(screenshot)))
 
-        # 始终处理最后一个部分
-        remaining_height = page_height - (num_full_screenshots * max_height)
-        start_y = num_full_screenshots * max_height
-        await page.evaluate(f"window.scrollTo(0, {start_y})")
-        await page.set_viewport_size({"width": max_body_width, "height": remaining_height})
-        screenshot = await page.screenshot(full_page=False)
-        screenshots.append(Image.open(io.BytesIO(screenshot)))
+        # 处理最后一个不满32000高度的部分（如果有）
+        if last_screenshot_height > 0:
+            start_y = num_full_screenshots * max_height
+            await page.evaluate(f"window.scrollTo(0, {start_y})")
+            await page.set_viewport_size({"width": max_body_width, "height": last_screenshot_height})
+            screenshot = await page.screenshot(full_page=False)
+            screenshots.append(Image.open(io.BytesIO(screenshot)))
 
         await browser.close()
 
