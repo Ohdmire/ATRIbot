@@ -334,23 +334,8 @@ document.addEventListener('DOMContentLoaded', function() {
         page = await context.new_page()
         await page.goto(f"file://{temp_html_path.absolute()}")
 
-        # 等待所有图片加载完成，设置超时时间为10秒
-        try:
-            await page.evaluate("""
-                () => Promise.race([
-                    Promise.all(
-                        Array.from(document.images)
-                            .filter(img => !img.complete)
-                            .map(img => new Promise((resolve, reject) => {
-                                img.onload = resolve;
-                                img.onerror = reject;
-                            }))
-                    ),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Image loading timeout')), 10000))
-                ])
-            """)
-        except Exception as e:
-            logger.warning(f"图片加载超时或发生错误: {str(e)}")
+        # 等待加载完成
+        await page.wait_for_load_state('domcontentloaded')
 
         # 获取页面高度
         page_height = await page.evaluate("""
@@ -366,18 +351,24 @@ document.addEventListener('DOMContentLoaded', function() {
         # 网页等待1s
         await asyncio.sleep(1)
 
-        # 计算需要截取的次数
-        max_height = 32000  # 稍微小于32767的值
-        num_screenshots = -(-page_height // max_height)  # 向上取整
+        # 计算需要截取的次数和每次截图的高度
+        max_height = 32000
+        num_full_screenshots = page_height // max_height
+        last_screenshot_height = page_height % max_height
 
         screenshots = []
-        for i in range(num_screenshots):
+        for i in range(num_full_screenshots):
             start_y = i * max_height
-            height = min(max_height, page_height - start_y)
-            
             await page.evaluate(f"window.scrollTo(0, {start_y})")
-            await page.set_viewport_size({"width": max_body_width, "height": height})
-            
+            await page.set_viewport_size({"width": max_body_width, "height": max_height})
+            screenshot = await page.screenshot(full_page=False)
+            screenshots.append(Image.open(io.BytesIO(screenshot)))
+
+        # 处理最后一个不满32000高度的部分（如果有）
+        if last_screenshot_height > 0:
+            start_y = num_full_screenshots * max_height
+            await page.evaluate(f"window.scrollTo(0, {start_y})")
+            await page.set_viewport_size({"width": max_body_width, "height": last_screenshot_height})
             screenshot = await page.screenshot(full_page=False)
             screenshots.append(Image.open(io.BytesIO(screenshot)))
 
