@@ -66,6 +66,17 @@ async def process_html(html_string):
             if src and src.startswith(('http://', 'https://')):
                 resources_to_download.append((src, tag, 'src'))
 
+     # 处理 proportional-container
+    for span in soup.find_all('span', class_='proportional-container'):
+        if 'data-src' in span.attrs:
+            del span['data-src']
+
+    # 清空所有 href 以 https://osu.ppy.sh/users/ 开头的链接
+    for link in soup.find_all('a', href=lambda href: href and href.startswith('https://')):
+        logger.info(f"清空链接: {link}")
+        link['href'] = ""
+
+
     results = await download_resource_async(resources_to_download)
 
     # 更新HTML的链接
@@ -132,7 +143,7 @@ async def process_html(html_string):
 
     return str(soup)
 
-async def html_to_image(html_string, max_img_width=1400, max_body_width=1650, avatar_url=None, username=None, user_id=None):
+async def html_to_image(html_string, max_body_width=1650, avatar_url=None, username=None, user_id=None):
     """
     将HTML字符串渲染成图片，写入文件，然后返回BytesIO对象
     """
@@ -395,5 +406,5 @@ document.addEventListener('DOMContentLoaded', function() {
     return img_byte_arr
 
 async def draw_profile(html_content, avatar_url, username, user_id):
-    result = await html_to_image(html_content, max_img_width=1400, max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
+    result = await html_to_image(html_content,max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
     return result
