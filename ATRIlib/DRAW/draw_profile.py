@@ -386,16 +386,23 @@ document.addEventListener('DOMContentLoaded', function() {
             # 等待一段时间让页面稳定
             await asyncio.sleep(2)
 
-            # 等待可能的动态内容加载
+            # 等待所有图片加载完成，设置超时时间为10秒
             try:
-                await page.wait_for_function("""
-                    () => {
-                        const images = Array.from(document.images);
-                        return images.every(img => img.complete);
-                    }
-                """, timeout=10000)
+                await page.evaluate("""
+                    () => Promise.race([
+                        Promise.all(
+                            Array.from(document.images)
+                                .filter(img => !img.complete)
+                                .map(img => new Promise((resolve, reject) => {
+                                    img.onload = resolve;
+                                    img.onerror = reject;
+                                }))
+                        ),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Image loading timeout')), 10000))
+                    ])
+                """)
             except Exception as e:
-                logger.warning(f"等待图片part2加载完成时发生错误: {str(e)}")
+                logger.warning(f"图片part2加载超时或发生错误: {str(e)}")
 
             # 截取第二部分
             await page.set_viewport_size({"width": max_body_width, "height": second_part_height})
