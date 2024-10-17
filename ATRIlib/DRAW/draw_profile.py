@@ -334,33 +334,12 @@ document.addEventListener('DOMContentLoaded', function() {
         page = await context.new_page()
         await page.goto(f"file://{temp_html_path.absolute()}")
 
-        # 等待所有图片加载完成，设置超时时间为10秒
-        try:
-            await page.evaluate("""
-                () => Promise.race([
-                    Promise.all(
-                        Array.from(document.images)
-                            .filter(img => !img.complete)
-                            .map(img => new Promise((resolve, reject) => {
-                                img.onload = resolve;
-                                img.onerror = reject;
-                            }))
-                    ),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Image loading timeout')), 10000))
-                ])
-            """)
-        except Exception as e:
-            logger.warning(f"图片加载超时或发生错误: {str(e)}")
+        # 等待加载完成
+        await page.wait_for_load_state('domcontentloaded')
 
         # 获取页面高度
         page_height = await page.evaluate("""
-            () => Math.max(
-                document.body.scrollHeight,
-                document.body.offsetHeight,
-                document.documentElement.clientHeight,
-                document.documentElement.scrollHeight,
-                document.documentElement.offsetHeight
-            )
+            document.documentElement.clientHeight
         """)
 
         # 网页等待1s
@@ -415,8 +394,8 @@ document.addEventListener('DOMContentLoaded', function() {
         img_byte_arr = io.BytesIO(f.read())
 
     # 清理临时文件
-    os.remove(jpeg_output_path)
-    os.remove(temp_html_path)
+    # os.remove(jpeg_output_path)
+    # os.remove(temp_html_path)
     for file in (profile_result_path / 'resources').glob('*'):
         os.remove(file)
 
