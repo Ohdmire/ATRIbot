@@ -44,7 +44,7 @@ RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/we
     && pip install --no-cache-dir -r requirements.txt
 
 # 安装 Playwright
-RUN pip install playwright && playwright install chromium
+RUN pip install playwright && playwright install firefox
 
 # 复制项目文件到工作目录
 COPY . .

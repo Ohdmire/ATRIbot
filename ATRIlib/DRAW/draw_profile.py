@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         f.write(html_with_css)
     
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        browser = await p.firefox.launch()
         context = await browser.new_context(viewport={'width': max_body_width, 'height': 1080})
         page = await context.new_page()
         await page.goto(f"file://{temp_html_path.absolute()}")
@@ -366,35 +366,57 @@ document.addEventListener('DOMContentLoaded', function() {
         # 网页等待1s
         await asyncio.sleep(1)
 
-        # 调整页面大小并截图，使用 scale: 'css' 选项
-        await page.set_viewport_size({"width": max_body_width, "height": page_height + 100})
-        png_output_path = profile_result_path / f"{user_id}.png"
-        await page.screenshot(path=str(png_output_path), full_page=True, scale='css')
+        # 计算需要截取的次数
+        max_height = 32000  # 稍微小于32767的值
+        num_screenshots = -(-page_height // max_height)  # 向上取整
+
+        screenshots = []
+        for i in range(num_screenshots):
+            start_y = i * max_height
+            height = min(max_height, page_height - start_y)
+            
+            await page.evaluate(f"window.scrollTo(0, {start_y})")
+            await page.set_viewport_size({"width": max_body_width, "height": height})
+            
+            screenshot = await page.screenshot(full_page=False)
+            screenshots.append(Image.open(io.BytesIO(screenshot)))
 
         await browser.close()
+
+    # 拼接图片
+    total_height = sum(img.height for img in screenshots)
+    combined_image = Image.new('RGB', (max_body_width, total_height))
+    y_offset = 0
+    for img in screenshots:
+        combined_image.paste(img, (0, y_offset))
+        y_offset += img.height
+
+    # 保存拼接后的图片
+    png_output_path = profile_result_path / f"{user_id}.png"
+    combined_image.save(png_output_path, format='PNG')
 
     # 记录生成的PNG文件大小
     png_file_size = os.path.getsize(png_output_path)
     logger.info(f"生成的PNG文件大小: {png_file_size / 1024 / 1024:.2f} MB")
 
     # 将PNG转换为JPEG
-    with Image.open(png_output_path) as img:
-        # 确保图片尺寸不超过65000x65000
-        max_size = 24000
-        if img.width > max_size or img.height > max_size:
-            ratio = min(max_size / img.width, max_size / img.height)
-            new_size = (int(img.width * ratio), int(img.height * ratio))
-            img = img.resize(new_size, Image.LANCZOS)
+    img = combined_image
+    # 确保图片尺寸不超过65000x65000
+    max_size = 24000
+    if img.width > max_size or img.height > max_size:
+        ratio = min(max_size / img.width, max_size / img.height)
+        new_size = (int(img.width * ratio), int(img.height * ratio))
+        img = img.resize(new_size, Image.LANCZOS)
 
-        # 转换图像模式为RGB
-        if img.mode in ('RGBA', 'P'):
-            img = img.convert('RGB')
+    # 转换图像模式为RGB
+    if img.mode in ('RGBA', 'P'):
+        img = img.convert('RGB')
 
-        img_byte_arr = io.BytesIO()
-        img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
-        
-        img_size = len(img_byte_arr.getvalue())
-        logger.info(f"转换后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: 95%")
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
+    
+    img_size = len(img_byte_arr.getvalue())
+    logger.info(f"转换后的JPEG文件大小: {img_size / 1024 / 1024:.2f} MB，质量: 95%")
 
     # 清理临时文件
     os.remove(png_output_path)
