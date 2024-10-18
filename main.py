@@ -24,6 +24,9 @@ import logging.config
 import asyncio
 import os
 
+with open('./log_config.ini', 'r', encoding='utf-8') as f:
+    logging.config.fileConfig(f)
+
 class IName(BaseModel):
     qq_id: int
     pp_range : Optional[int] = None
@@ -307,4 +310,4 @@ async def job_update_bind_all():
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='0.0.0.0', port=8008, log_config="log_config.ini", reload=True, timeout_keep_alive=120)
+    uvicorn.run('main:app', host='0.0.0.0', port=8008, reload=True, timeout_keep_alive=120)

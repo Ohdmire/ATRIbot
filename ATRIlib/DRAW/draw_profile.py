@@ -6,16 +6,12 @@ from PIL import Image, ImageSequence
 import io
 from playwright.async_api import async_playwright
 from ATRIlib.TOOLS.Download import download_resource_async
-from ATRIlib.TOOLS.CommonTools import get_base64_encoded_data
 import hashlib
 from urllib.parse import urlparse
 import shutil
-import asyncio
 import math
 
 Image.MAX_IMAGE_PIXELS = None
-
-logger = logging.getLogger(__name__)
 
 profile_result_path = Path('./data/tmp/profile')
 ERROR_IMAGE_PATH = Path('./assets/error/error-404.png')
@@ -76,7 +72,6 @@ async def process_html(html_string):
 
     # 清空所有 href 以 https://osu.ppy.sh/users/ 开头的链接
     for link in soup.find_all('a', href=lambda href: href and href.startswith('https://')):
-        logger.info(f"清空链接: {link}")
         link['href'] = ""
 
     # 检查本地是否已有资源，如果没有则添加到下载列表
@@ -91,7 +86,7 @@ async def process_html(html_string):
         else:
             # 如果本地已有资源，直接更新链接
             tag[attr] = f"resources/{filename}"
-            logger.info(f"使用本地资源: {url} -> resources/{filename}")
+            logging.info(f"使用本地资源: {url} -> resources/{filename}")
 
     # 只下载不存在的资源
     if resources_to_download:
@@ -100,7 +95,7 @@ async def process_html(html_string):
         # 更新HTML的链接
         for (url, tag, attr), (_, content, file_type) in zip(resources_to_download, results):
             if content:
-                logger.info(f"处理新下载的资源: {url}, 文件类型: {file_type}")
+                logging.info(f"处理新下载的资源: {url}, 文件类型: {file_type}")
 
                 if file_type == 'svg':
                     # SVG 处理
@@ -132,9 +127,9 @@ async def process_html(html_string):
                         else:
                             tag[attr] = url  # 保留原始URL
                     except Exception as e:
-                        logger.warning(f"处理SVG时出错: {str(e)}")
+                        logging.warning(f"处理SVG时出错: {str(e)}")
                         # 如果处理失败，保留原始URL
-                        logger.info(f"保留原始SVG URL: {url}")
+                        logging.info(f"保留原始SVG URL: {url}")
                         tag[attr] = url
                 elif file_type == 'gif':
                     # GIF 处理
@@ -147,7 +142,7 @@ async def process_html(html_string):
                         f.write(content)
                     
                     tag[attr] = f"resources/{filename}"
-                    logger.info(f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)")
+                    logging.info(f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)")
                 else:
                     # 其他资源的处理
                     file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
@@ -158,9 +153,9 @@ async def process_html(html_string):
                         f.write(content)
                     
                     tag[attr] = f"resources/{filename}"
-                    logger.info(f"更新链接: {url} -> resources/{filename}")
+                    logging.info(f"更新链接: {url} -> resources/{filename}")
             else:
-                logger.warning(f"无法下载: {url}")
+                logging.warning(f"无法下载: {url}")
                 if tag.name == 'img':
                     tag[attr] = "resources/error-404.png"
 
@@ -388,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
         # 滚动回顶部
         await page.evaluate("window.scrollTo(0, 0)")
 
-        logger.info(f"最终页面高度: {page_height}")
+        logging.info(f"最终页面高度: {page_height}")
         max_height = 32000  # 稍微小于32767的值
         num_screenshots = math.ceil(page_height / max_height)
 
@@ -410,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         await browser.close()
 
-        logger.info(f"总共生成了 {num_screenshots} 张截图")
+        logging.info(f"总共生成了 {num_screenshots} 张截图")
 
     # 拼接图片
     total_height = sum(img.height for img in screenshots)
@@ -437,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     # 记录生成的JPEG文件大小
     jpeg_file_size = os.path.getsize(jpeg_output_path)
-    logger.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
+    logging.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
 
     # 将文件内容入内存
     with open(jpeg_output_path, 'rb') as f:
