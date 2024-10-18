@@ -48,6 +48,9 @@ import traceback
 import asyncio
 
 
+logger = logging.getLogger(__name__)
+
+
 def handle_exceptions(func):
     if asyncio.iscoroutinefunction(func):
         async def wrapper(*args, **kwargs):
@@ -600,10 +603,12 @@ async def format_beatmap_type_ba(qq_id, osuname):
 
 @handle_exceptions
 async def format_profile(qq_id, osuname):
-
+    logger.info(f"开始生成用户资料 - qq_id: {qq_id}, osuname: {osuname}")
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
-    return await calculate_profile(user_id)
+    result = await calculate_profile(user_id)
+    logger.info(f"用户资料生成完成 - user_id: {user_id}")
+    return result
 
 @handle_exceptions
 async def format_lazer_update():
