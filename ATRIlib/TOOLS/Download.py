@@ -15,7 +15,7 @@ avatar_path = Path('./data/avatar/')
 cover_path = Path('./data/cover/')
 medal_path = Path('./assets/medal/')
 semaphore = asyncio.Semaphore(16)
-semaphore_small = asyncio.Semaphore(8)
+semaphore_small = asyncio.Semaphore(4)
 
 
 # 下载ppy的资源(图片)
