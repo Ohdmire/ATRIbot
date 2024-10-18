@@ -159,7 +159,7 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
             <img src="{avatar_url}" style="width: 200px; height: 200px; border-radius: 50%;">
         </div>
         '''
-    username_html = f'<div style="text-align: center; margin-bottom: 20px; color: white;"><strong>{username}</strong></div>' if username else ""
+    username_html = f'<div class="user-name" style="text-align: center; margin-bottom: 20px;">{username}</div>' if username else ""
     
     # 添加分割线
     divider_html = '<hr style="border: 0; height: 1px; background: #ffffff; margin: 20px 0;">'
@@ -190,7 +190,7 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
             font-weight: bold;
             width: max-content;
             max-width: 100%;
-            color: #66ccff;  /* 新的颜色蓝色 */
+            color: #66ccff;  /* 新的颜色色 */
             text-decoration: none;  /* 移除下划线 */
         }}
 
@@ -269,10 +269,16 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
 
         /* 添加 .bbcode-spoilerbox__body 的样式 */
         .bbcode-spoilerbox__body {{
-            margin-left: 20px;  /* 左侧偏移 */
+            margin-left: 10px;  /* 左侧偏移 */
             padding: 10px;  /* 内边距 */
             border-left: 2px solid #66ccff;  /* 左侧边框，使用浅蓝色 */
             margin-top: 5px;  /* 与标题的间距 */
+        }}
+
+        /* 修改 user-name 的颜色为淡粉色 */
+        .user-name {{
+            color: #FFB6C1;  /* 淡粉色 */
+            font-weight: bold;  /* 加粗 */
         }}
     </style>
     """
@@ -343,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
             () => {
                 return new Promise((resolve) => {
                     let totalHeight = 0;
-                    let distance = 1000;
+                    let distance = 300;
                     let timer = setInterval(() => {
                         let scrollHeight = document.body.scrollHeight;
                         window.scrollBy(0, distance);
@@ -365,8 +371,6 @@ document.addEventListener('DOMContentLoaded', function() {
         num_screenshots = math.ceil(page_height / max_height)
 
         screenshots = []
-        screenshots_dir = profile_result_path / f"{user_id}_screenshots"
-        screenshots_dir.mkdir(parents=True, exist_ok=True)
 
         # 设置viewport高度为页面高度，确保可以捕获整个页面
         await page.set_viewport_size({"width": max_body_width, "height": page_height})
@@ -381,11 +385,6 @@ document.addEventListener('DOMContentLoaded', function() {
             )
             screenshot_image = Image.open(io.BytesIO(screenshot))
             screenshots.append(screenshot_image)
-            
-            # 保存单独的截图
-            screenshot_path = screenshots_dir / f"screenshot_{i+1}.png"
-            screenshot_image.save(screenshot_path)
-            logger.info(f"保存截图: {screenshot_path}")
 
         await browser.close()
 
@@ -418,13 +417,13 @@ document.addEventListener('DOMContentLoaded', function() {
     jpeg_file_size = os.path.getsize(jpeg_output_path)
     logger.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
 
-    # 将文件内容读入内存
+    # 将文件内容入内存
     with open(jpeg_output_path, 'rb') as f:
         img_byte_arr = io.BytesIO(f.read())
 
     # 清理临时文件
-    #os.remove(jpeg_output_path)
-    #os.remove(temp_html_path)
+    os.remove(jpeg_output_path)
+    os.remove(temp_html_path)
     for file in (profile_result_path / 'resources').glob('*'):
         os.remove(file)
 
