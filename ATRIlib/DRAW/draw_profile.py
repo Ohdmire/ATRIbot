@@ -43,31 +43,33 @@ async def process_html(html_string):
     """
     soup = BeautifulSoup(html_string, 'html.parser')
     resources_to_download = []
+    resources_to_update = []
 
     # 确保资源目录存在
     resource_dir = profile_result_path / 'resources'
     resource_dir.mkdir(parents=True, exist_ok=True)
 
-    # 复制错误图片到资源目录
+    # 复制错误图片到资源目录（如果不存在）
     error_image_dest = resource_dir / 'error-404.png'
-    shutil.copy(ERROR_IMAGE_PATH, error_image_dest)
+    if not error_image_dest.exists():
+        shutil.copy(ERROR_IMAGE_PATH, error_image_dest)
 
-    # 收集所有需要下载的资源
+    # 收集所有需要处理的资源
     for tag in soup.find_all(['img', 'link', 'script', 'svg']):
         if tag.name in ['img', 'svg']:
             src = tag.get('src') or tag.get('data')
             if src and src.startswith(('http://', 'https://')):
-                resources_to_download.append((src, tag, 'src' if tag.name == 'img' else 'data'))
+                resources_to_update.append((src, tag, 'src' if tag.name == 'img' else 'data'))
         elif tag.name == 'link' and tag.get('rel') == ['stylesheet']:
             href = tag.get('href')
             if href and href.startswith(('http://', 'https://')):
-                resources_to_download.append((href, tag, 'href'))
+                resources_to_update.append((href, tag, 'href'))
         elif tag.name == 'script' and tag.get('src'):
             src = tag.get('src')
             if src and src.startswith(('http://', 'https://')):
-                resources_to_download.append((src, tag, 'src'))
+                resources_to_update.append((src, tag, 'src'))
 
-     # 处理 proportional-container
+    # 处理 proportional-container
     for span in soup.find_all('span', class_='proportional-container'):
         if 'data-src' in span.attrs:
             del span['data-src']
@@ -77,70 +79,90 @@ async def process_html(html_string):
         logger.info(f"清空链接: {link}")
         link['href'] = ""
 
+    # 检查本地是否已有资源，如果没有则添加到下载列表
+    for url, tag, attr in resources_to_update:
+        file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
+        filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+        # 特殊处理 如果是gif 则直接找转换过的png
+        local_path = resource_dir / filename
 
-    results = await download_resource_async(resources_to_download)
-
-    # 更新HTML的链接
-    for (url, tag, attr), (_, content, file_type) in zip(resources_to_download, results):
-        if content:
-            logger.info(f"处理资源: {url}, 文件类型: {file_type}")
-
-            if file_type == 'svg':
-                # SVG 处理
-                try:
-                    svg_content = content.decode('utf-8')
-                    svg_soup = BeautifulSoup(svg_content, 'html.parser')
-                    svg_tag = svg_soup.find('svg')
-                    if svg_tag:
-                        # 保存原始 img 标签的属性
-                        original_attrs = dict(tag.attrs)
-                        # 将原来的 img 标签替换为 svg 标签
-                        tag.name = 'svg'
-                        # 合并原始属性和 SVG 属性，保留 img 的样式
-                        tag.attrs.update(svg_tag.attrs)
-                        # 确保保留原始的 class 和 style 属性
-                        for attr in ['class', 'style']:
-                            if attr in original_attrs:
-                                tag[attr] = original_attrs[attr]
-                        # 添加 SVG 内容
-                        tag.clear()
-                        tag.extend(svg_tag.contents)
-                        logger.info(f"IMG替换SVG保留样式: {tag}")
-                    else:
-                        logger.warning(f"SVG内容中未找到SVG标签: {url}")
-                        tag[attr] = url  # 保留原始URL
-                except Exception as e:
-                    logger.error(f"处理SVG时出错: {str(e)}")
-                    # 如果处理失败，保留原始URL
-                    logger.info(f"保留原始SVG URL: {url}")
-                    tag[attr] = url
-            elif file_type == 'gif':
-                # GIF 处理
-                content = extract_last_frame_from_gif(content)
-                file_ext = '.png'
-                filename = hashlib.md5(url.encode()).hexdigest() + file_ext
-                local_path = resource_dir / filename
-                
-                with open(local_path, 'wb') as f:
-                    f.write(content)
-                
-                tag[attr] = f"resources/{filename}"
-                logger.info(f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)")
-            else:
-                # 其他资源的处理
-                file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
-                filename = hashlib.md5(url.encode()).hexdigest() + file_ext
-                local_path = resource_dir / filename
-                
-                with open(local_path, 'wb') as f:
-                    f.write(content)
-                
-                tag[attr] = f"resources/{filename}"
-                logger.info(f"更新链接: {url} -> resources/{filename}")
+        if not local_path.exists():
+            resources_to_download.append((url, tag, attr))
         else:
-            logger.warning(f"无法下载: {url}")
-            if tag.name == 'img':
-                tag[attr] = "resources/error-404.png"
+            # 如果本地已有资源，直接更新链接
+            tag[attr] = f"resources/{filename}"
+            logger.info(f"使用本地资源: {url} -> resources/{filename}")
+
+    # 只下载不存在的资源
+    if resources_to_download:
+        results = await download_resource_async(resources_to_download)
+
+        # 更新HTML的链接
+        for (url, tag, attr), (_, content, file_type) in zip(resources_to_download, results):
+            if content:
+                logger.info(f"处理新下载的资源: {url}, 文件类型: {file_type}")
+
+                if file_type == 'svg':
+                    # SVG 处理
+                    try:
+                        # file_ext = '.bin'
+                        # filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+                        # local_path = resource_dir / filename
+                        # # 保存为二进制文件
+                        # with open(local_path, 'wb') as f:
+                        #     f.write(content)
+
+                        svg_content = content.decode('utf-8')
+                        svg_soup = BeautifulSoup(svg_content, 'html.parser')
+                        svg_tag = svg_soup.find('svg')
+                        if svg_tag:
+                            # 保存原始 img 标签的属性
+                            original_attrs = dict(tag.attrs)
+                            # 将原来的 img 标签替换为 svg 标签
+                            tag.name = 'svg'
+                            # 合并原始属性和 SVG 属性，保留 img 的样式
+                            tag.attrs.update(svg_tag.attrs)
+                            # 确保保留原始的 class 和 style 属性
+                            for attr in ['class', 'style']:
+                                if attr in original_attrs:
+                                    tag[attr] = original_attrs[attr]
+                            # 添加 SVG 内容
+                            tag.clear()
+                            tag.extend(svg_tag.contents)
+                        else:
+                            tag[attr] = url  # 保留原始URL
+                    except Exception as e:
+                        logger.warning(f"处理SVG时出错: {str(e)}")
+                        # 如果处理失败，保留原始URL
+                        logger.info(f"保留原始SVG URL: {url}")
+                        tag[attr] = url
+                elif file_type == 'gif':
+                    # GIF 处理
+                    content = extract_last_frame_from_gif(content)
+                    file_ext = '.bin'
+                    filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+                    local_path = resource_dir / filename
+                    
+                    with open(local_path, 'wb') as f:
+                        f.write(content)
+                    
+                    tag[attr] = f"resources/{filename}"
+                    logger.info(f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)")
+                else:
+                    # 其他资源的处理
+                    file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
+                    filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+                    local_path = resource_dir / filename
+                    
+                    with open(local_path, 'wb') as f:
+                        f.write(content)
+                    
+                    tag[attr] = f"resources/{filename}"
+                    logger.info(f"更新链接: {url} -> resources/{filename}")
+            else:
+                logger.warning(f"无法下载: {url}")
+                if tag.name == 'img':
+                    tag[attr] = "resources/error-404.png"
 
     return str(soup)
 
@@ -327,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
     """
     
-    # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标签
+    # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标���
     html_with_css = f"<html><head>{css}{js}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
     
     # 将HTML内容写入临时文件
@@ -424,12 +446,12 @@ document.addEventListener('DOMContentLoaded', function() {
     # 清理临时文件
     os.remove(jpeg_output_path)
     os.remove(temp_html_path)
-    for file in (profile_result_path / 'resources').glob('*'):
-        os.remove(file)
+    # 不再删除resources目录中的文件
+    # for file in (profile_result_path / 'resources').glob('*'):
+    #     os.remove(file)
 
     img_byte_arr.seek(0)
     return img_byte_arr
-
 async def draw_profile(html_content, avatar_url, username, user_id):
     result = await html_to_image(html_content,max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
     return result
