@@ -394,8 +394,8 @@ document.addEventListener('DOMContentLoaded', function() {
         img_byte_arr = io.BytesIO(f.read())
 
     # 清理临时文件
-    # os.remove(jpeg_output_path)
-    # os.remove(temp_html_path)
+    os.remove(jpeg_output_path)
+    os.remove(temp_html_path)
     for file in (profile_result_path / 'resources').glob('*'):
         os.remove(file)
 
