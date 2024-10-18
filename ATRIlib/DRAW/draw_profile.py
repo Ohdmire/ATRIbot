@@ -11,6 +11,7 @@ import hashlib
 from urllib.parse import urlparse
 import shutil
 import asyncio
+import math
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -189,7 +190,7 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
             font-weight: bold;
             width: max-content;
             max-width: 100%;
-            color: #66ccff;  /* 新的颜色：浅蓝色 */
+            color: #66ccff;  /* 新的颜色蓝色 */
             text-decoration: none;  /* 移除下划线 */
         }}
 
@@ -311,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 确保文字段落保持左对齐
+    // 确文字段落保持左对齐
     var paragraphs = document.querySelectorAll('p');
     paragraphs.forEach(function(p) {
         p.style.textAlign = 'left';
@@ -334,33 +335,61 @@ document.addEventListener('DOMContentLoaded', function() {
         page = await context.new_page()
         await page.goto(f"file://{temp_html_path.absolute()}")
 
-        # 等待加载完成
+        # 等待页面加载完成
         await page.wait_for_load_state('domcontentloaded')
 
-        # 获取页面高度
+        # 缓慢滚动到页面底部并返回总高度
         page_height = await page.evaluate("""
-            document.documentElement.clientHeight
+            () => {
+                return new Promise((resolve) => {
+                    let totalHeight = 0;
+                    let distance = 1000;
+                    let timer = setInterval(() => {
+                        let scrollHeight = document.body.scrollHeight;
+                        window.scrollBy(0, distance);
+                        totalHeight += distance;
+                        if(totalHeight >= scrollHeight){
+                            clearInterval(timer);
+                            resolve(totalHeight);
+                        }
+                    }, 1);
+                });
+            }
         """)
 
-        # 网页等待1s
-        await asyncio.sleep(1)
+        # 滚动回顶部
+        await page.evaluate("window.scrollTo(0, 0)")
 
-        # 计算需要截取的次数
+        logger.info(f"最终页面高度: {page_height}")
         max_height = 32000  # 稍微小于32767的值
-        num_screenshots = -(-page_height // max_height)  # 向上取整
+        num_screenshots = math.ceil(page_height / max_height)
 
         screenshots = []
+        screenshots_dir = profile_result_path / f"{user_id}_screenshots"
+        screenshots_dir.mkdir(parents=True, exist_ok=True)
+
+        # 设置viewport高度为页面高度，确保可以捕获整个页面
+        await page.set_viewport_size({"width": max_body_width, "height": page_height})
+
         for i in range(num_screenshots):
             start_y = i * max_height
             height = min(max_height, page_height - start_y)
             
-            await page.evaluate(f"window.scrollTo(0, {start_y})")
-            await page.set_viewport_size({"width": max_body_width, "height": height})
+            screenshot = await page.screenshot(
+                full_page=False,
+                clip={'x': 0, 'y': start_y, 'width': max_body_width, 'height': height}
+            )
+            screenshot_image = Image.open(io.BytesIO(screenshot))
+            screenshots.append(screenshot_image)
             
-            screenshot = await page.screenshot(full_page=False)
-            screenshots.append(Image.open(io.BytesIO(screenshot)))
+            # 保存单独的截图
+            screenshot_path = screenshots_dir / f"screenshot_{i+1}.png"
+            screenshot_image.save(screenshot_path)
+            logger.info(f"保存截图: {screenshot_path}")
 
         await browser.close()
+
+        logger.info(f"总共生成了 {num_screenshots} 张截图")
 
     # 拼接图片
     total_height = sum(img.height for img in screenshots)
@@ -394,8 +423,8 @@ document.addEventListener('DOMContentLoaded', function() {
         img_byte_arr = io.BytesIO(f.read())
 
     # 清理临时文件
-    os.remove(jpeg_output_path)
-    os.remove(temp_html_path)
+    #os.remove(jpeg_output_path)
+    #os.remove(temp_html_path)
     for file in (profile_result_path / 'resources').glob('*'):
         os.remove(file)
 

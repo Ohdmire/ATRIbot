@@ -21,15 +21,6 @@ import uvicorn
 import logging
 import logging.config
 
-# 在程序开始时加载日志配置
-logging.config.fileConfig('log_config.ini')
-
-# 获取根日志记录器
-logger = logging.getLogger()
-
-# 测试日志
-logger.info("这是一条测试日志")
-
 import asyncio
 import os
 
