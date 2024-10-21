@@ -47,8 +47,6 @@ async def calculate_uu_medal(user_id):
 
     medalprstrct = get_user_medal_list_from_db(user_id)
 
-    raw = get_user_special_medal_list_from_db(user_id)
-
     medal_Value = {
         55: "🟢1*Pass",
         56: "🟢2*Pass",
@@ -66,13 +64,15 @@ async def calculate_uu_medal(user_id):
         66: "🟡4*FC",
         67: "🟡5*FC",
         68: "🟡6*FC",
+        69: "🟡7*FC",
+        70: "🟡8*FC",
         243: "🟡9*FC",
         245: "🟡10*FC",
     }
 
     result_dict = {}
 
-    for i in raw:
+    for i in medalprstrct:
         result_dict[medal_Value[i['achievement_id']]] = i['achieved_at']
 
     return result_dict
