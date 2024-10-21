@@ -28,7 +28,7 @@ from ATRIlib.interbot import get_interbot_test1,get_interbot_test2
 from ATRIlib.API.PPYapiv2 import get_token
 from ATRIlib.whatif import calculate_pp,calculate_rank
 
-from ATRIlib.medal import calculate_medal, download_all_medals, calculate_medal_pr,calculate_uu_medal
+from ATRIlib.medal import calculate_medal, download_all_medals, calculate_medal_pr,calculate_uu_medal,calculate_special_medal
 
 from ATRIlib.help import get_help
 
@@ -43,6 +43,11 @@ from ATRIlib.beatmaptype import calculate_beatmap_type_ba
 from ATRIlib.profile import calculate_profile
 
 from ATRIlib.lazerupdate import get_lazer_update
+
+from ATRIlib.DRAW.draw_medal import draw_special_medal
+from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
+
+from io import BytesIO
 
 import traceback
 import asyncio
@@ -458,6 +463,19 @@ async def format_uu_medal(qq_id, osuname):
     return result_text
 
 @handle_exceptions
+async def format_special_medal(qq_id, osuname):
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    await get_bpstruct(user_id)
+
+    raw_pass,raw_fc = await calculate_special_medal(user_id)
+    
+    img = draw_special_medal(raw_pass,raw_fc,username)
+
+    return img
+
+@handle_exceptions
 async def format_download_medal():
 
     raw = await download_all_medals()
@@ -703,6 +721,7 @@ def format_bind(qq_id, osuname):
     raw = update_bind_info(qq_id,osuname)
 
     return raw
+
 
 
 

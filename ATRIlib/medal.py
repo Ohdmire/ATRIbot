@@ -77,6 +77,46 @@ async def calculate_uu_medal(user_id):
 
     return result_dict
 
+async def calculate_special_medal(user_id):
+
+    specialmedalprstrct = get_user_special_medal_list_from_db(user_id)
+
+    pass_medal_Value = {
+        55: "1",
+        56: "2",
+        57: "3",
+        58: "4",
+        59: "5",
+        60: "6",
+        61: "7",
+        62: "8",
+        242: "9",
+        244: "10",
+    }
+
+    fc_medal_Value = {
+        63: "1",
+        64: "2",
+        65: "3",
+        66: "4",
+        67: "5",
+        68: "6",
+        69: "7",
+        70: "8",
+        243: "9",
+        245: "10",
+    }
+    
+    result_pass_dict = {}
+    result_fc_dict = {}
+
+    for i in specialmedalprstrct:
+        if i['achievement_id'] in pass_medal_Value:
+            result_pass_dict[pass_medal_Value[i['achievement_id']]] = i['achieved_at']
+        elif i['achievement_id'] in fc_medal_Value:
+            result_fc_dict[fc_medal_Value[i['achievement_id']]] = i['achieved_at']
+
+    return result_pass_dict,result_fc_dict
 
 async def download_all_medals():
 

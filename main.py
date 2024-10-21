@@ -142,6 +142,14 @@ async def fetch_uu_medal(item:IName):
     result = await ATRIproxy.format_uu_medal(item.qq_id, item.osuname)
     return str(result)
 
+@app.api_route("/qq/medal/pic", methods=["GET", "POST"])
+async def fetch_special_medal(item:IName):
+    img_bytes = await ATRIproxy.format_special_medal(item.qq_id, item.osuname)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/png")
+    else:
+        return str(img_bytes)
+
 
 @app.api_route("/qq/medal/download", methods=["GET", "POST"])
 async def job_fetch_group_info():
@@ -312,7 +320,6 @@ async def job_update_bind_all():
     await asyncio.sleep(60)
     task2 = await ATRIproxy.format_job_update_all_bind_users_info()
     return str(task1 + task2)
-
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8008, reload=True, timeout_keep_alive=120)

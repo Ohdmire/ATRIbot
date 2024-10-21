@@ -7,6 +7,12 @@ import subprocess
 from io import BytesIO
 import os
 from ATRIlib.TOOLS import Download
+from PIL import Image, ImageDraw, ImageFont
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from datetime import datetime
+from datetime import timedelta
+import seaborn as sns
 
 def warp_text(text,max_chars_per_line):
 
@@ -417,6 +423,73 @@ async def draw_medal_pr(medalprstructlist,userstruct):
 
         img_bytes.seek(0)
         return img_bytes
+
+
+def draw_special_medal(specialmedalstruct_pass, specialmedalstruct_fc, username):
+    # 创建图形和轴
+    fig, ax = plt.subplots(figsize=(16, 10))
+    
+    # 设置标题
+    ax.set_title(f'{username}\'s Special Medal Timeline', fontsize=24)
+
+    # 准备数据
+    dates_pass = [datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ") for date in specialmedalstruct_pass.values()]
+    dates_fc = [datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ") for date in specialmedalstruct_fc.values()]
+    
+    y_values_pass = [int(name.split()[0]) for name in specialmedalstruct_pass.keys()]
+    y_values_fc = [int(name.split()[0]) for name in specialmedalstruct_fc.keys()]
+    
+    # 使用折线图替代散点图
+    ax.plot(dates_pass, y_values_pass, color='blue', marker='o', linestyle='-', linewidth=2, markersize=8, label='Pass')
+    ax.plot(dates_fc, y_values_fc, color='red', marker='o', linestyle='-', linewidth=2, markersize=8, label='FC')
+    
+    # 设置y轴范围和标签
+    ax.set_ylim(0, 11)
+    ax.set_yticks(range(1, 11))
+    ax.set_ylabel('Star', fontsize=12)
+    
+    # 设置x轴为日期格式
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    
+    # 旋转x轴标签以防止重叠
+    plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+    
+    # 为每个点添加标签
+    for date, y, name in zip(dates_pass + dates_fc, y_values_pass + y_values_fc, 
+                             list(specialmedalstruct_pass.keys()) + list(specialmedalstruct_fc.keys())):
+        ax.annotate(name+"*", (date, y), xytext=(5, 5), textcoords='offset points', 
+                    fontsize=8, alpha=0.7, rotation=45)
+    
+    # 添加图例
+    ax.legend()
+    
+    # 添加网格线
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 保存图像到BytesIO对象
+    img_bytes = BytesIO()
+    plt.savefig(img_bytes, format='PNG', dpi=300, bbox_inches='tight')
+    img_bytes.seek(0)
+    plt.close(fig)
+    
+    return img_bytes
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
