@@ -136,6 +136,11 @@ async def fetch_medal_pr(item:IName):
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
         return str(img_bytes)
+    
+@app.api_route("/qq/medal/uu", methods=["GET", "POST"])
+async def fetch_uu_medal(item:IName):
+    result = await ATRIproxy.format_uu_medal(item.qq_id, item.osuname)
+    return str(result)
 
 
 @app.api_route("/qq/medal/download", methods=["GET", "POST"])

@@ -1,4 +1,4 @@
-from ATRIlib.DB.pipeline_medal import get_medal_list_from_db,get_user_medal_list_from_db
+from ATRIlib.DB.pipeline_medal import get_medal_list_from_db,get_user_medal_list_from_db,get_user_special_medal_list_from_db
 from ATRIlib.DRAW.draw_medal import draw_medal,draw_medal_pr
 from ATRIlib.DB.Mongodb import db_medal,db_user
 import re
@@ -42,6 +42,40 @@ async def calculate_medal_pr(user_id):
     raw = await draw_medal_pr(medalprstrct,userstruct)
 
     return raw
+
+async def calculate_uu_medal(user_id):
+
+    medalprstrct = get_user_medal_list_from_db(user_id)
+
+    raw = get_user_special_medal_list_from_db(user_id)
+
+    medal_Value = {
+        55: "🟢1*Pass",
+        56: "🟢2*Pass",
+        57: "🟢3*Pass",
+        58: "🟢4*Pass",
+        59: "🟢5*Pass",
+        60: "🟢6*Pass",
+        61: "🟢7*Pass",
+        62: "🟢8*Pass",
+        242: "🟢9*Pass",
+        244: "🟢10*Pass",
+        63: "🟡1*FC",
+        64: "🟡2*FC",
+        65: "🟡3*FC",
+        66: "🟡4*FC",
+        67: "🟡5*FC",
+        68: "🟡6*FC",
+        243: "🟡9*FC",
+        245: "🟡10*FC",
+    }
+
+    result_dict = {}
+
+    for i in raw:
+        result_dict[medal_Value[i['achievement_id']]] = i['achieved_at']
+
+    return result_dict
 
 
 async def download_all_medals():

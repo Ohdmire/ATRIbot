@@ -28,7 +28,7 @@ from ATRIlib.interbot import get_interbot_test1,get_interbot_test2
 from ATRIlib.API.PPYapiv2 import get_token
 from ATRIlib.whatif import calculate_pp,calculate_rank
 
-from ATRIlib.medal import calculate_medal, download_all_medals, calculate_medal_pr
+from ATRIlib.medal import calculate_medal, download_all_medals, calculate_medal_pr,calculate_uu_medal
 
 from ATRIlib.help import get_help
 
@@ -442,6 +442,20 @@ async def format_medal_pr(qq_id, osuname):
     raw = await calculate_medal_pr(user_id)
 
     return raw
+
+@handle_exceptions
+async def format_uu_medal(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    raw = await calculate_uu_medal(user_id)
+
+    result_text = f'{userstruct["username"]}的Medal'
+
+    for achievement_name,achieved_at in raw.items():
+        result_text += f'\n{achieved_at[:10]} --> {achievement_name}'    
+
+    return result_text
 
 @handle_exceptions
 async def format_download_medal():

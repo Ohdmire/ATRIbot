@@ -86,3 +86,43 @@ def get_user_medal_list_from_db(user_id):
     result = list(db_user.aggregate(pipeline))
 
     return result
+
+def get_user_special_medal_list_from_db(user_id):
+    special_medal_list = [
+        55,56,57,58,59,60,61,62,242,244,  # pass系列
+        63,64,65,66,67,68,69,70,243,245  # FC系列
+    ]
+
+    pipeline = [
+        {
+            "$match": {
+                "id": user_id
+            }
+        },
+        {
+            "$unwind": "$user_achievements"
+        },
+        {
+            "$match": {
+                "user_achievements.achievement_id": {"$in": special_medal_list}
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "achievement_id": "$user_achievements.achievement_id",
+                "achieved_at": "$user_achievements.achieved_at"
+            }
+        },
+        {
+            "$sort": {
+                "achieved_at": 1 # 按获得时间升序排序
+            }
+        }
+    ]
+
+    result = list(db_user.aggregate(pipeline))
+
+    print(result)
+    
+    return result
