@@ -50,6 +50,11 @@ async def process_html(html_string):
     if not error_image_dest.exists():
         shutil.copy(ERROR_IMAGE_PATH, error_image_dest)
 
+    # 删除没有 class 属性的 <img> 标签
+    for img in soup.find_all('img'):
+        if not img.get('class'):
+            img.decompose()
+
     # 收集所有需要处理的资源
     for tag in soup.find_all(['img', 'link', 'script', 'svg']):
         if tag.name in ['img', 'svg']:
@@ -113,7 +118,7 @@ async def process_html(html_string):
                         if svg_tag:
                             # 保存原始 img 标签的属性
                             original_attrs = dict(tag.attrs)
-                            # 将原来的 img 标签替换为 svg 标签
+                            # 将原来的 img 标签替换�� svg 标签
                             tag.name = 'svg'
                             # 合并原始属性和 SVG 属性，保留 img 的样式
                             tag.attrs.update(svg_tag.attrs)
@@ -344,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
     """
     
-    # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标���
+    # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标
     html_with_css = f"<html><head>{css}{js}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
     
     # 将HTML内容写入临时文件
@@ -452,3 +457,4 @@ document.addEventListener('DOMContentLoaded', function() {
 async def draw_profile(html_content, avatar_url, username, user_id):
     result = await html_to_image(html_content,max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
     return result
+
