@@ -50,11 +50,6 @@ async def process_html(html_string):
     if not error_image_dest.exists():
         shutil.copy(ERROR_IMAGE_PATH, error_image_dest)
 
-    # 删除没有 class 属性的 <img> 标签
-    for img in soup.find_all('img'):
-        if not img.get('loading'):
-            img.decompose()
-
     # 收集所有需要处理的资源
     for tag in soup.find_all(['img', 'link', 'script', 'svg']):
         if tag.name in ['img', 'svg']:
