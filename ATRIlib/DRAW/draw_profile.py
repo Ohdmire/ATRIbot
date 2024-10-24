@@ -398,6 +398,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             screenshot = await page.screenshot(
                 full_page=False,
+                type='jpeg',
+                quality=95,
                 clip={'x': 0, 'y': start_y, 'width': max_body_width, 'height': height}
             )
             screenshot_image = Image.open(io.BytesIO(screenshot))
