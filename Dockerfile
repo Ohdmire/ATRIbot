@@ -46,6 +46,10 @@ RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/we
 # 安装 Playwright
 RUN pip install playwright && playwright install firefox
 
+# 设置时区为Asia/Shanghai
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # 复制项目文件到工作目录
 COPY . .
 
