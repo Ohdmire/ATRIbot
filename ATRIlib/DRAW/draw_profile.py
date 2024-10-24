@@ -10,6 +10,8 @@ import hashlib
 from urllib.parse import urlparse
 import shutil
 import math
+from wand.image import Image as WandImage
+from wand.exceptions import WandException
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -50,7 +52,7 @@ async def process_html(html_string):
     if not error_image_dest.exists():
         shutil.copy(ERROR_IMAGE_PATH, error_image_dest)
 
-    # 收集所有需要处理的资源
+    # 收集所有��要处理的资源
     for tag in soup.find_all(['img', 'link', 'script', 'svg']):
         if tag.name in ['img', 'svg']:
             src = tag.get('src') or tag.get('data')
@@ -344,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
     """
     
-    # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标���
+    # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标
     html_with_css = f"<html><head>{css}{js}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
     
     # 将HTML内容写入临时文件
@@ -384,10 +386,10 @@ document.addEventListener('DOMContentLoaded', function() {
         await page.evaluate("window.scrollTo(0, 0)")
 
         logging.info(f"最终页面高度: {page_height}")
-        max_height = 32000  # 稍微小于32767的值
+        max_height = 16000  # 稍微小于32767的值
         num_screenshots = math.ceil(page_height / max_height)
 
-        screenshots = []
+        screenshot_paths = []
 
         # 设置viewport高度为页面高度，确保可以捕获整个页面
         await page.set_viewport_size({"width": max_body_width, "height": page_height})
@@ -398,55 +400,62 @@ document.addEventListener('DOMContentLoaded', function() {
             
             screenshot = await page.screenshot(
                 full_page=False,
+                type='jpeg',
+                quality=95,
                 clip={'x': 0, 'y': start_y, 'width': max_body_width, 'height': height}
             )
-            screenshot_image = Image.open(io.BytesIO(screenshot))
-            screenshots.append(screenshot_image)
+            screenshot_path = profile_result_path / f"{user_id}_screenshot_{i}.png"
+            with open(screenshot_path, 'wb') as f:
+                f.write(screenshot)
+            screenshot_paths.append(screenshot_path)
 
         await browser.close()
 
         logging.info(f"总共生成了 {num_screenshots} 张截图")
 
-    # 拼接图片
-    total_height = sum(img.height for img in screenshots)
-    combined_image = Image.new('RGB', (max_body_width, total_height))
-    y_offset = 0
-    for img in screenshots:
-        combined_image.paste(img, (0, y_offset))
-        y_offset += img.height
+        fileout = profile_result_path / f"{user_id}.jpg"
 
-    # 确保图片尺寸不超过65000x65000
-    max_size = 24000
-    if combined_image.width > max_size or combined_image.height > max_size:
-        ratio = min(max_size / combined_image.width, max_size / combined_image.height)
-        new_size = (int(combined_image.width * ratio), int(combined_image.height * ratio))
-        combined_image = combined_image.resize(new_size, Image.LANCZOS)
+        # 使用 ImageMagick 拼接图片
 
-    # 转换图像模式为RGB（如果需要）
-    if combined_image.mode in ('RGBA', 'P'):
-        combined_image = combined_image.convert('RGB')
+        with WandImage() as combined_image:
+            for screenshot_path in screenshot_paths:
+                with WandImage(filename=str(screenshot_path)) as img:
+                    combined_image.sequence.append(img)
+            combined_image.concat(stacked=True)
 
-    # 保存为压缩的JPEG格式
-    jpeg_output_path = profile_result_path / f"{user_id}.jpg"
-    combined_image.save(jpeg_output_path, format='JPEG', quality=95, optimize=True)
+            # 确保图片尺寸不超过限制
+            max_size = 24000  # ImageMagick 默认限制通常是 16K x 16K
+            if combined_image.width > max_size or combined_image.height > max_size:
+                ratio = min(max_size / combined_image.width, max_size / combined_image.height)
+                new_width = int(combined_image.width * ratio)
+                new_height = int(combined_image.height * ratio)
+                logging.info(f"调整图像大小从 {combined_image.width}x{combined_image.height} 到 {new_width}x{new_height}")
+                combined_image.resize(width=new_width, height=new_height)
 
-    # 记录生成的JPEG文件大小
-    jpeg_file_size = os.path.getsize(jpeg_output_path)
-    logging.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
+            # 保存为压缩的JPEG格式
+            jpeg_output_path = profile_result_path / f"{user_id}.jpg"
+            combined_image.compression_quality = 95
+            combined_image.save(filename=str(jpeg_output_path))
 
-    # 将文件内容入内存
-    with open(jpeg_output_path, 'rb') as f:
-        img_byte_arr = io.BytesIO(f.read())
+        # 记录生成的JPEG文件大小
+        jpeg_file_size = os.path.getsize(jpeg_output_path)
+        logging.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
 
-    # 清理临时文件
-    os.remove(jpeg_output_path)
-    os.remove(temp_html_path)
-    # 不再删除resources目录中的文件
-    # for file in (profile_result_path / 'resources').glob('*'):
-    #     os.remove(file)
+        # 将文件内容读入内存
+        with open(jpeg_output_path, 'rb') as f:
+            img_byte_arr = io.BytesIO(f.read())
 
-    img_byte_arr.seek(0)
-    return img_byte_arr
+        # 清理临时文件
+        os.remove(jpeg_output_path)
+        os.remove(temp_html_path)
+        for screenshot_path in screenshot_paths:
+            os.remove(screenshot_path)
+
+        img_byte_arr.seek(0)
+        return img_byte_arr
+
+
+
 async def draw_profile(html_content, avatar_url, username, user_id):
     result = await html_to_image(html_content,max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
     return result

@@ -33,6 +33,8 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     libgbm1 \
     libasound2 \
+    libmagickwand-dev \
+    imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
 
