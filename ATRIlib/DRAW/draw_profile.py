@@ -52,7 +52,7 @@ async def process_html(html_string):
 
     # 删除没有 class 属性的 <img> 标签
     for img in soup.find_all('img'):
-        if not img.get('lazy'):
+        if not img.get('loading'):
             img.decompose()
 
     # 收集所有需要处理的资源
