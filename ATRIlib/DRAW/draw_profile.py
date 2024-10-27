@@ -359,7 +359,10 @@ document.addEventListener('DOMContentLoaded', function() {
         await page.goto(f"file://{temp_html_path.absolute()}")
 
         # 等待页面加载完成
-        await page.wait_for_load_state('domcontentloaded')
+        try:
+            await page.wait_for_load_state('domcontentloaded')
+        except Exception as e:
+            logging.warning(f"页面加载错误: {e}")
 
         # 缓慢滚动到页面底部并返回总高度
         page_height = await page.evaluate("""
