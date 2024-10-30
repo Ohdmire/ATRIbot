@@ -206,6 +206,11 @@ async def fetch_test2(item:IName):
     result = await ATRIproxy.format_test2(item.qq_id,item.osuname)
     return str(result)
 
+@app.api_route("/qq/skill", methods=["GET", "POST"])
+async def fetch_skill(item:IName):
+    result = await ATRIproxy.format_skill(item.qq_id,item.osuname)
+    return str(result)
+
 @app.api_route("/qq/bind", methods=["GET", "POST"])
 async def fetch_bind(item:IName):
     result = await ATRIproxy.format_bind(item.qq_id,item.osuname)
