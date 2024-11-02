@@ -31,7 +31,7 @@ async def get_latest_pprework_progress():
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
-            latest_commit_url = (await response.json())[0]['url'].replace("api.github.com", "github.atri1024.help")
+            latest_commit_url = (await response.json())[0]['url']
 
     async with aiohttp.ClientSession() as session:
         async with session.get(latest_commit_url, headers=headers) as response:
