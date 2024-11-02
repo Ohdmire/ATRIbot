@@ -8,6 +8,9 @@ def calculate_similarity(str1, str2):
 def monitor_profile(group_id):
     # 获取监控数据
     raw = monitor_pipeline(group_id)
+
+    if len(raw) == 0:
+        return []
     
     # 计算差异度并排序
     diff_results = []
