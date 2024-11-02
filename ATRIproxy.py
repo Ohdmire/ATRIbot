@@ -42,6 +42,8 @@ from ATRIlib.beatmaptype import calculate_beatmap_type_ba
 
 from ATRIlib.profile import calculate_profile
 
+from ATRIlib.monitor import monitor_profile
+
 from ATRIlib.lazerupdate import get_lazer_update
 
 from ATRIlib.DRAW.draw_medal import draw_special_medal
@@ -647,6 +649,24 @@ async def format_profile(qq_id, osuname):
     user_id = userstruct["id"]
     result = await calculate_profile(user_id)
     return result
+
+@handle_exceptions
+async def format_monitor_profile(group_id,group_member_list):
+
+    if group_member_list:
+        format_job_update_group_list(group_id,group_member_list)
+
+    await job_update_group_user_info(group_id)
+
+    raw = monitor_profile(group_id)
+
+    result_text = f'今天他悄悄的更新了profile👀'
+    for i in raw[:10]:
+        result_text += f'\n{i["diff_score"]*100:.2f}% --> {i["username"]}'
+    if len(raw) > 10:
+        result_text += f'\n......还有{len(raw)-10}个哦 我会一直监视你👀'
+
+    return result_text
 
 @handle_exceptions
 async def format_lazer_update():

@@ -116,6 +116,11 @@ async def fetch_profile(item:IName):
     else:
         return str(img_bytes)
     
+@app.api_route("/qq/profile/monitor", methods=["GET", "POST"])
+async def fetch_profile_monitor(item:IName):
+    result = await ATRIproxy.format_monitor_profile(item.group_id,item.group_member_list)
+    return str(result)
+
 @app.api_route("/lazer/update", methods=["GET", "POST"])
 async def fetch_lazer_update():
     result = await ATRIproxy.format_lazer_update()
