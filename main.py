@@ -121,6 +121,14 @@ async def fetch_lazer_update():
     result = await ATRIproxy.format_lazer_update()
     return str(result)
 
+@app.api_route("/pprework/progress", methods=["GET", "POST"])
+async def fetch_pprework_progress():
+    img_bytes = await ATRIproxy.format_pprework_progress()
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+
 @app.api_route("/qq/medal", methods=["GET", "POST"])
 async def fetch_medal(item:ItemN):
     img_bytes = await ATRIproxy.format_medal(item.medalid)

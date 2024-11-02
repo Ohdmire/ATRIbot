@@ -47,6 +47,8 @@ from ATRIlib.lazerupdate import get_lazer_update
 from ATRIlib.DRAW.draw_medal import draw_special_medal
 from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
 
+from ATRIlib.github import get_commit_content
+
 from io import BytesIO
 
 import traceback
@@ -660,6 +662,11 @@ async def format_lazer_update():
     return result_text
 
 @handle_exceptions
+async def format_pprework_progress():
+    raw = await get_commit_content()
+    return raw
+
+@handle_exceptions
 async def format_activity(group_id,group_member_list):
 
     if group_member_list:
@@ -692,8 +699,6 @@ async def format_job_update_all_users_bp():
     raw = await job_update_all_user_bp()
 
     return raw
-
-
 
 @handle_exceptions
 async def format_job_update_all_bind_users_bp():
