@@ -10,7 +10,7 @@ async def calculate_profile(user_id,is_yesterday=False):
     html_content = userstruct["page"]["html"]
 
     if is_yesterday:
-        userstruct = db_yesterday.find_one({"id": user_id})
+        userstruct = db_yesterday.find_one({"user_id": user_id})
         if userstruct is not None:
             username = userstruct["user_data"]["username"]
             avatar_url = userstruct["user_data"]["avatar_url"]
