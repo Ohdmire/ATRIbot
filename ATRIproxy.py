@@ -660,6 +660,9 @@ async def format_monitor_profile(group_id,group_member_list):
 
     raw = monitor_profile(group_id)
 
+    if len(raw) == 0:
+        return '今天还没有人更新profile哦 不过我会一直监视你👀'
+
     result_text = f'今天他悄悄的更新了profile👀'
     for i in raw[:10]:
         result_text += f'\n{i["diff_score"]*100:.2f}% --> {i["username"]}'
