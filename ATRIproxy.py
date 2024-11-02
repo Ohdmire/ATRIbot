@@ -55,6 +55,10 @@ from io import BytesIO
 
 import traceback
 import asyncio
+from asyncio import Semaphore
+
+
+profile_semaphore = Semaphore(1)  # 限制为1表示一次只能处理一个请求
 
 
 def handle_exceptions(func):
@@ -645,10 +649,12 @@ async def format_beatmap_type_ba(qq_id, osuname):
 
 @handle_exceptions
 async def format_profile(qq_id, osuname):
-    userstruct = await get_userstruct_automatically(qq_id, osuname)
-    user_id = userstruct["id"]
-    result = await calculate_profile(user_id)
-    return result
+    # 使用信号量控制并发
+    async with profile_semaphore:
+        userstruct = await get_userstruct_automatically(qq_id, osuname)
+        user_id = userstruct["id"]
+        result = await calculate_profile(user_id)
+        return result
 
 @handle_exceptions
 async def format_monitor_profile(group_id,group_member_list):
