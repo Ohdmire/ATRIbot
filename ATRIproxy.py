@@ -648,12 +648,12 @@ async def format_beatmap_type_ba(qq_id, osuname):
     return result_text
 
 @handle_exceptions
-async def format_profile(qq_id, osuname):
+async def format_profile(qq_id, osuname,is_yesterday=False):
     # 使用信号量控制并发
     async with profile_semaphore:
         userstruct = await get_userstruct_automatically(qq_id, osuname)
         user_id = userstruct["id"]
-        result = await calculate_profile(user_id)
+        result = await calculate_profile(user_id,is_yesterday)
         return result
 
 @handle_exceptions

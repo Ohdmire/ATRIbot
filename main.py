@@ -39,7 +39,7 @@ class IName(BaseModel):
     group_id : Optional[int] = None
     mods_list: Optional[list] = []
     group_member_list: Optional[list] = []
-
+    is_yesterday: Optional[bool] = False
 
 class ItemN(BaseModel):
     pp: Optional[int] = None
@@ -110,7 +110,7 @@ async def fetch_beatmaptype_all(item:IName):
 
 @app.api_route("/qq/profile", methods=["GET", "POST"])
 async def fetch_profile(item:IName):
-    img_bytes = await ATRIproxy.format_profile(item.qq_id,item.osuname)
+    img_bytes = await ATRIproxy.format_profile(item.qq_id,item.osuname,item.is_yesterday)
     if type(img_bytes) is BytesIO:
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
