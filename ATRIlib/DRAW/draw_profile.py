@@ -356,7 +356,10 @@ document.addEventListener('DOMContentLoaded', function() {
         browser = await p.firefox.launch()
         context = await browser.new_context(viewport={'width': max_body_width, 'height': 1080})
         page = await context.new_page()
-        await page.goto(f"file://{temp_html_path.absolute()}")
+        try:
+            await page.goto(f"file://{temp_html_path.absolute()}")
+        except Exception as e:
+            logging.warning(f"页面初始化错误: {e}")
 
         # 等待页面加载完成
         try:
