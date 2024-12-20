@@ -14,7 +14,7 @@ async def calculate_profile(user_id,is_yesterday=False):
 
     # 检查是否出现敏感词
     for block_key in block_key_list:
-        if block_key in html_content:
+        if block_key in raw_content:
             raise ValueError("该profile存在可疑网址，请检查")
 
     if is_yesterday:
