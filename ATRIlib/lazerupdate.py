@@ -16,7 +16,7 @@ async def get_lazer_update():
             file_type = match.group(1).lower()
             prefix = "Windows" if file_type == "exe" else "Android" if file_type == "apk" else ""
             # 在下载链接前添加代理前缀和文件类型前缀
-            proxy_url.append(f"{prefix}: https://ghp.ci/{asset['browser_download_url']}")
+            proxy_url.append(f"{prefix}: https://ghgo.xyz/{asset['browser_download_url']}")
 
     data['proxy_url'] = proxy_url
 
