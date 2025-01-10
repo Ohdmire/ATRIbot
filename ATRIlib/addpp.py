@@ -32,7 +32,10 @@ async def calculate_if_get_pp(user_id,pp_lists):
         {'id': user_id})['statistics']['global_rank']
 
     if new_pp_sum - now_pp > 1:
-        new_rank = await get_rank_based_on_pp(new_pp_sum)
+        try:
+            new_rank = await get_rank_based_on_pp(new_pp_sum)
+        except:
+            new_rank = original_rank
     else:
         new_rank = original_rank
 
