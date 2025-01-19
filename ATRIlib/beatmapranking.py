@@ -39,8 +39,8 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list):
             # break
         if "great" not in record["top_score"]["statistics"]:
             record["top_score"]["statistics"]["great"] = 0
-        if "good" not in record["top_score"]["statistics"]:
-            record["top_score"]["statistics"]["good"] = 0
+        if "ok" not in record["top_score"]["statistics"]:
+            record["top_score"]["statistics"]["ok"] = 0
         if "meh" not in record["top_score"]["statistics"]:
             record["top_score"]["statistics"]["meh"] = 0
         if "miss" not in record["top_score"]["statistics"]:

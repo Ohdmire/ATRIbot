@@ -208,7 +208,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
 
             if j.attrib['id'] == '$judgementdetails_my':  # 渲染对应的文本咯
                 j.getchildren()[
-                    0].text = f'{player["top_score"]["statistics"]["great"]}/{player["top_score"]["statistics"]["good"]}/{player["top_score"]["statistics"]["meh"]}/{player["top_score"]["statistics"]["miss"]}'
+                    0].text = f'{player["top_score"]["statistics"]["great"]}/{player["top_score"]["statistics"]["ok"]}/{player["top_score"]["statistics"]["meh"]}/{player["top_score"]["statistics"]["miss"]}'
 
             if j.attrib['id'] == '$daysago_my':  # 渲染daysago
 
@@ -336,7 +336,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
                 j.getchildren()[0].text = f'{i}.'
             if j.attrib['id'] == f'$judgementdetails_{i}':  # 渲染对应的文本咯
                 j.getchildren()[
-                    0].text = f'{other_players[i - 1]["top_score"]["statistics"]["great"]}/{other_players[i - 1]["top_score"]["statistics"]["good"]}/{other_players[i - 1]["top_score"]["statistics"]["meh"]}/{other_players[i - 1]["top_score"]["statistics"]["miss"]}'
+                    0].text = f'{other_players[i - 1]["top_score"]["statistics"]["great"]}/{other_players[i - 1]["top_score"]["statistics"]["ok"]}/{other_players[i - 1]["top_score"]["statistics"]["meh"]}/{other_players[i - 1]["top_score"]["statistics"]["miss"]}'
 
             if j.attrib['id'] == f'$backgroud_color_{i}':
                 if other_players[i - 1]["top_score"]["legacy_total_score"] == 0:
