@@ -10,6 +10,7 @@ import hashlib
 from urllib.parse import urlparse
 import shutil
 import math
+from io import BytesIO
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -386,73 +387,65 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         """)
 
+        body_height = await page.evaluate("""
+            () => document.body.getBoundingClientRect().height
+        """)
+
         # 滚动回顶部
         await page.evaluate("window.scrollTo(0, 0)")
 
-        logging.info(f"最终页面高度: {page_height}")
         max_height = 32000  # 稍微小于32767的值
-        num_screenshots = math.ceil(page_height / max_height)
 
-        screenshots = []
+        if body_height > max_height:
+            scale = max_height / body_height
+        else:
+            scale = 1
 
-        # 设置viewport高度为页面高度，确保可以捕获整个页面
+        # 缩放body元素
+        await page.evaluate(f"""
+        document.body.style.transform = `scale({scale})`;
+        document.body.style.transformOrigin = 'top left';
+        """)
+
+        body_height = await page.evaluate("""
+                    () => document.body.getBoundingClientRect().height
+                """)
+
+        logging.info(f"最终页面高度: {page_height}")
+        logging.info(f"body元素的高度: {body_height}")
+
         await page.set_viewport_size({"width": max_body_width, "height": page_height})
-
-        for i in range(num_screenshots):
-            start_y = i * max_height
-            height = min(max_height, page_height - start_y)
-            
-            screenshot = await page.screenshot(
-                full_page=False,
-                type='jpeg',
-                quality=95,
-                clip={'x': 0, 'y': start_y, 'width': max_body_width, 'height': height}
+        screenshot = await page.screenshot(
+            path = profile_result_path / f"{user_id}test.jpg",
+            full_page=False,
+            type='jpeg',
+            quality=95,
+            clip={'x': 0, 'y': 0, 'width': max_body_width*scale, 'height': body_height}
             )
-            screenshot_image = Image.open(io.BytesIO(screenshot))
-            screenshots.append(screenshot_image)
+
+        # screenshot_image = Image.open(io.BytesIO(screenshot))
 
         await browser.close()
 
-        logging.info(f"总共生成了 {num_screenshots} 张截图")
+    # # 保存为压缩的JPEG格式
+    # jpeg_output_path = profile_result_path / f"{user_id}.jpg"
+    # combined_image.save(jpeg_output_path, format='JPEG', quality=95, optimize=True)
 
-    # 拼接图片
-    total_height = sum(img.height for img in screenshots)
-    combined_image = Image.new('RGB', (max_body_width, total_height))
-    y_offset = 0
-    for img in screenshots:
-        combined_image.paste(img, (0, y_offset))
-        y_offset += img.height
-
-    # 确保图片尺寸不超过65000x65000
-    max_size = 24000
-    if combined_image.width > max_size or combined_image.height > max_size:
-        ratio = min(max_size / combined_image.width, max_size / combined_image.height)
-        new_size = (int(combined_image.width * ratio), int(combined_image.height * ratio))
-        combined_image = combined_image.resize(new_size, Image.LANCZOS)
-
-    # 转换图像模式为RGB（如果需要）
-    if combined_image.mode in ('RGBA', 'P'):
-        combined_image = combined_image.convert('RGB')
-
-    # 保存为压缩的JPEG格式
-    jpeg_output_path = profile_result_path / f"{user_id}.jpg"
-    combined_image.save(jpeg_output_path, format='JPEG', quality=95, optimize=True)
-
-    # 记录生成的JPEG文件大小
-    jpeg_file_size = os.path.getsize(jpeg_output_path)
-    logging.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
+    # # 记录生成的JPEG文件大小
+    # jpeg_file_size = os.path.getsize(jpeg_output_path)
+    # logging.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
 
     # 将文件内容入内存
-    with open(jpeg_output_path, 'rb') as f:
-        img_byte_arr = io.BytesIO(f.read())
+    # with open(screenshot_image, 'rb') as f:
+    #     img_byte_arr = io.BytesIO(f.read())
 
     # 清理临时文件
-    os.remove(jpeg_output_path)
+    # os.remove(jpeg_output_path)
     os.remove(temp_html_path)
     # 不再删除resources目录中的文件
     # for file in (profile_result_path / 'resources').glob('*'):
     #     os.remove(file)
-
+    img_byte_arr = io.BytesIO(screenshot)
     img_byte_arr.seek(0)
     return img_byte_arr
 async def draw_profile(html_content, avatar_url, username, user_id):

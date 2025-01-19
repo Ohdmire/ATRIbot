@@ -272,7 +272,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
                 j.set('transform', 'translate(50)')
                 modstext = ""
                 for mod in player["top_score"]["mods"]:
-                    modstext = modstext + mod + ","
+                    modstext = modstext + mod['acronym'] + ","
                 modstext = modstext[:-1]
                 j.getchildren()[
                     0].text = f'{modstext}'

@@ -46,7 +46,7 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list):
         if "miss" not in record["top_score"]["statistics"]:
             record["top_score"]["statistics"]["miss"] = 0
     if user_record is None:
-        user_record = {"top_score": {"user_id" : user_id , "total_score" : -1}}
+        user_record = {"top_score": {"user_id" : user_id , "total_score" : -1, "legacy_total_score" : -1}}
 
     result = await draw_beatmap_rank_screen(user_record, raw, beatmapinfo, mods_list)
 
