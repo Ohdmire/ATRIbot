@@ -202,7 +202,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
                             print(id_value)
                             target_element = svg_tree.xpath(f'//*[@id="{id_value}"]')[0]
                             if target_element is not None:
-                                new_color = "#000000"  # 新的颜色值
+                                new_color = "#02D0FF"  # 新的颜色值
                                 for stop_element in target_element.getchildren():
                                     stop_element.attrib["stop-color"] = new_color
 
@@ -346,7 +346,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
                             id_value = url_value[5:-1]  # 提取 paint18_linear_0_1
                             target_element = svg_tree.xpath(f'//*[@id="{id_value}"]')[0]
                             if target_element is not None:
-                                new_color = "#000000"  # 新的颜色值
+                                new_color = "#02D0FF"  # 新的颜色值
                                 for stop_element in target_element.getchildren():
                                     stop_element.attrib["stop-color"] = new_color
 
