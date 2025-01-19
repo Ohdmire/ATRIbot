@@ -115,7 +115,7 @@
 <rect id="back" x="124" y="387" width="1680" height="610" fill="#242424"/>
 <g id="other_players_grade">
 <g id="player_grade_16">
-<g id="Rectangle 382">
+<g id="$backgroud_color_16">
 <mask id="path-56-inside-1_0_1" fill="white">
 <path d="M977 927H1777V987H977V927Z"/>
 </mask>
@@ -134,7 +134,7 @@
 <text id="$mods_16" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1712.53" y="976.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_15">
-<g id="Rectangle 382_2">
+<g id="$backgroud_color_15">
 <mask id="path-68-inside-2_0_1" fill="white">
 <path d="M977 863H1777V923H977V863Z"/>
 </mask>
@@ -153,7 +153,7 @@
 <text id="$mods_15" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1713.53" y="912.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_14">
-<g id="Rectangle 382_3">
+<g id="$backgroud_color_14">
 <mask id="path-80-inside-3_0_1" fill="white">
 <path d="M977 801H1777V861H977V801Z"/>
 </mask>
@@ -172,7 +172,7 @@
 <text id="$mods_14" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1708.53" y="850.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_13">
-<g id="Rectangle 382_4">
+<g id="$backgroud_color_13">
 <mask id="path-92-inside-4_0_1" fill="white">
 <path d="M977 739H1777V799H977V739Z"/>
 </mask>
@@ -191,7 +191,7 @@
 <text id="$mods_13" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1709.53" y="788.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_12">
-<g id="Rectangle 382_5">
+<g id="$backgroud_color_12">
 <mask id="path-104-inside-5_0_1" fill="white">
 <path d="M977 677H1777V737H977V677Z"/>
 </mask>
@@ -210,7 +210,7 @@
 <text id="$mods_12" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1709.53" y="726.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_11">
-<g id="Rectangle 382_6">
+<g id="$backgroud_color_11">
 <mask id="path-116-inside-6_0_1" fill="white">
 <path d="M977 615H1777V675H977V615Z"/>
 </mask>
@@ -229,7 +229,7 @@
 <text id="$mods_11" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1709.53" y="664.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_10">
-<g id="Rectangle 382_7">
+<g id="$backgroud_color_10">
 <mask id="path-128-inside-7_0_1" fill="white">
 <path d="M977 553H1777V613H977V553Z"/>
 </mask>
@@ -248,7 +248,7 @@
 <text id="$mods_10" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1709.53" y="602.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_9">
-<g id="Rectangle 382_8">
+<g id="$backgroud_color_9">
 <mask id="path-140-inside-8_0_1" fill="white">
 <path d="M977 491H1777V551H977V491Z"/>
 </mask>
@@ -267,7 +267,7 @@
 <text id="$mods_9" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1710.53" y="540.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_8">
-<g id="Rectangle 382_9">
+<g id="$backgroud_color_8">
 <mask id="path-152-inside-9_0_1" fill="white">
 <path d="M977 429H1777V489H977V429Z"/>
 </mask>
@@ -286,7 +286,7 @@
 <text id="$mods_8" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="1710.53" y="478.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_7">
-<g id="Rectangle 382_10">
+<g id="$backgroud_color_7">
 <mask id="path-164-inside-10_0_1" fill="white">
 <path d="M142 801H942V861H142V801Z"/>
 </mask>
@@ -305,7 +305,7 @@
 <text id="$mods_7" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="875.531" y="850.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_6">
-<g id="Rectangle 382_11">
+<g id="$backgroud_color_6">
 <mask id="path-176-inside-11_0_1" fill="white">
 <path d="M142 739H942V799H142V739Z"/>
 </mask>
@@ -324,7 +324,7 @@
 <text id="$mods_6" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="876.531" y="788.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_5">
-<g id="Rectangle 382_12">
+<g id="$backgroud_color_5">
 <mask id="path-188-inside-12_0_1" fill="white">
 <path d="M142 677H942V737H142V677Z"/>
 </mask>
@@ -343,7 +343,7 @@
 <text id="$mods_5" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="876.531" y="726.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_4">
-<g id="Rectangle 382_13">
+<g id="$backgroud_color_4">
 <mask id="path-200-inside-13_0_1" fill="white">
 <path d="M142 615H942V675H142V615Z"/>
 </mask>
@@ -362,7 +362,7 @@
 <text id="$mods_4" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="876.531" y="664.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_3">
-<g id="Rectangle 382_14">
+<g id="$backgroud_color_3">
 <mask id="path-212-inside-14_0_1" fill="white">
 <path d="M142 553H942V613H142V553Z"/>
 </mask>
@@ -381,7 +381,7 @@
 <text id="$mods_3" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="876.531" y="602.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_2">
-<g id="Rectangle 382_15">
+<g id="$backgroud_color_2">
 <mask id="path-224-inside-15_0_1" fill="white">
 <path d="M142 491H942V551H142V491Z"/>
 </mask>
@@ -400,7 +400,7 @@
 <text id="$mods_2" fill="white" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="20" letter-spacing="0em"><tspan x="877.531" y="540.273">HD,DT</tspan></text>
 </g>
 <g id="player_grade_1">
-<g id="Rectangle 382_16">
+<g id="$backgroud_color_1">
 <mask id="path-236-inside-16_0_1" fill="white">
 <path d="M142 429H942V489H142V429Z"/>
 </mask>
@@ -421,7 +421,7 @@
 </g>
 <text id="$no_score" opacity="0.01" fill="white" xml:space="preserve" style="white-space: pre" font-family="Lato" font-size="36" letter-spacing="0em"><tspan x="472" y="966.432">No Score</tspan></text>
 <g id="my_grade">
-<g id="Rectangle 382_17">
+<g id="$backgroud_color_my">
 <mask id="path-249-inside-17_0_1" fill="white">
 <path d="M137 926H937V986H137V926Z"/>
 </mask>
@@ -444,7 +444,7 @@
 <rect id="Rectangle 399" width="3" height="570" transform="matrix(-1 0 0 1 960 427)" fill="#D9D9D9"/>
 <text id="bid:" fill="white" xml:space="preserve" style="white-space: pre" font-family="DM Sans" font-size="24" font-weight="500" letter-spacing="0em"><tspan x="150.477" y="414.684">bid:</tspan></text>
 <text id="$bid" fill="#FFE76B" xml:space="preserve" style="white-space: pre" font-family="DM Sans" font-size="24" font-weight="500" letter-spacing="0em"><tspan x="197.211" y="415.184">12345678</tspan></text>
-<text id="$i_in" fill="#01D5FB" xml:space="preserve" style="white-space: pre" font-family="DM Sans" font-size="32" font-weight="500" letter-spacing="0em"><tspan x="226.156" y="372.912">#1 / 30</tspan></text>
+<text id="$i_in" fill="#01D5FB" xml:space="preserve" style="white-space: pre" font-family="Lato" font-size="32" font-weight="500" letter-spacing="0em"><tspan x="227.5" y="374.384">#1 / 30</tspan></text>
 <text id="&#230;&#143;&#144;&#231;&#164;&#186;&#239;&#188;&#154;&#229;&#166;&#130;&#230;&#158;&#156;&#230;&#142;&#146;&#232;&#161;&#140;&#230;&#166;&#156;&#230;&#178;&#161;&#228;&#186;&#186;&#229;&#143;&#175;&#228;&#187;&#165;&#232;&#190;&#147;&#229;&#133;&#165;&#239;&#188;&#129;brkup bid&#230;&#155;&#180;&#230;&#150;&#176;&#230;&#142;&#146;&#232;&#161;&#140;&#230;&#166;&#156;" fill="#B8B8B8" xml:space="preserve" style="white-space: pre" font-family="Inter" font-size="14" letter-spacing="0em"><tspan x="1517" y="1054.59">&#x63d0;&#x793a;&#xff1a;&#x5982;&#x679c;&#x6392;&#x884c;&#x699c;&#x6ca1;&#x4eba;&#x53ef;&#x4ee5;&#x8f93;&#x5165;&#xff01;brkup bid&#x66f4;&#x65b0;&#x6392;&#x884c;&#x699c;</tspan></text>
 <g id="modsF">
 <rect id="$mods" x="1720" y="275" width="70" height="30" rx="15" fill="#D9D9D9"/>

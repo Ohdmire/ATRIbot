@@ -193,14 +193,27 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
                 index_in_child = index_in.getchildren()[0]
                 index_in_child.text = f'# {index} / {len(other_players)}'
 
+            if j.attrib['id'] == '$backgroud_color_my':
+                if player["top_score"]["legacy_total_score"] == 0:
+                    for node in j.getchildren():
+                        if "fill" in node.attrib and "linear" in node.attrib["fill"]:
+                            url_value = node.attrib["fill"]
+                            id_value = url_value[5:-1]  # 提取 paint18_linear_0_1
+                            print(id_value)
+                            target_element = svg_tree.xpath(f'//*[@id="{id_value}"]')[0]
+                            if target_element is not None:
+                                new_color = "#000000"  # 新的颜色值
+                                for stop_element in target_element.getchildren():
+                                    stop_element.attrib["stop-color"] = new_color
+
             if j.attrib['id'] == '$judgementdetails_my':  # 渲染对应的文本咯
                 j.getchildren()[
-                    0].text = f'{player["top_score"]["statistics"]["count_300"]}/{player["top_score"]["statistics"]["count_100"]}/{player["top_score"]["statistics"]["count_50"]}/{player["top_score"]["statistics"]["count_miss"]}'
+                    0].text = f'{player["top_score"]["statistics"]["great"]}/{player["top_score"]["statistics"]["good"]}/{player["top_score"]["statistics"]["meh"]}/{player["top_score"]["statistics"]["miss"]}'
 
             if j.attrib['id'] == '$daysago_my':  # 渲染daysago
 
                 formated_time = datetime.datetime.strptime(
-                    player["top_score"]['created_at'], "%Y-%m-%dT%H:%M:%SZ")  # 格式化
+                    player["top_score"]['ended_at'], "%Y-%m-%dT%H:%M:%SZ")  # 格式化
                 formated_time = formated_time + \
                     datetime.timedelta(hours=8)  # 时区转换
                 now = datetime.datetime.now()
@@ -252,7 +265,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
 
             if j.attrib['id'] == '$score_my':  # 渲染score
                 j.getchildren()[
-                    0].text = f'Score:{player["top_score"]["score"]:,}'
+                    0].text = f'Score:{player["top_score"]["total_score"]:,}'
 
             if j.attrib['id'] == '$mods_my':  # 渲染mods
                 j.set('text-anchor', 'end')
@@ -321,14 +334,25 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
 
             if j.attrib['id'] == f'$index_{i}':  # 渲染index
                 j.getchildren()[0].text = f'{i}.'
-
             if j.attrib['id'] == f'$judgementdetails_{i}':  # 渲染对应的文本咯
                 j.getchildren()[
-                    0].text = f'{other_players[i - 1]["top_score"]["statistics"]["count_300"]}/{other_players[i - 1]["top_score"]["statistics"]["count_100"]}/{other_players[i - 1]["top_score"]["statistics"]["count_50"]}/{other_players[i - 1]["top_score"]["statistics"]["count_miss"]}'
+                    0].text = f'{other_players[i - 1]["top_score"]["statistics"]["great"]}/{other_players[i - 1]["top_score"]["statistics"]["good"]}/{other_players[i - 1]["top_score"]["statistics"]["meh"]}/{other_players[i - 1]["top_score"]["statistics"]["miss"]}'
+
+            if j.attrib['id'] == f'$backgroud_color_{i}':
+                if other_players[i - 1]["top_score"]["legacy_total_score"] == 0:
+                    for node in j.getchildren():
+                        if "fill" in node.attrib and "linear" in node.attrib["fill"]:
+                            url_value = node.attrib["fill"]
+                            id_value = url_value[5:-1]  # 提取 paint18_linear_0_1
+                            target_element = svg_tree.xpath(f'//*[@id="{id_value}"]')[0]
+                            if target_element is not None:
+                                new_color = "#000000"  # 新的颜色值
+                                for stop_element in target_element.getchildren():
+                                    stop_element.attrib["stop-color"] = new_color
 
             if j.attrib['id'] == f'$daysago_{i}':  # 渲染daysago
                 formated_time = datetime.datetime.strptime(
-                    other_players[i - 1]["top_score"]['created_at'], "%Y-%m-%dT%H:%M:%SZ")  # 格式化
+                    other_players[i - 1]["top_score"]['ended_at'], "%Y-%m-%dT%H:%M:%SZ")  # 格式化
 
                 formated_time = formated_time + \
                     datetime.timedelta(hours=8)  # 时区转换
@@ -381,14 +405,14 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
 
             if j.attrib['id'] == f'$score_{i}':  # 渲染score
                 j.getchildren()[
-                    0].text = f'Score:{other_players[i - 1]["top_score"]["score"]:,}'
+                    0].text = f'Score:{other_players[i - 1]["top_score"]["total_score"]:,}'
 
             if j.attrib['id'] == f'$mods_{i}':  # 渲染mods
                 j.set('text-anchor', 'end')
                 j.set('transform', 'translate(50)')
                 modstext = ""
                 for mod in other_players[i - 1]["top_score"]["mods"]:
-                    modstext = modstext + mod + ","
+                    modstext = modstext + mod['acronym'] + ","
                 modstext = modstext[:-1]
                 j.getchildren()[0].text = f'{modstext}'
 

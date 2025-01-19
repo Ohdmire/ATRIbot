@@ -44,7 +44,7 @@ RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/we
     && pip install --no-cache-dir -r requirements.txt
 
 # 安装 Playwright
-RUN pip install playwright && playwright install firefox
+RUN playwright install firefox
 
 # 设置时区为Asia/Shanghai
 ENV TZ=Asia/Shanghai

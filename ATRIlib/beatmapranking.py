@@ -36,9 +36,17 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list):
     for record in raw:
         if record["top_score"]["user_id"] == user_id:
             user_record = record
-            break
+            # break
+        if "great" not in record["top_score"]["statistics"]:
+            record["top_score"]["statistics"]["great"] = 0
+        if "good" not in record["top_score"]["statistics"]:
+            record["top_score"]["statistics"]["good"] = 0
+        if "meh" not in record["top_score"]["statistics"]:
+            record["top_score"]["statistics"]["meh"] = 0
+        if "miss" not in record["top_score"]["statistics"]:
+            record["top_score"]["statistics"]["miss"] = 0
     if user_record is None:
-        user_record = {"top_score": {"user_id" : user_id , "score" : -1}}
+        user_record = {"top_score": {"user_id" : user_id , "total_score" : -1}}
 
     result = await draw_beatmap_rank_screen(user_record, raw, beatmapinfo, mods_list)
 

@@ -15,6 +15,9 @@ client_secret = osuclientsecret
 # 获取访问令牌
 token = None
 
+# 定义headers
+headers = {'Authorization': f'Bearer {token}','x-api-version':'20240529'}
+
 # 定义一个全局信号量
 semaphore = asyncio.Semaphore(1000)
 
@@ -51,7 +54,7 @@ def rate_limited(retries=3, delay=1, backoff=1):
     return decorator
 
 def get_token():
-    global token
+    global token,headers
     url = 'https://osu.ppy.sh/oauth/token'
     data = {
         'client_id': client_id,
@@ -61,13 +64,13 @@ def get_token():
     }
     response = requests.post(url, data=data)
     token = response.json()['access_token']
+    headers = {'Authorization': f'Bearer {token}', 'x-api-version': '20240529'}
 
 get_token()
 
 @rate_limited()
 async def get_user_info(osuname):
     url = f'https://osu.ppy.sh/api/v2/users/{osuname}/osu?key=username'
-    headers = {'Authorization': f'Bearer {token}'}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -77,7 +80,6 @@ async def get_user_info(osuname):
 @rate_limited()
 async def get_user_info_fromid(osuid):
     url = f'https://osu.ppy.sh/api/v2/users/{osuid}/osu?key=id'
-    headers = {'Authorization': f'Bearer {token}'}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -87,7 +89,6 @@ async def get_user_info_fromid(osuid):
 @rate_limited()
 async def get_user_best_all_info(user_id):
     url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/best?mode=osu&limit=100'
-    headers = {'Authorization': f'Bearer {token}'}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -97,7 +98,6 @@ async def get_user_best_all_info(user_id):
 @rate_limited()
 async def get_user_scores_info(user_id, beatmap_id):
     url = f'https://osu.ppy.sh/api/v2/beatmaps/{beatmap_id}/scores/users/{user_id}/all?mode=osu'
-    headers = {'Authorization': f'Bearer {token}'}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -111,7 +111,6 @@ async def get_user_scores_info(user_id, beatmap_id):
 @rate_limited()
 async def get_user_passrecent_info(user_id):
     url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?mode=osu'
-    headers = {'Authorization': f'Bearer {token}'}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -121,7 +120,6 @@ async def get_user_passrecent_info(user_id):
 @rate_limited()
 async def get_beatmap_info(beatmap_id):
     url = f'https://osu.ppy.sh/api/v2/beatmaps/{beatmap_id}'
-    headers = {'Authorization': f'Bearer {token}'}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -131,7 +129,7 @@ async def get_beatmap_info(beatmap_id):
 async def get_most_played_beatmaps(user_id, played_count):
     @rate_limited()
     async def fetch_most_played(session, url, params):
-        headers = {'Authorization': f'Bearer {token}'}
+
         async with session.get(url, headers=headers, params=params) as response:
             return await response.json()
 
