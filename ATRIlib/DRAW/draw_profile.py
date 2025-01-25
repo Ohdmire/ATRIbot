@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
         # 滚动回顶部
         await page.evaluate("window.scrollTo(0, 0)")
 
-        max_height = 32000  # 稍微小于32767的值
+        max_height = 24000  # 稍微小于32767的值
 
         if body_height > max_height:
             scale = max_height / body_height
@@ -447,6 +447,11 @@ document.addEventListener('DOMContentLoaded', function() {
     #     os.remove(file)
     img_byte_arr = io.BytesIO(screenshot)
     img_byte_arr.seek(0)
+
+    image_size = img_byte_arr.getbuffer().nbytes
+
+    logging.info(f"图片大小: {image_size / 1024 / 1024:.2f} MB")
+
     return img_byte_arr
 async def draw_profile(html_content, avatar_url, username, user_id):
     result = await html_to_image(html_content,max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
