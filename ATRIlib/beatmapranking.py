@@ -1,4 +1,5 @@
-from ATRIlib.DB.pipeline_beatmapranking import get_beatmapranking_up_list_from_db,get_beatmapranking_list_from_db
+from ATRIlib.DB.pipeline_beatmapranking import get_beatmapranking_up_list_from_db, get_beatmapranking_list_from_db, \
+    get_beatmapranking_list_from_db_old
 from ATRIlib.API.PPYapiv2 import get_beatmap_info
 from ATRIlib.TASKS.Jobs import multi_update_users_beatmap_score_async
 from ATRIlib.DRAW.draw_brk import draw_beatmap_rank_screen
@@ -22,7 +23,7 @@ async def calculate_beatmapranking_update(beatmap_id, group_id):
 
     return result
 
-async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list):
+async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_old=False):
     if "NM" in mods_list:
         mods_list = []
     if "None" in mods_list:
@@ -30,7 +31,10 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list):
 
     beatmapinfo = await get_beatmap_info(beatmap_id)
 
-    raw = get_beatmapranking_list_from_db(user_id,beatmap_id,group_id,mods_list)
+    if is_old:
+        raw = get_beatmapranking_list_from_db_old(user_id,beatmap_id,group_id,mods_list)
+    else:
+        raw = get_beatmapranking_list_from_db(user_id,beatmap_id,group_id,mods_list)
 
     user_record = None
     for record in raw:
@@ -48,7 +52,7 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list):
     if user_record is None:
         user_record = {"top_score": {"user_id" : user_id , "total_score" : -1, "legacy_total_score" : -1}}
 
-    result = await draw_beatmap_rank_screen(user_record, raw, beatmapinfo, mods_list)
+    result = await draw_beatmap_rank_screen(user_record, raw, beatmapinfo, mods_list,is_old)
 
     return result
 

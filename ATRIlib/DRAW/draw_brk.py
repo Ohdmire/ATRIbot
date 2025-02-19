@@ -29,7 +29,7 @@ with open(beatmap_rank_template_file_path, 'rb') as f:
     beatmap_rank_svg_tree = etree.fromstring(svg_data, parser)
 
 
-async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_list):
+async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_list,is_old):
 
     start_time = datetime.datetime.now()
 
@@ -263,15 +263,22 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
                 j.getchildren()[
                     0].text = f'{player["top_score"]["accuracy"]*100:.2f}%'
 
-            if j.attrib['id'] == '$score_my':  # 渲染score
+            if j.attrib['id'] == '$score_my' and is_old==False:  # 渲染score
                 j.getchildren()[
                     0].text = f'Score:{player["top_score"]["total_score"]:,}'
+
+            if j.attrib['id'] == '$score_my' and is_old==True:  # 渲染score
+                j.getchildren()[
+                    0].text = f'Score:{player["top_score"]["legacy_total_score"]:,}'
 
             if j.attrib['id'] == '$mods_my':  # 渲染mods
                 j.set('text-anchor', 'end')
                 j.set('transform', 'translate(50)')
                 modstext = ""
                 for mod in player["top_score"]["mods"]:
+                    if is_old:
+                        if mod['acronym'] == "CL":
+                            continue
                     modstext = modstext + mod['acronym'] + ","
                 modstext = modstext[:-1]
                 j.getchildren()[
@@ -403,15 +410,22 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
                 j.getchildren()[
                     0].text = f'{other_players[i - 1]["top_score"]["accuracy"]*100: .2f}%'
 
-            if j.attrib['id'] == f'$score_{i}':  # 渲染score
+            if j.attrib['id'] == f'$score_{i}' and is_old==False:  # 渲染score
                 j.getchildren()[
                     0].text = f'Score:{other_players[i - 1]["top_score"]["total_score"]:,}'
+
+            if j.attrib['id'] == f'$score_{i}' and is_old==True:  # 渲染score
+                j.getchildren()[
+                    0].text = f'Score:{other_players[i - 1]["top_score"]["legacy_total_score"]:,}'
 
             if j.attrib['id'] == f'$mods_{i}':  # 渲染mods
                 j.set('text-anchor', 'end')
                 j.set('transform', 'translate(50)')
                 modstext = ""
                 for mod in other_players[i - 1]["top_score"]["mods"]:
+                    if is_old:
+                        if mod['acronym'] == "CL":
+                            continue
                     modstext = modstext + mod['acronym'] + ","
                 modstext = modstext[:-1]
                 j.getchildren()[0].text = f'{modstext}'

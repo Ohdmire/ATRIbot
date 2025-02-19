@@ -438,14 +438,14 @@ async def format_brk_up(beatmap_id,group_id):
 
 
 @handle_exceptions
-async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list):
+async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
 
     await update_scores_to_db(user_id, beatmap_id)
 
-    raw = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list)
+    raw = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list,is_old)
 
     return raw
 

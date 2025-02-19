@@ -37,6 +37,7 @@ class IName(BaseModel):
     mods_list: Optional[list] = []
     group_member_list: Optional[list] = []
     is_yesterday: Optional[bool] = False
+    is_old: Optional[bool] = False
 
 class ItemN(BaseModel):
     pp: Optional[int] = None
@@ -233,7 +234,7 @@ async def jobs(item:ItemN):
 
 @app.api_route("/qq/brk", methods=["GET", "POST"])
 async def jobs(item:IName):
-    img_bytes = await ATRIproxy.format_brk(item.qq_id, item.osuname,item.beatmap_id,item.group_id,item.mods_list)
+    img_bytes = await ATRIproxy.format_brk(item.qq_id, item.osuname,item.beatmap_id,item.group_id,item.mods_list,item.is_old)
     if type(img_bytes) is BytesIO:
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
