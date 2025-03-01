@@ -1,4 +1,4 @@
-from ATRIlib.API.github import get_news_url,replace_github_domain_own
+from ATRIlib.API.github import get_news_url
 from ATRIlib.API.deepseek import translate
 from ATRIlib.TOOLS.Download import download_news_markdown,news_path
 from ATRIlib.DRAW.draw_news import draw_news
@@ -27,12 +27,6 @@ def complete_url_in_markdown(content):
     replacement = r'![](https://raw.githubusercontent.com/ppy/osu-wiki/master/wiki'
     return re.sub(pattern, replacement, content)
 
-def add_gh_proxy(content):
-    # 使用正则表达式替换所有匹配的字段
-    pattern = r'https://raw\.githubusercontent\.com'
-    replacement = r'https://gh-proxy.com/https://raw.githubusercontent.com'
-    return re.sub(pattern, replacement, content)
-
 
 
 async def calculate_news(index,is_raw_news=False):
@@ -49,7 +43,6 @@ async def calculate_news(index,is_raw_news=False):
             raw = f.read()
             raw = format_markdown(raw)
             raw = complete_url_in_markdown(raw)
-            raw = add_gh_proxy(raw)
             result = await draw_news(markdown_name, raw)
         return result
 
@@ -63,7 +56,6 @@ async def calculate_news(index,is_raw_news=False):
             raw = f.read()
             raw = format_markdown(raw)
             raw = complete_url_in_markdown(raw)
-            raw = add_gh_proxy(raw)
             translated_content = translate(raw)
             # translated_content = raw
             with open(translated_filepath,"w") as f:
