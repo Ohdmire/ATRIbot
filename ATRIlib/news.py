@@ -35,13 +35,23 @@ def add_gh_proxy(content):
 
 
 
-async def calculate_news(index):
+async def calculate_news(index,is_raw_news=False):
     url,markdown_name = await get_news_url(index)
 
     # 判断是否存在文件
 
     translated_filepath = news_path / (markdown_name + "_translated.md")
     raw_filepath = news_path / (markdown_name + ".md")
+
+    if is_raw_news:
+        await download_news_markdown(markdown_name, url)
+        with open(raw_filepath,"r",encoding="utf-8") as f:
+            raw = f.read()
+            raw = format_markdown(raw)
+            raw = complete_url_in_markdown(raw)
+            raw = add_gh_proxy(raw)
+            result = await draw_news(markdown_name, raw)
+        return result
 
     if translated_filepath.exists():
         with open(translated_filepath,"r") as f:

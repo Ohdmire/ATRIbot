@@ -659,10 +659,10 @@ async def format_profile(qq_id, osuname,is_yesterday=False):
         return result
 
 @handle_exceptions
-async def format_news(index):
+async def format_news(index,is_raw_news):
     # 使用信号量控制并发
     async with profile_semaphore:
-        result = await calculate_news(index)
+        result = await calculate_news(index,is_raw_news)
         return result
 
 @handle_exceptions

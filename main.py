@@ -47,6 +47,7 @@ class ItemN(BaseModel):
     group_member_list: Optional[list] = []
     medalid: Optional[int] = None
     news_index: Optional[int] = 0
+    is_raw_news: Optional[bool] = False
 
 scheduler = AsyncIOScheduler()
 
@@ -121,7 +122,7 @@ async def fetch_profile(item:IName):
 
 @app.api_route("/news", methods=["GET", "POST"])
 async def fetch_news(item: ItemN):
-    img_bytes = await ATRIproxy.format_news(item.news_index)
+    img_bytes = await ATRIproxy.format_news(item.news_index,item.is_raw_news)
     if type(img_bytes) is BytesIO:
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:

@@ -47,7 +47,9 @@ async def get_latest_pprework_progress():
 
 async def get_news_url(index):
 
-    url = f"https://{reverse_proxy_domain}/repos/ppy/osu-wiki/commits?path=news"
+    index = -index
+
+    url = f"https://{reverse_proxy_domain}/repos/ppy/osu-wiki/contents/news/2025"
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -56,14 +58,14 @@ async def get_news_url(index):
 
             # 把域名部分替换为gh.atri1024.help
             commit_url = replace_github_domain_own(commit_url)
+    # async with aiohttp.ClientSession() as session:
+    #     async with session.get(commit_url, headers=headers) as response:
+    #         commit_url_raw = (await response.json())['files'][0]['contents_url']
+    #
+    #         commit_url_raw = replace_github_domain_own(commit_url_raw)
+
     async with aiohttp.ClientSession() as session:
         async with session.get(commit_url, headers=headers) as response:
-            commit_url_raw = (await response.json())['files'][0]['contents_url']
-
-            commit_url_raw = replace_github_domain_own(commit_url_raw)
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(commit_url_raw, headers=headers) as response:
 
             markdown_obj = (await response.json())
 
