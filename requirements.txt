@@ -47,4 +47,6 @@ tzlocal==5.2
 urllib3==2.2.3
 uvicorn==0.31.0
 yarl==1.13.1
+openai==1.65.1
+markdown==3.7
 playwright

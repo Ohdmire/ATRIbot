@@ -14,6 +14,8 @@ beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
 avatar_path = Path('./data/avatar/')
 cover_path = Path('./data/cover/')
 medal_path = Path('./assets/medal/')
+news_path = Path('./data/news/')
+
 semaphore = asyncio.Semaphore(16)
 semaphore_small = asyncio.Semaphore(4)
 
@@ -176,3 +178,15 @@ async def fetch_beatmap_file_async_all(beatmap_id_list, Temp=False):
             beatmap_ids.append(beatmap_id)
 
     await download_osu_async(beatmap_ids, Temp=Temp)
+
+# 获取新闻
+async def download_news_markdown(title, url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:  # 检查状态码是否为200
+                markdown_file = news_path / f'{title}.md'
+                with open(markdown_file, 'wb') as file:
+                    async for chunk in response.content.iter_chunked(1024):
+                        file.write(chunk)
+            else:
+                print(f'Error: {response.status} {response.reason} - {url}')

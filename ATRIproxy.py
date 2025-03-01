@@ -49,6 +49,8 @@ from ATRIlib.lazerupdate import get_lazer_update
 from ATRIlib.DRAW.draw_medal import draw_special_medal
 from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
 
+from ATRIlib.news import calculate_news
+
 from ATRIlib.github import get_commit_content
 
 from io import BytesIO
@@ -654,6 +656,13 @@ async def format_profile(qq_id, osuname,is_yesterday=False):
         userstruct = await get_userstruct_automatically(qq_id, osuname)
         user_id = userstruct["id"]
         result = await calculate_profile(user_id,is_yesterday)
+        return result
+
+@handle_exceptions
+async def format_news(index):
+    # 使用信号量控制并发
+    async with profile_semaphore:
+        result = await calculate_news(index)
         return result
 
 @handle_exceptions

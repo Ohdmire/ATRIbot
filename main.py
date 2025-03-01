@@ -46,6 +46,7 @@ class ItemN(BaseModel):
     group_id: Optional[int] = None
     group_member_list: Optional[list] = []
     medalid: Optional[int] = None
+    news_index: Optional[int] = 0
 
 scheduler = AsyncIOScheduler()
 
@@ -66,7 +67,10 @@ async def app_lifespan(app: FastAPI):
         "data/tmp/pr",
         "data/tmp/medal",
         "data/tmp/medal_pr",
-        "data/tmp/profile"
+        "data/tmp/profile",
+        "data/tmp/news",
+        "data/news",
+        "data/css"
     ]
     
     # 检查并创建目录
@@ -113,7 +117,17 @@ async def fetch_profile(item:IName):
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
         return str(img_bytes)
-    
+
+
+@app.api_route("/news", methods=["GET", "POST"])
+async def fetch_news(item: ItemN):
+    img_bytes = await ATRIproxy.format_news(item.news_index)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+
+
 @app.api_route("/qq/profile/monitor", methods=["GET", "POST"])
 async def fetch_profile_monitor(item:ItemN):
     result = await ATRIproxy.format_monitor_profile(item.group_id,item.group_member_list)
