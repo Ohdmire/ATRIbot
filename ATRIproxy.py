@@ -370,7 +370,7 @@ async def format_choke(qq_id, osuname):
     total_lost_pp = round(raw["total_lost_pp"])
     total_lost_pp_plus = round(raw["total_lost_pp_plus"])
 
-    result_text = f'{username}\'s ≤0.5%miss choke'
+    result_text = f'{username}\'s ≤0.2%miss choke'
     result_text += f'\n现在的pp:{mypp}pp({total_lost_pp})'
     result_text += f'\n如果不choke:{weighted_fixed_result_total_pp}pp'
     result_text += f'\n累加丢失的pp:{total_lost_pp_plus}pp\n'
@@ -383,6 +383,8 @@ async def format_choke(qq_id, osuname):
         if (count+1) % 2 == 0:
             result_text += f'\n'
         count += 1
+
+    result_text +=f'\n你一共choke了:{count+1}张图\n'
 
     return result_text
 
