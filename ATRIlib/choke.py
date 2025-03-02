@@ -31,19 +31,19 @@ async def calculate_choke_pp(user_id):
         # 更新pp_if_fc
         calculatedppstruct = await calculate_iffcpp_one_in_bps(user_id,count)
         iffcpp = calculatedppstruct["iffcpp"]
-        fixedpp_list.append(iffcpp) # 更新之后的pplist
-        if is_choke(user_id,count,calculatedppstruct['beatmapmaxcombo']):
-            lost_pp = bps_pp_list[count] - iffcpp
-            if lost_pp >=-1:
-                count+=1
-                continue
+        lost_pp = bps_pp_list[count] - iffcpp
+        if is_choke(user_id,count,calculatedppstruct['beatmapmaxcombo']) and lost_pp <-1:
+            fixedpp_list.append(iffcpp)  # 更新之后的pplist
             total_lost_pp_plus += lost_pp
             choke_dict.update({count:lost_pp}) # 写入丢失的pp
             total_lost_count += 1
+        else:
+            fixedpp_list.append(bps_pp_list[count])  # 把原来的pp放入pplist
         count += 1
 
     # 获取整个fixed后的原始pp
-    fixed_original_total_pp = np.array(fixedpp_list)
+    sorted_fixedpp_list = sorted(fixedpp_list,reverse=True)
+    fixed_original_total_pp = np.array(sorted_fixedpp_list)
     list_weight = np.array(WEIGHT_LIST)
     weighted_fixed_original_total_pp = np.sum(fixed_original_total_pp * list_weight)
     bonuspp = calculate_bonus_pp(user_id)
