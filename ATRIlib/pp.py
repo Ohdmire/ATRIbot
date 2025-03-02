@@ -57,8 +57,11 @@ async def calculate_iffcpp_one_in_bps(user_id,count):
 def is_choke(user_id,count,beatmap_maxcombo):
     bpstruct = db_bp.find_one({'id': user_id})
     maxcombo = bpstruct["bps_maxcombo"][count]
-    misscount = bpstruct["bps_statistics"][count]["count_miss"]
-    if misscount == 1 or (maxcombo / beatmap_maxcombo <0.72 and misscount == 0):
+    try:
+        misscount = bpstruct["bps_statistics"][count]["miss"]
+    except:
+        misscount = 0
+    if misscount/beatmap_maxcombo < 0.005 and maxcombo > beatmap_maxcombo / 2:
         return True
     else:
         return False

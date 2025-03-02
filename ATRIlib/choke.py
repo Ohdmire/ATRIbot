@@ -34,6 +34,9 @@ async def calculate_choke_pp(user_id):
         fixedpp_list.append(iffcpp) # 更新之后的pplist
         if is_choke(user_id,count,calculatedppstruct['beatmapmaxcombo']):
             lost_pp = bps_pp_list[count] - iffcpp
+            if lost_pp >=-1:
+                count+=1
+                continue
             total_lost_pp_plus += lost_pp
             choke_dict.update({count:lost_pp}) # 写入丢失的pp
             total_lost_count += 1

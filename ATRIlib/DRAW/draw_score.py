@@ -169,7 +169,7 @@ async def draw_result_screen(data, ppresult):
     score_ele_child = score_ele.getchildren()[0]
     score_ele.set('text-anchor', 'middle')
     score_ele_child.set('x', '1175')
-    score_ele_child.text = f'{data["score"]:,}'
+    score_ele_child.text = f'{data["total_score"]:,}'
 
     great_ele = svg_tree.xpath(
         '//*[@id="$greatnum"]')[0]
@@ -177,7 +177,7 @@ async def draw_result_screen(data, ppresult):
     great_ele.set('text-anchor', 'end')
 
     great_ele_child.set('x', '932')
-    great_ele_child.text = f'{data["statistics"]["count_300"]}'
+    great_ele_child.text = f'{data["statistics"]["great"]}'
 
     ok_ele = svg_tree.xpath(
         '//*[@id="$oknum"]')[0]
@@ -185,7 +185,7 @@ async def draw_result_screen(data, ppresult):
     ok_ele.set('text-anchor', 'end')
 
     ok_ele_child.set('x', '932')
-    ok_ele_child.text = f'{data["statistics"]["count_100"]}'
+    ok_ele_child.text = f'{data["statistics"]["ok"]}'
 
     meh_ele = svg_tree.xpath(
         '//*[@id="$mehnum"]')[0]
@@ -193,7 +193,7 @@ async def draw_result_screen(data, ppresult):
     meh_ele.set('text-anchor', 'end')
 
     meh_ele_child.set('x', '932')
-    meh_ele_child.text = f'{data["statistics"]["count_50"]}'
+    meh_ele_child.text = f'{data["statistics"]["meh"]}'
 
     miss_ele = svg_tree.xpath(
         '//*[@id="$missnum"]')[0]
@@ -201,34 +201,34 @@ async def draw_result_screen(data, ppresult):
     miss_ele.set('text-anchor', 'end')
 
     miss_ele_child.set('x', '932')
-    miss_ele_child.text = f'{data["statistics"]["count_miss"]}'
+    miss_ele_child.text = f'{data["statistics"]["miss"]}'
 
     greatpercent_ele = svg_tree.xpath(
         '//*[@id="$greatpercent"]')[0]
     greatpercent_ele_child = greatpercent_ele.getchildren()[0]
-    greatpercent = data["statistics"]["count_300"] / (data["statistics"]["count_300"] + data["statistics"]
-                                                        ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
+    greatpercent = data["statistics"]["great"] / (data["statistics"]["great"] + data["statistics"]
+                                                        ["ok"] + data["statistics"]["meh"] + data["statistics"]["miss"])
     greatpercent_ele_child.text = f'({greatpercent*100:.2f}%)'
 
     okpercent_ele = svg_tree.xpath(
         '//*[@id="$okpercent"]')[0]
     okpercent_ele_child = okpercent_ele.getchildren()[0]
-    okpercent = data["statistics"]["count_100"] / (data["statistics"]["count_300"] + data["statistics"]
-                                                    ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
+    okpercent = data["statistics"]["ok"] / (data["statistics"]["great"] + data["statistics"]
+                                                    ["ok"] + data["statistics"]["meh"] + data["statistics"]["miss"])
     okpercent_ele_child.text = f'({okpercent*100:.2f}%)'
 
     mehpercent_ele = svg_tree.xpath(
         '//*[@id="$mehpercent"]')[0]
     mehpercent_ele_child = mehpercent_ele.getchildren()[0]
-    mehpercent = data["statistics"]["count_50"] / (data["statistics"]["count_300"] + data["statistics"]
-                                                    ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
+    mehpercent = data["statistics"]["meh"] / (data["statistics"]["great"] + data["statistics"]
+                                                    ["ok"] + data["statistics"]["meh"] + data["statistics"]["miss"])
     mehpercent_ele_child.text = f'({mehpercent*100:.2f}%)'
 
     misspercent_ele = svg_tree.xpath(
         '//*[@id="$misspercent"]')[0]
     misspercent_ele_child = misspercent_ele.getchildren()[0]
-    misspercent = data["statistics"]["count_miss"] / (data["statistics"]["count_300"] + data["statistics"]
-                                                        ["count_100"] + data["statistics"]["count_50"] + data["statistics"]["count_miss"])
+    misspercent = data["statistics"]["miss"] / (data["statistics"]["great"] + data["statistics"]
+                                                        ["ok"] + data["statistics"]["meh"] + data["statistics"]["miss"])
     misspercent_ele_child.text = f'({misspercent*100:.2f}%)'
 
     great_fade_ele = svg_tree.xpath(
@@ -305,7 +305,12 @@ async def draw_result_screen(data, ppresult):
     grade.tag = 'image'
     grade.set('xlink', f'{garde_path_forsvg}/{data["rank"]}.png')
 
-    reverse_modslist = data["mods"]
+    raw_mods_list = []
+
+    for i in data["mods"]:
+        raw_mods_list.append(i["acronym"])
+
+    reverse_modslist = raw_mods_list
     reverse_modslist.reverse()
     mod_ele = svg_tree.xpath(
         '//*[@id="$mods"]')[0]
@@ -377,7 +382,7 @@ async def draw_result_screen(data, ppresult):
     playername_ele_child.text = data['user']['username']
 
     datedplaytime = datetime.datetime.strptime(
-        data['created_at'], '%Y-%m-%dT%H:%M:%SZ'
+        data['ended_at'], '%Y-%m-%dT%H:%M:%SZ'
     )
     datedplaytime = datedplaytime + datetime.timedelta(hours=8)  # 时区转换
 

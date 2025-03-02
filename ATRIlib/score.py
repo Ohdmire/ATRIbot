@@ -23,6 +23,15 @@ async def calculate_pr_score(user_id):
         ppresult = await calculate_pp_if_all(
             data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
 
+    if "great" not in data["statistics"]:
+        data["statistics"]["great"] = 0
+    if "ok" not in data["statistics"]:
+        data["statistics"]["ok"] = 0
+    if "meh" not in data["statistics"]:
+        data["statistics"]["meh"] = 0
+    if "miss" not in data["statistics"]:
+        data["statistics"]["miss"] = 0
+
     result = await draw_result_screen(data, ppresult)
 
     return result
