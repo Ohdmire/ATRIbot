@@ -42,7 +42,7 @@ async def html_to_image(title,translated_content,max_body_width=800):
     html_content += "<style>" + css_style + css_content + "</style>"
 
     html_content += """<article class="markdown-body">"""
-    html_content += markdown.markdown(translated_content)
+    html_content += markdown.markdown(translated_content,extensions=['extra'])
     html_content += """</article>"""
 
 
