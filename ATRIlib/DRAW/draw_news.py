@@ -53,7 +53,7 @@ async def html_to_image(title,translated_content,max_body_width=800):
 
     async with async_playwright() as p:
         browser = await p.firefox.launch()
-        context = await browser.new_context(viewport={'width': max_body_width, 'height': 1080})
+        context = await browser.new_context(viewport={'width': max_body_width, 'height': 1080},ignore_https_errors=True)
         page = await context.new_page()
         try:
             await page.goto(f"file://{temp_html_path.absolute()}")
