@@ -85,18 +85,11 @@ async def html_to_image(title,translated_content,max_body_width=800):
             }
         """)
 
-        body_height = await page.evaluate("""
-            () => document.body.getBoundingClientRect().height
-        """)
-
-
-        await page.set_viewport_size({"width": max_body_width, "height": page_height})
         screenshot = await page.screenshot(
             path = news_result_path / f"{title}.jpg",
-            full_page=False,
+            full_page=True,
             type='jpeg',
             quality=95,
-            clip={'x': 0, 'y': 0, 'width': max_body_width, 'height': body_height}
             )
 
         # screenshot_image = Image.open(io.BytesIO(screenshot))
