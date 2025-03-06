@@ -1,8 +1,7 @@
 services:
   app:
     build: .
-    ports:
-      - "8008:8008"
+    network_mode: host
     depends_on:
       - mongodb
     env_file:
@@ -11,6 +10,7 @@ services:
       - ./logs:/app/logs
       - ./assets:/app/assets
       - ./data:/app/data
+      - /etc/ssl/certs:/etc/ssl/certs:ro
     restart: always
 
   mongodb:

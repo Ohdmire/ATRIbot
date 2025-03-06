@@ -66,62 +66,62 @@ async def html_to_image(title,translated_content,max_body_width=800):
         except Exception as e:
             logging.warning(f"页面加载错误: {e}")
 
-            # 缓慢滚动到页面底部并返回总高度
-            page_height = await page.evaluate("""
-                    () => {
-                        return new Promise((resolve) => {
-                            let totalHeight = 0;
-                            let distance = 300;
-                            let timer = setInterval(() => {
-                                let scrollHeight = document.body.scrollHeight;
-                                window.scrollBy(0, distance);
-                                totalHeight += distance;
-                                if(totalHeight >= scrollHeight){
-                                    clearInterval(timer);
-                                    resolve(totalHeight);
-                                }
-                            }, 1);
-                        });
-                    }
-                """)
+        # 缓慢滚动到页面底部并返回总高度
+        page_height = await page.evaluate("""
+                () => {
+                    return new Promise((resolve) => {
+                        let totalHeight = 0;
+                        let distance = 300;
+                        let timer = setInterval(() => {
+                            let scrollHeight = document.body.scrollHeight;
+                            window.scrollBy(0, distance);
+                            totalHeight += distance;
+                            if(totalHeight >= scrollHeight){
+                                clearInterval(timer);
+                                resolve(totalHeight);
+                            }
+                        }, 1);
+                    });
+                }
+            """)
 
-            body_height = await page.evaluate("""
-                    () => document.body.getBoundingClientRect().height
-                """)
+        body_height = await page.evaluate("""
+                () => document.body.getBoundingClientRect().height
+            """)
 
-            # 滚动回顶部
-            await page.evaluate("window.scrollTo(0, 0)")
+        # 滚动回顶部
+        await page.evaluate("window.scrollTo(0, 0)")
 
-            max_height = 24000  # 稍微小于32767的值
+        max_height = 24000  # 稍微小于32767的值
 
-            if body_height > max_height:
-                scale = max_height / body_height
-            else:
-                scale = 1
+        if body_height > max_height:
+            scale = max_height / body_height
+        else:
+            scale = 1
 
-            # 缩放body元素
-            await page.evaluate(f"""
-                document.body.style.transform = `scale({scale})`;
-                document.body.style.transformOrigin = 'top left';
-                """)
+        # 缩放body元素
+        await page.evaluate(f"""
+            document.body.style.transform = `scale({scale})`;
+            document.body.style.transformOrigin = 'top left';
+            """)
 
-            body_height = await page.evaluate("""
-                            () => document.body.getBoundingClientRect().height
-                        """)
+        body_height = await page.evaluate("""
+                        () => document.body.getBoundingClientRect().height
+                    """)
 
-            logging.info(f"最终页面高度: {page_height}")
-            logging.info(f"body元素的高度: {body_height}")
+        logging.info(f"最终页面高度: {page_height}")
+        logging.info(f"body元素的高度: {body_height}")
 
-            await page.set_viewport_size({"width": max_body_width, "height": page_height})
-            screenshot = await page.screenshot(
-                path=news_result_path / f"{title}.jpg",
-                full_page=False,
-                type='jpeg',
-                quality=95,
-                clip={'x': 0, 'y': 0, 'width': max_body_width * scale, 'height': body_height}
-            )
+        await page.set_viewport_size({"width": max_body_width, "height": page_height})
+        screenshot = await page.screenshot(
+            path=news_result_path / f"{title}.jpg",
+            full_page=False,
+            type='jpeg',
+            quality=95,
+            clip={'x': 0, 'y': 0, 'width': max_body_width * scale, 'height': body_height}
+        )
 
-        # screenshot_image = Image.open(io.BytesIO(screenshot))
+    # screenshot_image = Image.open(io.BytesIO(screenshot))
 
         await browser.close()
 
