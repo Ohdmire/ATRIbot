@@ -23,7 +23,7 @@ from ATRIlib.group import update_group_info
 
 from ATRIlib.bind import update_bind_info
 
-from ATRIlib.interbot import get_interbot_test1,get_interbot_test2,get_interbot_skill
+from ATRIlib.interbot import health_check,check2
 
 from ATRIlib.API.PPYapiv2 import get_token
 from ATRIlib.whatif import calculate_pp,calculate_rank
@@ -113,12 +113,10 @@ def format_token():
 @handle_exceptions
 async def format_test1(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
-    username = userstruct["username"]
+    user_id = userstruct["id"]
+    bpstruct = await get_bpstruct(user_id)
 
-    raw = await get_interbot_test1(username)
-
-    if "王者" in raw:
-        raw = raw.replace("王者","老登")
+    raw = health_check(userstruct,bpstruct)
 
     return raw
 
@@ -126,20 +124,13 @@ async def format_test1(qq_id, osuname):
 @handle_exceptions
 async def format_test2(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
-    username = userstruct["username"]
+    user_id = userstruct["id"]
+    await get_bpstruct(user_id)
 
-    raw = await get_interbot_test2(username)
-
-    return raw
-
-@handle_exceptions
-async def format_skill(qq_id, osuname):
-    userstruct = await get_userstruct_automatically(qq_id, osuname)
-    username = userstruct["username"]
-
-    raw = await get_interbot_skill(username)
+    raw = check2(userstruct)
 
     return raw
+
 
 @handle_exceptions
 async def format_bpsim(qq_id, osuname, pp_range):

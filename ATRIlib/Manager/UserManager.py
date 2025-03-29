@@ -1,5 +1,5 @@
 from ATRIlib.DB.Mongodb import update_db_user, update_db_bind, bulk_update_db_score, update_db_bp
-
+from ATRIlib.DB.Mongodb import db_score,db_bp
 # 更新用户信息
 def update_user(userdata):
 
@@ -47,3 +47,21 @@ def update_bp(bpdatas):
     update_db_bp(user_id, final_bp_data)
 
     return final_bp_data
+
+def get_bp_score_struct(user_id,index):
+    bpstruct = db_bp.find_one({'id': user_id})
+    bps_scoreids = bpstruct['bps']
+    score_id = bps_scoreids[index]
+
+    score_struct = db_score.find_one({'id': score_id})
+
+    if "great" not in score_struct["statistics"]:
+        score_struct["statistics"]["great"] = 0
+    if "ok" not in score_struct["statistics"]:
+        score_struct["statistics"]["ok"] = 0
+    if "meh" not in score_struct["statistics"]:
+        score_struct["statistics"]["meh"] = 0
+    if "miss" not in score_struct["statistics"]:
+        score_struct["statistics"]["miss"] = 0
+
+    return score_struct
