@@ -71,7 +71,7 @@ def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist
                                 }
                             ] if modslist is not None else []
                         ) + [
-                            {"$sort": {"total_score": 1}},
+                            {"$sort": {"total_score": -1}},
                             {"$limit": 1}
                         ],
                 "as": "top_score"
@@ -93,7 +93,7 @@ def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist
         # 7. 按照 top_score 中的 score 字段排序
         {
             "$sort": {
-                "top_score.total_score": 1  # -1 表示降序排序
+                "top_score.total_score": -1  # -1 表示降序排序
             }
         }
     ]
