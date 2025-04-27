@@ -399,8 +399,11 @@ async def format_addpp(qq_id, osuname,pp_lists):
     result_text += f'\n现在的pp:{nowpp}pp'
     result_text += f'\n如果加入这些pp:{newpp}pp'
     result_text += f'\n增加了:{diff_pp}pp\n'
-    result_text += f'\n变化前的排名:#{int(raw["original_rank"]):,}'
-    result_text += f'\n变化后的排名:#{int(raw["new_rank"]):,}(↑{int(diff_rank):,})'
+    try:
+        result_text += f'\n变化前的排名:#{int(raw["original_rank"]):,}'
+        result_text += f'\n变化后的排名:#{int(raw["new_rank"]):,}(↑{int(diff_rank):,})'
+    except:
+        pass
 
     return result_text
 
