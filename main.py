@@ -20,6 +20,7 @@ import logging.config
 
 import asyncio
 import os
+from asyncio import Semaphore
 
 with open('./log_config.ini', 'r', encoding='utf-8') as f:
     logging.config.fileConfig(f)
@@ -92,6 +93,9 @@ async def app_lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=app_lifespan)
 
+# 限制 /qq/profile 路由的并发请求数量
+profile_route_semaphore = Semaphore(1)
+
 @app.api_route("/qq/mostplayed", methods=["GET", "POST"])
 async def fetch_test2(item:IName):
     result = await ATRIproxy.format_most_played_beatmap(item.qq_id,item.osuname)
@@ -113,11 +117,12 @@ async def fetch_beatmaptype_all(item:IName):
 
 @app.api_route("/qq/profile", methods=["GET", "POST"])
 async def fetch_profile(item:IName):
-    img_bytes = await ATRIproxy.format_profile(item.qq_id,item.osuname,item.is_yesterday)
-    if type(img_bytes) is BytesIO:
-        return StreamingResponse(img_bytes, media_type="image/jpeg")
-    else:
-        return str(img_bytes)
+    async with profile_route_semaphore:
+        img_bytes = await ATRIproxy.format_profile(item.qq_id,item.osuname,item.is_yesterday)
+        if type(img_bytes) is BytesIO:
+            return StreamingResponse(img_bytes, media_type="image/jpeg")
+        else:
+            return str(img_bytes)
 
 
 @app.api_route("/news", methods=["GET", "POST"])

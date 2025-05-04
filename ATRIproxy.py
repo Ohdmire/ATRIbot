@@ -57,11 +57,6 @@ from io import BytesIO
 
 import traceback
 import asyncio
-from asyncio import Semaphore
-
-
-profile_semaphore = Semaphore(1)  # 限制为1表示一次只能处理一个请求
-
 
 def handle_exceptions(func):
     if asyncio.iscoroutinefunction(func):
@@ -334,7 +329,7 @@ async def format_avgtth(qq_id, osuname, tth_range):
 
     diff_top5_total = diff_bp1 + diff_bp2 + diff_bp3 + diff_bp4 + diff_bp5
 
-    result_text = f'根据亚托莉的数据库(#{count})\n{username}对比平均游玩时间\nTTH段:{mytth}(±{tth_range})w'
+    result_text = f'根据亚托莉的数据库(#{count})\n{username}对比平均总打击数\nTTH段:{mytth}(±{tth_range})w'
     result_text += f'\nPP:{mypp}pp -- {avgpp}pp({diff_pp})'
     result_text += f'\nbp1:{mybp1}pp -- {avgbp1}pp({diff_bp1})'
     result_text += f'\nbp2:{mybp2}pp -- {avgbp2}pp({diff_bp2})'
@@ -647,19 +642,15 @@ async def format_beatmap_type_ba(qq_id, osuname):
 
 @handle_exceptions
 async def format_profile(qq_id, osuname,is_yesterday=False):
-    # 使用信号量控制并发
-    async with profile_semaphore:
-        userstruct = await get_userstruct_automatically(qq_id, osuname)
-        user_id = userstruct["id"]
-        result = await calculate_profile(user_id,is_yesterday)
-        return result
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    result = await calculate_profile(user_id,is_yesterday)
+    return result
 
 @handle_exceptions
 async def format_news(index,is_raw_news):
-    # 使用信号量控制并发
-    async with profile_semaphore:
-        result = await calculate_news(index,is_raw_news)
-        return result
+    result = await calculate_news(index,is_raw_news)
+    return result
 
 @handle_exceptions
 async def format_monitor_profile(group_id,group_member_list):
