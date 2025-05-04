@@ -60,7 +60,7 @@ import asyncio
 from datetime import datetime, timedelta
 
 brkup_cache = {}
-BRKUP_CACHE_DURATION = timedelta(minutes=5) # Unified cache duration
+BRKUP_CACHE_DURATION = timedelta(minutes=10) # Unified cache duration
 
 async def cleanup_brk_cache():
     """Removes expired entries from the brkup_cache."""
