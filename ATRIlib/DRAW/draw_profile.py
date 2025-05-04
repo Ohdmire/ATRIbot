@@ -387,12 +387,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         """)
 
+        # 第一次获取个大概body
         body_height = await page.evaluate("""
             () => document.body.getBoundingClientRect().height
         """)
 
         # 滚动回顶部
-        await page.evaluate("window.scrollTo(0, 0)")
+        # await page.evaluate("window.scrollTo(0, 0)")
 
         max_height = 24000  # 稍微小于32767的值
 
@@ -406,21 +407,22 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.transform = `scale({scale})`;
         document.body.style.transformOrigin = 'top left';
         """)
+        
+        await page.set_viewport_size({"width": max_body_width, "height": page_height})
 
+        # 第二次获取个整个body
         body_height = await page.evaluate("""
-                    () => document.body.getBoundingClientRect().height
-                """)
+            () => document.body.getBoundingClientRect().height
+        """)
 
         logging.info(f"最终页面高度: {page_height}")
         logging.info(f"body元素的高度: {body_height}")
 
-        await page.set_viewport_size({"width": max_body_width, "height": page_height})
         screenshot = await page.screenshot(
-            path = profile_result_path / f"{user_id}test.jpg",
             full_page=False,
             type='jpeg',
             quality=95,
-            clip={'x': 0, 'y': 0, 'width': max_body_width*scale, 'height': body_height}
+            clip={'x': 0, 'y': 0, 'width': max_body_width*scale, 'height': body_height} # 使用缩放后的 body_height 设置 clip 高度
             )
 
         # screenshot_image = Image.open(io.BytesIO(screenshot))
