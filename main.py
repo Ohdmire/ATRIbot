@@ -87,6 +87,8 @@ async def app_lifespan(app: FastAPI):
                       trigger="cron", hour=4) #定时转移数据库
     scheduler.add_job(job_update_bind_all,
                       trigger="cron", hour=4,minute=2) #定时更新绑定用户所有
+    scheduler.add_job(ATRIproxy.cleanup_brk_cache,
+                      trigger="interval", hours=1) #定时清理brk缓存
     scheduler.start()
     yield
     logging.info("亚托莉，关闭!")
@@ -249,8 +251,16 @@ async def fetch_bind(item:IName):
 
 @app.api_route("/qq/brkup", methods=["GET", "POST"])
 async def jobs(item:ItemN):
-    result = await ATRIproxy.format_brk_up(item.beatmap_id,item.group_id)
-    return str(result)
+    # Cache logic and cleanup moved to ATRIproxy.format_brk_up
+    result = await ATRIproxy.format_brk_up(item.beatmap_id, item.group_id)
+
+    if result["status"] == "cached":
+        return f'请求太快啦，请{result["remaining_seconds"]}s后再试试'
+    elif result["status"] == "success":
+        return str(result["result"])
+    else:
+        # Handle other potential statuses or errors from ATRIproxy
+        return str(result) # Or a more specific error message
 
 @app.api_route("/qq/brk", methods=["GET", "POST"])
 async def jobs(item:IName):

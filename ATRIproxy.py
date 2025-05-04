@@ -57,6 +57,23 @@ from io import BytesIO
 
 import traceback
 import asyncio
+from datetime import datetime, timedelta
+
+brkup_cache = {}
+BRKUP_CACHE_DURATION = timedelta(minutes=5) # Unified cache duration
+
+async def cleanup_brk_cache():
+    """Removes expired entries from the brkup_cache."""
+    logging.info("Cleaning up brkup_cache...")
+    current_time = datetime.now()
+    keys_to_remove = [
+        key for key, (cached_time, _) in brkup_cache.items()
+        if current_time - cached_time > BRKUP_CACHE_DURATION
+    ]
+    for key in keys_to_remove:
+        del brkup_cache[key]
+        logging.info(f"Removed expired brkup cache entry for key: {key}")
+    logging.info("Brkup cache cleanup finished.")
 
 def handle_exceptions(func):
     if asyncio.iscoroutinefunction(func):
@@ -424,23 +441,91 @@ async def format_pttpp(qq_id, osuname, pp_range):
 
 @handle_exceptions
 async def format_brk_up(beatmap_id,group_id):
+    # Add cleanup logic here
+    # Assuming a function exists or needs to be called for cleanup
+    # Example: await ATRIlib.beatmapranking.cleanup_brk_temp_data(beatmap_id, group_id)
+    logging.info(f"Performing cleanup for brkup request: beatmap_id={beatmap_id}, group_id={group_id}")
+    # TODO: Implement or call the actual cleanup function here
+
+    cache_key = (beatmap_id, group_id)
+    current_time = datetime.now()
+
+    # Check cache
+    if cache_key in brkup_cache:
+        cached_time, cached_result = brkup_cache[cache_key]
+        time_difference = current_time - cached_time
+        if time_difference <= BRKUP_CACHE_DURATION:
+            remaining_time = BRKUP_CACHE_DURATION - time_difference
+            remaining_seconds = int(remaining_time.total_seconds())
+            logging.info(f"Returning cached result for brkup key: {cache_key}, remaining time: {remaining_seconds} seconds")
+            # Return a specific indicator for cache hit
+            return {"status": "cached", "remaining_seconds": remaining_seconds, "result": cached_result} # Return cached result
+        else:
+            # Cache expired, remove it
+            del brkup_cache[cache_key]
+            logging.info(f"Brkup cache expired for key: {cache_key}")
+
+    # If not in cache or cache expired, fetch new data
+    logging.info(f"Fetching new data for brkup key: {cache_key}")
+    # Add cleanup logic here
+    # Assuming a function exists or needs to be called for cleanup
+    # Example: await ATRIlib.beatmapranking.cleanup_brk_temp_data(beatmap_id, group_id)
+    logging.info(f"Performing cleanup for brkup request: beatmap_id={beatmap_id}, group_id={group_id}")
+    # TODO: Implement or call the actual cleanup function here
 
     raw = await calculate_beatmapranking_update(beatmap_id,group_id)
 
-    return raw
+    # Store result in cache
+    brkup_cache[cache_key] = (current_time, raw)
+
+    return {"status": "success", "result": raw} # Return status and result
 
 
 @handle_exceptions
 async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
+    cache_key = (beatmap_id, group_id)
+    current_time = datetime.now()
+    # Check cache
+    if cache_key in brkup_cache: # Use the unified cache
+        cached_time, cached_data = brkup_cache[cache_key]
+        time_difference = current_time - cached_time
+        if time_difference <= BRKUP_CACHE_DURATION: # Use the unified duration
+            remaining_time = BRKUP_CACHE_DURATION - time_difference
+            remaining_seconds = int(remaining_time.total_seconds())
+            logging.info(f"Using cached result for brk key: {cache_key}, remaining time: {remaining_seconds} seconds")
+            # If cached, use the cached data directly for brk
+            raw = cached_data
+        else:
+            # Cache expired, remove it
+            del brkup_cache[cache_key]
+            logging.info(f"Brkup cache expired for key: {cache_key}")
+            # If cache expired or not found, fetch new data
+            await format_brk_up(beatmap_id, group_id) # This will update the cache
+            # After updating, re-check the cache to get the new data
+            if cache_key in brkup_cache:
+                 _, raw = brkup_cache[cache_key]
+            else:
+                 # Handle case where format_brk_up failed to cache
+                 logging.error(f"Failed to retrieve data for brk key after update: {cache_key}")
+                 return "获取数据失败" # Or raise an exception
+    else:
+        # If cache not found, fetch new data
+        await format_brk_up(beatmap_id, group_id) # This will update the cache
+        # After updating, re-check the cache to get the new data
+        if cache_key in brkup_cache:
+             _, raw = brkup_cache[cache_key]
+        else:
+             # Handle case where format_brk_up failed to cache
+             logging.error(f"Failed to retrieve data for brk key after initial fetch: {cache_key}")
+             return "获取数据失败" # Or raise an exception
+
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
-
     await update_scores_to_db(user_id, beatmap_id)
-
-    raw = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list,is_old)
-
-    return raw
+    # Use the retrieved raw data from cache or new fetch
+    result = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list,is_old) # Pass raw data to calculate_beatmapranking
+    return result
 
 @handle_exceptions
 async def format_medal(medalid):
