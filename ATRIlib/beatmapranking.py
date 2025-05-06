@@ -16,7 +16,7 @@ async def calculate_beatmapranking_update(user_id,beatmap_id, group_id):
     beatmapinfo = await get_beatmap_info(beatmap_id)
 
     if beatmapinfo == {'error': "Specified beatmap difficulty couldn't be found."}:
-        return "无法找到该谱面"
+        raise ValueError(f"无法找到这个谱面b{beatmap_id}")
 
     if beatmapinfo["ranked"] not in {1, 2, 4}:
         await job_update_unrank_score(user_id)
