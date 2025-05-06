@@ -3,10 +3,10 @@ import functools
 import logging
 import time
 
-from ATRIlib.API.PPYapiv2 import get_user_info_fromid,get_user_best_all_info,get_user_scores_info
+from ATRIlib.API.PPYapiv2 import get_user_info_fromid,get_user_best_all_info,get_user_scores_info,get_user_passrecent_info
 
 from ATRIlib.Manager.UserManager import update_user,update_bp
-from ATRIlib.Manager.ScoreManager import update_score_many
+from ATRIlib.Manager.ScoreManager import update_score_many,upate_unrank_score
 
 import aiohttp
 
@@ -131,6 +131,10 @@ async def multi_update_users_bps_async(users_id_lists):
 
     return result_text
 
+async def job_update_unrank_score(user_id):
+    datas = await get_user_passrecent_info(user_id)
+    for data in datas:
+        upate_unrank_score(data)
 
 async def multi_update_users_beatmap_score_async(beatmap_id, users_lists):
     total_users = len(users_lists)

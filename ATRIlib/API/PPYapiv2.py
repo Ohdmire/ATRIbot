@@ -110,7 +110,7 @@ async def get_user_scores_info(user_id, beatmap_id):
 
 @rate_limited()
 async def get_user_passrecent_info(user_id):
-    url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?mode=osu'
+    url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?legacy_only=0&include_fails=0&mode=osu&limit=100'
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:

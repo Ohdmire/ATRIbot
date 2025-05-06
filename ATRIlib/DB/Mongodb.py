@@ -54,6 +54,15 @@ db_solution = Mongodb('solution')
 db_mostplayed = Mongodb('mostplayed')
 db_yesterday = Mongodb('yesterday')
 db_beatmaptype = Mongodb('beatmaptype')
+db_unrankscore = Mongodb('unrankscore')
+
+# 写入unrankscore
+def update_db_unrankscore(scoredata):
+    db_unrankscore.update(
+        {"id": scoredata["id"]},  # 查询条件
+        {"$set": scoredata},  # 插入的数据
+        upsert=True  # 如果不存在则插入
+    )
 
 # 写入用户信息
 def update_db_user(userdata):

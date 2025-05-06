@@ -1,14 +1,58 @@
 from ATRIlib.DB.pipeline_beatmapranking import get_beatmapranking_up_list_from_db, get_beatmapranking_list_from_db, \
-    get_beatmapranking_list_from_db_old
+    get_beatmapranking_list_from_db_old,get_beatmapranking_list_from_unrankscore_db,get_beatmapranking_list_from_unrankscore_db_old
 from ATRIlib.API.PPYapiv2 import get_beatmap_info
-from ATRIlib.TASKS.Jobs import multi_update_users_beatmap_score_async
+from ATRIlib.TASKS.Jobs import multi_update_users_beatmap_score_async,job_update_unrank_score
 from ATRIlib.DRAW.draw_brk import draw_beatmap_rank_screen
+from datetime import datetime, timedelta
+import logging
 
-async def calculate_beatmapranking_update(beatmap_id, group_id):
+brkup_cache = {}
+BRKUP_CACHE_DURATION = timedelta(minutes=10)  # Unified cache duration
+
+async def calculate_beatmapranking_update(user_id,beatmap_id, group_id):
+
+    is_ranked = True
+
     beatmapinfo = await get_beatmap_info(beatmap_id)
 
     if beatmapinfo == {'error': "Specified beatmap difficulty couldn't be found."}:
         return "无法找到该谱面"
+
+    if beatmapinfo["ranked"] not in {1, 2, 4}:
+        await job_update_unrank_score(user_id)
+        is_ranked = False
+        return {"status": "success","is_ranked":is_ranked}
+
+    logging.info(f"Performing cleanup for brkup request: beatmap_id={beatmap_id}, group_id={group_id}")
+    # TODO: Implement or call the actual cleanup function here
+
+    cache_key = (beatmap_id, group_id)
+    current_time = datetime.now()
+
+    # Check cache
+    if cache_key in brkup_cache:
+        cached_time, cached_result = brkup_cache[cache_key]
+        time_difference = current_time - cached_time
+        if time_difference <= BRKUP_CACHE_DURATION:
+            remaining_time = BRKUP_CACHE_DURATION - time_difference
+            remaining_seconds = int(remaining_time.total_seconds())
+            logging.info(
+                f"Returning cached result for brkup key: {cache_key}, remaining time: {remaining_seconds} seconds")
+
+            return {"status": "cached", "remaining_seconds": remaining_seconds,
+                    "result": cached_result}  # Return cached result
+        else:
+            # Cache expired, remove it
+            del brkup_cache[cache_key]
+            logging.info(f"Brkup cache expired for key: {cache_key}")
+
+    # If not in cache or cache expired, fetch new data
+    logging.info(f"Fetching new data for brkup key: {cache_key}")
+    # Add cleanup logic here
+    # Assuming a function exists or needs to be called for cleanup
+    # Example: await ATRIlib.beatmapranking.cleanup_brk_temp_data(beatmap_id, group_id)
+    logging.info(f"Performing cleanup for brkup request: beatmap_id={beatmap_id}, group_id={group_id}")
+    # TODO: Implement or call the actual cleanup function here
 
     all_users_list = get_beatmapranking_up_list_from_db(group_id)
 
@@ -21,9 +65,13 @@ async def calculate_beatmapranking_update(beatmap_id, group_id):
     result = f'b{beatmap_id}\n'
     result += await multi_update_users_beatmap_score_async(beatmap_id, users_id_list)
 
-    return result
+    # 更新成功后才
+    # Store result in cache
+    brkup_cache[cache_key] = (current_time, result)
 
-async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_old=False):
+    return {"status": "success", "result": result,"is_ranked":is_ranked}  # Return status and result
+
+async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_old=False,is_ranked=True):
     if "NM" in mods_list:
         mods_list = []
     if "None" in mods_list:
@@ -32,9 +80,15 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_o
     beatmapinfo = await get_beatmap_info(beatmap_id)
 
     if is_old:
-        raw = get_beatmapranking_list_from_db_old(user_id,beatmap_id,group_id,mods_list)
+        if is_ranked:
+            raw = get_beatmapranking_list_from_db_old(user_id, beatmap_id, group_id, mods_list)
+        else:
+            raw = get_beatmapranking_list_from_unrankscore_db_old(user_id, beatmap_id, group_id, mods_list)
     else:
-        raw = get_beatmapranking_list_from_db(user_id,beatmap_id,group_id,mods_list)
+        if is_ranked:
+            raw = get_beatmapranking_list_from_db(user_id,beatmap_id,group_id,mods_list)
+        else:
+            raw = get_beatmapranking_list_from_unrankscore_db(user_id,beatmap_id,group_id,mods_list)
 
     user_record = None
     for record in raw:

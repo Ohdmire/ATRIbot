@@ -270,6 +270,14 @@ async def jobs(item:IName):
     else:
         return str(img_bytes)
 
+@app.api_route("/qq/brk/pr", methods=["GET", "POST"])
+async def jobs(item:IName):
+    img_bytes = await ATRIproxy.format_brkpr(item.qq_id, item.osuname,item.group_id,item.mods_list,item.is_old)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+
 @app.api_route("/qq/pr", methods=["GET", "POST"])
 async def fetch_pr(item:IName):
     img_bytes = await ATRIproxy.format_pr(item.qq_id, item.osuname)
