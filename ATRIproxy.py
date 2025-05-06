@@ -457,7 +457,9 @@ async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
     return result
 
 @handle_exceptions
-async def format_brkpr(qq_id, osuname,group_id,mods_list,is_old):
+async def format_brkpr(qq_id, osuname,group_id,index,is_old):
+
+    mods_list = ["None"]
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -465,7 +467,7 @@ async def format_brkpr(qq_id, osuname,group_id,mods_list,is_old):
     data = await get_user_passrecent_info(user_id)
     if len(data) == 0:
         raise ValueError("无法找到最近游玩的成绩")
-    data = data[0]
+    data = data[index-1]
     beatmap_id = data["beatmap_id"]
 
     await update_scores_to_db(user_id, beatmap_id)
