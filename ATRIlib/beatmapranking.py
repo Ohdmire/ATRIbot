@@ -40,7 +40,7 @@ async def calculate_beatmapranking_update(user_id,beatmap_id, group_id):
                 f"Returning cached result for brkup key: {cache_key}, remaining time: {remaining_seconds} seconds")
 
             return {"status": "cached", "remaining_seconds": remaining_seconds,
-                    "result": cached_result}  # Return cached result
+                    "result": cached_result,"is_ranked":is_ranked}  # Return cached result
         else:
             # Cache expired, remove it
             del brkup_cache[cache_key]
