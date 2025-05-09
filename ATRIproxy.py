@@ -438,7 +438,9 @@ async def format_pttpp(qq_id, osuname, pp_range):
 
 
 @handle_exceptions
-async def format_brk_up(user_id,beatmap_id,group_id):
+async def format_brk_up(qq_id, osuname,beatmap_id,group_id):
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
 
     raw = await calculate_beatmapranking_update(user_id,beatmap_id,group_id)
 

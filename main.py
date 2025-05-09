@@ -251,9 +251,9 @@ async def fetch_bind(item:IName):
     return str(result)
 
 @app.api_route("/qq/brkup", methods=["GET", "POST"])
-async def jobs(item:ItemN):
+async def jobs(item:IName):
     # Cache logic and cleanup moved to ATRIproxy.format_brk_up
-    result = await ATRIproxy.format_brk_up(item.beatmap_id, item.group_id)
+    result = await ATRIproxy.format_brk_up(item.qq_id, item.osuname,item.beatmap_id, item.group_id)
 
     if result["status"] == "cached":
         return f'请求太快啦，请{result["remaining_seconds"]}s后再试试'
