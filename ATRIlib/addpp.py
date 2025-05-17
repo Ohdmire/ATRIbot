@@ -20,6 +20,9 @@ async def calculate_if_get_pp(user_id,pp_lists):
 
     sorted_new_pp_list = sorted(new_pp_list, reverse=True)[:100]
 
+    if len(sorted_new_pp_list) < 100:
+        sorted_new_pp_list = sorted_new_pp_list + [0] * (100 - len(sorted_new_pp_list))
+
     list1 = np.array(sorted_new_pp_list)
     list2 = np.array(WEIGHT_LIST)
     list3 = list1 * list2
