@@ -13,6 +13,9 @@ async def calculate_if_get_pp(user_id,pp_lists):
 
     bp_pp_list = db_bp.find_one({'id': user_id})['bps_pp']
 
+    if len(bp_pp_list) < 100:
+        bp_pp_list = bp_pp_list + [0] * (100 - len(bp_pp_list))
+
     new_pp_list = bp_pp_list.copy()
 
     for i in pp_lists:

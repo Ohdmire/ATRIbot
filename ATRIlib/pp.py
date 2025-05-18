@@ -14,6 +14,9 @@ beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
 def calculate_origin_pp(user_id):
     bps_pplist = db_bp.find_one({'id': user_id})['bps_pp']
 
+    if len(bps_pplist) < 100:
+        bps_pplist = bps_pplist + [0] * (100 - len(bps_pplist))
+
     list1 = np.array(bps_pplist)
     list2 = np.array(WEIGHT_LIST)
     list3 = list1 * list2
