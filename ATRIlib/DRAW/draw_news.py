@@ -6,7 +6,7 @@ from pathlib import Path
 import io
 
 news_result_path = Path('./data/tmp/news')
-css_file_path = Path('./data/css/')
+css_file_path = Path('./assets/css/')
 
 async def draw_news(title,translated_content):
     result = await html_to_image(title,translated_content)

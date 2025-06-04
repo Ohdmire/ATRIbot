@@ -73,7 +73,6 @@ async def app_lifespan(app: FastAPI):
         "data/tmp/profile",
         "data/tmp/news",
         "data/news",
-        "data/css"
     ]
     
     # 检查并创建目录
