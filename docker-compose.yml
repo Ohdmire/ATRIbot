@@ -11,7 +11,6 @@ services:
       - ./assets:/app/assets
       - ./data:/app/data
       - ./assets/fonts/ttf:/usr/share/fonts/ttf
-      - ./assets/fonts/otf:/usr/share/fonts/otf
       - /etc/ssl/certs:/etc/ssl/certs:ro
     restart: always
 
