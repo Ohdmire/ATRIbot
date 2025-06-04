@@ -54,9 +54,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # 复制项目文件到工作目录
 COPY . .
 
-# 安装字体
-COPY ./assets/fonts /usr/share/fonts/
-
 # 暴露端口8008
 EXPOSE 8008
 
