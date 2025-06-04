@@ -10,7 +10,6 @@ services:
       - ./logs:/app/logs
       - ./assets:/app/assets
       - ./data:/app/data
-      - ./assets/fonts:/usr/share/fonts/
       - /etc/ssl/certs:/etc/ssl/certs:ro
     restart: always
 
