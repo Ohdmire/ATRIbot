@@ -1,11 +1,15 @@
 from ATRIlib.API.PPYapiv2 import get_user_info,get_user_best_all_info
 from ATRIlib.Manager.UserManager import update_user,update_bp
-
+from ATRIlib.DB.Mongodb import db_user
 
 # 更新user信息 顺便返回user的id
 async def update_user_info(osuname):
     userdata = await get_user_info(osuname)
-    update_user(userdata)
+    # 考虑一下这里可能网络请求返回的没有id这个
+    if 'id' in userdata:
+        update_user(userdata)
+    else:
+        userdata = db_user.find_one({'username': osuname})
     return userdata
 
 
