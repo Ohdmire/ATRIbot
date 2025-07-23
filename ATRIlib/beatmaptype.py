@@ -47,10 +47,10 @@ async def calculate_beatmap_type_ba(user_id):
         else:
             lack_beatmap_id_list.append(bps_beatmap_id)
 
-    if lack_beatmap_id_list:
-        get_beatmap_type_data = await get_beatmap_type(lack_beatmap_id_list)
-        for beatmap_id,beatmap_type in get_beatmap_type_data.items():
-            update_beatmap_attributes(beatmap_id,beatmap_type)
+    if lack_beatmap_id_list:  # 检查是否有缺少的beatmap ID列表
+        for beatmap_id in lack_beatmap_id_list:
+            beatmap_type = await get_beatmap_type(beatmap_id)
+            update_beatmap_attributes(beatmap_id, beatmap_type)
             count_bp += 1
             if "aim" in beatmap_type:
                 raw["aim_total"] += beatmap_type["aim"]
