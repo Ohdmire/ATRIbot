@@ -35,12 +35,12 @@ async def download_resource(session, url):
                     if mime_type == 'image/svg+xml' or content_type.startswith('image/svg+xml'):
                         logging.info(f"下载了SVG文件: {url}")
                         return url, content, 'svg'
-                    
+
                     # 检查是否为GIF文件
                     if mime_type == 'image/gif' or content_type.startswith('image/gif'):
                         logging.info(f"下载了GIF文件: {url}")
                         return url, content, 'gif'
-                    
+
                     # 如果是其他类型的图片，进行压缩
                     if content_type.startswith('image'):
                         img = Image.open(BytesIO(content))
@@ -52,8 +52,10 @@ async def download_resource(session, url):
                         logging.info(f"下载资源 {url} 成功，压缩后大小为 {len(content)} 字节")
                         return url, content, 'image'
                     return url, content, 'other'
+                else:
+                    logging.error(f"下载{url}网络错误{response.status}")
     except Exception as e:
-        logging.error(f"下载资源时出错: {url}, 错误: {str(e)}")
+        logging.error(f"下载资源时出错: {url}, 错误: {type(e)} {str(e)}")
     return url, None, None
         
 async def download_resource_async(resources_to_download):
