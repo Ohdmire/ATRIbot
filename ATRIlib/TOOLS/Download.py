@@ -7,8 +7,6 @@ import logging
 import base64
 import mimetypes
 
-logger = logging.getLogger(__name__)
-
 beatmaps_path = Path('./data/beatmaps/')
 beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
 avatar_path = Path('./data/avatar/')
@@ -35,12 +33,12 @@ async def download_resource(session, url):
                     # 检查是否为SVG文件
                     mime_type, _ = mimetypes.guess_type(url)
                     if mime_type == 'image/svg+xml' or content_type.startswith('image/svg+xml'):
-                        logger.info(f"下载了SVG文件: {url}")
+                        logging.info(f"下载了SVG文件: {url}")
                         return url, content, 'svg'
                     
                     # 检查是否为GIF文件
                     if mime_type == 'image/gif' or content_type.startswith('image/gif'):
-                        logger.info(f"下载了GIF文件: {url}")
+                        logging.info(f"下载了GIF文件: {url}")
                         return url, content, 'gif'
                     
                     # 如果是其他类型的图片，进行压缩
@@ -51,11 +49,11 @@ async def download_resource(session, url):
                         img_io = BytesIO()
                         img.save(img_io, format='JPEG', quality=95, optimize=True)
                         content = img_io.getvalue()
-                        logger.info(f"下载资源 {url} 成功，压缩后大小为 {len(content)} 字节")
+                        logging.info(f"下载资源 {url} 成功，压缩后大小为 {len(content)} 字节")
                         return url, content, 'image'
                     return url, content, 'other'
     except Exception as e:
-        logger.error(f"下载资源时出错: {url}, 错误: {str(e)}")
+        logging.error(f"下载资源时出错: {url}, 错误: {str(e)}")
     return url, None, None
         
 async def download_resource_async(resources_to_download):
