@@ -7,7 +7,7 @@ async def get_beatmap_type(beatmap_id):
     data = {"beatmap_ids": [beatmap_id]}
 
     # 设置总超时为 10 秒
-    timeout = ClientTimeout(total=10)
+    timeout = ClientTimeout(total=5)
 
     try:
         async with aiohttp.ClientSession(timeout=timeout) as session:
