@@ -13,7 +13,7 @@ services:
       - ./assets/fonts/ttf:/usr/share/fonts/ttf
       - /etc/ssl/certs:/etc/ssl/certs:ro
     restart: always
-    mem_limit: 4g
+    mem_limit: 3g
 
   mongodb:
     # 不支持AVX的MongoDB版本
