@@ -500,7 +500,7 @@ async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
     return result
 
 @handle_exceptions
-async def format_bd(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
+async def format_bd(qq_id, osuname,beatmap_id,group_id,mods_list):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]

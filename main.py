@@ -285,7 +285,7 @@ async def fetch_brk(item:IName):
 
 @app.api_route("/qq/bd", methods=["GET", "POST"])
 async def fetch_bd(item:IName):
-    img_bytes = await ATRIproxy.format_bd(item.qq_id, item.osuname,item.beatmap_id,item.group_id,item.mods_list,item.is_old)
+    img_bytes = await ATRIproxy.format_bd(item.qq_id, item.osuname,item.beatmap_id,item.group_id,item.mods_list)
     if type(img_bytes) is BytesIO:
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
