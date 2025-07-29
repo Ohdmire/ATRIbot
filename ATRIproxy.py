@@ -27,6 +27,9 @@ from ATRIlib.interbot_test import health_check,check2
 
 from ATRIlib.interbot_pr import calculate_rctpp
 from ATRIlib.interbot_rctpp import calculate_rctpp_text
+from ATRIlib.interbot_bd import calculate_bd
+
+from ATRIlib.update import update_user_avatar
 
 from ATRIlib.API.PPYapiv2 import get_token,get_user_passrecent_info
 from ATRIlib.API.PPYapiv2 import get_user_recentscore_info_stable
@@ -495,6 +498,33 @@ async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
     raw = await calculate_beatmapranking_update(user_id,beatmap_id,group_id)
     result = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list,is_old,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
     return result
+
+@handle_exceptions
+async def format_bd(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+
+    await update_scores_to_db(user_id, beatmap_id)
+    raw = await calculate_beatmapranking_update(user_id,beatmap_id,group_id)
+    result = await calculate_bd(userstruct,user_id,beatmap_id,group_id,mods_list,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
+    return result
+
+@handle_exceptions
+async def format_update_avatar(qq_id, osuname):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    avatar_url = userstruct["avatar_url"]
+
+    raw = await update_user_avatar(user_id,avatar_url)
+
+    result = username + raw
+
+    return result
+
+
 
 @handle_exceptions
 async def format_brkpr(qq_id, osuname,group_id,index,is_old):

@@ -5,22 +5,21 @@ import logging
 import random
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
+from ATRIlib.Config import path_config
+from ATRIlib.TOOLS import Download
+from ATRIlib.TOOLS.CommonTools import calculate_rank_for_stable,mods_to_str
 
-from ATRIlib.DRAW.draw_daily import font_path
+from io import BytesIO
 
-# from draw_interbot import draw_data
-# from commLib import mods
-# from botappLib import botHandler
-# from ppyappLib import ppyHandler
-# from draws import score
+interbot_path = Path('./assets/interbot')
 
-interbot_path = Path('assets/interbot')
-
-default_skin = interbot_path.joinpath('New!+game!')  # 使用 os.path.join 处理路径
+default_skin = Path('New!+game!')  # 使用 os.path.join 处理路径
 osu_ui = interbot_path.joinpath('osu!ui', 'Resources')
 font_cn = interbot_path.joinpath('font', 'msyh.ttc')  # 微软雅黑（需确保文件存在）
 font_alp = interbot_path.joinpath('font', 'Aller_Rg_MODFIED.ttf')  # Aller 字体（需确保文件存在）
 
+cover_path = path_config.cover_path
+avatar_path =path_config.avatar_path
 
 class DrawRec():
     def __init__(self, **kw):
@@ -70,7 +69,7 @@ class DrawRec():
     def add_items2(self, fname, x=0, y=0, **kwargs):
         # UI元素或者使用默认路径外的
         path_pref = self.ui if not kwargs.get('path', None) else kwargs['path']
-        path = '%s/%s' % (path_pref, fname)
+        path = path_pref.joinpath(fname)
         self.add_items(x=x, y=y, path=path, **kwargs)
 
     def add_text(self, x, y, text, font_size=28, color='white', font_path=None, ttype='en'):
@@ -90,7 +89,7 @@ class DrawRec():
         self.RecImg.save(name)
 
 
-def drawR(mapjson, rankjson, userjson, bestinfo={}):
+async def drawR(mapjson, rankjson, userjson):
     # skin
     # bg_e = draw_data.check_bg(mapjson['beatmap_id'], mapjson['beatmapset_id'])
     bg_e = True
@@ -146,21 +145,43 @@ def drawR(mapjson, rankjson, userjson, bestinfo={}):
         hit_length = "%02d:%02d" % (m, s)  # sec
 
     # 头像download
-    uids = [list(r.keys())[0] for r in rankjson]
-    check_uids = uids[:12]
     me = userjson.get('user_id', '')
-    if me not in uids:
-        check_uids.append(me)
-        me_idx = -1
-    else:
-        me_idx = uids.index(me)
-    # draw_data.check_img(check_uids)
+
+    # 下载头像批量
+
+    me_idx = -1
+
+    avatar_url_list = []
+    user_id_list = []
+
+    # 遍历rankjson并记录索引
+    for index, r in enumerate(rankjson):
+        user_id = r['user_info']['id']
+        avatar_img = avatar_path / str(user_id)
+        if avatar_img.exists() is False:
+            avatar_url_list.append(r['user_info']['avatar_url'])
+            user_id_list.append(user_id)
+        # 检查是否是当前用户
+
+        if str(user_id) == str(me):
+            me_idx = index  # 记录找到的索引位置
+
+    await Download.download_avatar_async(avatar_url_list,user_id_list)
 
     d = DrawRec()
 
     # 第一层bg
+
+    cover_img = cover_path / f'{mapjson["beatmapset_id"]}.jpg'
+    if cover_img.exists() is True:
+        pass
+    else:
+        await Download.download_cover(
+            f'https://assets.ppy.sh/beatmaps/{mapjson["beatmapset_id"]}/covers/raw.jpg',
+            mapjson["beatmapset_id"])
+
     # d.add_items(isresize=True, path='image/bg/default.jpg')
-    d.add_items(isresize=True, path='image/bg/%s' % bg)
+    d.add_items(isresize=True, path=cover_img)
     # title黑层
     d.add_items2(songselecttop)
     # 更新提示
@@ -181,8 +202,16 @@ def drawR(mapjson, rankjson, userjson, bestinfo={}):
     # options
     d.add_items(options_icon, 520, 678)
 
+    # 我的头像
+    avatar_img = avatar_path / f'{userjson['user_id']}.jpeg'
+    if avatar_img.exists() is True:
+        pass
+    else:
+        await Download.download_avatar_async(userjson['avatar_url'],
+                                             userjson['user_id'])
+
     # 头像
-    d.add_items(x=690, y=675, path='image/userimg/%s.jpg' % me, isresize=True, width=90, height=90)
+    d.add_items(x=690, y=675, path=avatar_img, isresize=True, width=90, height=90)
     # 用户信息
     d.add_items2(umod, 998, 670, factor=0.5)
     d.add_text(968, 710, '# %s' % rank, font_size=16, ttype='en')
@@ -210,65 +239,113 @@ def drawR(mapjson, rankjson, userjson, bestinfo={}):
     d.add_text(1180, 30, f"bid: {bid}", font_size=25, ttype='en')
 
     # 榜区域
-    nums = len(uids)
+    nums = len(rankjson)
     # o = botHandler.botHandler()
     # res = o.get_usernames_by_uid(uids)
     # udict = {r['osuid']: r['osuname'] for r in res}
+    # 遍历第一列要显示的用户
+    # 判断用户数量是否超过6个
     if nums > 6:
-        r1 = 6
-        r2 = nums - 6
+        r1 = 6  # 第一列显示6个用户
+        r2 = nums - 6  # 剩余用户在第二列显示
     else:
-        r1 = nums
-        r2 = 0
-    offset1 = 65
+        r1 = nums  # 不超过6个就全部显示在第一列
+        r2 = 0  # 第二列不显示
+
+    offset1 = 65  # 每个用户条目在垂直方向的间距
+
+    # 遍历第一列要显示的用户
     for i in range(r1):
+        # 获取当前用户的数据字典
         r = rankjson[i]
-        u = uids[i]
-        mds = int(r[u][5])
-        mds_l = []
-        m = ','.join(mds_l) if mds > 0 else ''
-        rank = 'D' if r[u][4] == 'F' else r[u][4]
+        # 从字典中提取用户ID（每个字典只有一个键值对）
+        # u = uids[i]
+        mds_l = [mod['acronym'] for mod in r['top_score']['mods']]
+        m = mods_to_str(r['top_score']['mods'])
+        # 处理评级显示，F级显示为D
+
+        stb_rank = calculate_rank_for_stable(r['top_score']["statistics"]["great"], r['top_score']["statistics"]["ok"],
+                                             r['top_score']["statistics"]["meh"], r['top_score']["statistics"]["miss"])
+
+        has_hd_or_fl = any(m["acronym"] in {"HD", "FL"} for m in r['top_score']['mods'])
+
+        if has_hd_or_fl:
+            if stb_rank == "S":
+                stb_rank = "SH"
+            elif stb_rank == "SS":
+                stb_rank = "XH"
+
+        r['top_score']["rank"] = stb_rank
+
+
+        rank = 'D' if stb_rank == 'F' else stb_rank
         d.draw_rectangle(x=20, y=160 + i * offset1, width=460, height=60, fill=(0, 0, 0, 50))
-        d.add_items(x=20, y=160 + i * offset1, path='image/userimg/%s.jpg' % u, isresize=True, width=60, height=60)
+        avatar_img = avatar_path / f'{r['user_info']['id']}.jpeg'
+        if avatar_img.exists() is True:
+            pass
+        else:
+            await Download.download_avatar_async(r['user_info']['avatar_url'],
+                                                 r['user_info']['id'])
+        d.add_items(x=20, y=160 + i * offset1, path=avatar_img, isresize=True, width=60, height=60)
         d.add_items(rank_x % rank, 80, 170 + i * offset1)
-        # d.add_text(120, 160 + i * offset1, '%s' % (udict.get(u, 'None')), font_size=25, ttype='en')
-        d.add_text(120, 190 + i * offset1, '得分: %s' % (format(int(r[u][0]), ',')), font_size=20, ttype='cn')
-        d.add_text(300, 190 + i * offset1, '(%sx)' % (format(int(r[u][1]), ',')), font_size=20, ttype='en')
+        d.add_text(120, 160 + i * offset1, '%s' % (r['user_info']['username']), font_size=25, ttype='en')
+        d.add_text(120, 190 + i * offset1, '得分: %s' % (format(int(r['top_score']['legacy_total_score']), ',')), font_size=20, ttype='cn')
+        d.add_text(300, 190 + i * offset1, '(%sx)' % (format(int(r['top_score']['max_combo']), ',')), font_size=20, ttype='en')
         d.add_text(450 - 20 * len(mds_l), 165 + i * offset1, '%s' % (m), font_size=20, ttype='en')
-        d.add_text(400, 190 + i * offset1, '%s%%' % (r[u][3]), font_size=18, ttype='en')
+        d.add_text(400, 190 + i * offset1, '%.2f%%' % (r['top_score']['accuracy']*100), font_size=18, ttype='en')
 
     d.add_text(150, 550, '个人最佳成绩', font_size=24, ttype='cn')
     d.draw_rectangle(x=20, y=590, width=460, height=60, fill=(0, 0, 0, 50))
     if me_idx != -1:
         r = rankjson[me_idx]
-        u = uids[me_idx]
-        mds = int(r[u][5])
-        mds_l = []
-        m = ','.join(mds_l) if mds > 0 else ''
-        rank = 'D' if r[u][4] == 'F' else r[u][4]
-        d.add_items(x=20, y=590, path='image/userimg/%s.jpg' % me, isresize=True, width=60, height=60)
+        mds_l = [mod['acronym'] for mod in r['top_score']['mods']]
+        m = mods_to_str(r['top_score']['mods'])
+        stb_rank = calculate_rank_for_stable(r['top_score']["statistics"]["great"], r['top_score']["statistics"]["ok"],
+                                             r['top_score']["statistics"]["meh"], r['top_score']["statistics"]["miss"])
+
+        has_hd_or_fl = any(m["acronym"] in {"HD", "FL"} for m in r['top_score']['mods'])
+
+        if has_hd_or_fl:
+            if stb_rank == "S":
+                stb_rank = "SH"
+            elif stb_rank == "SS":
+                stb_rank = "XH"
+
+        r['top_score']["rank"] = stb_rank
+
+        rank = 'D' if stb_rank == 'F' else stb_rank
+
+        # 我的头像
+        avatar_img = avatar_path / f'{r['user_info']['id']}.jpeg'
+        if avatar_img.exists() is True:
+            pass
+        else:
+            await Download.download_avatar_async(r['user_info']['avatar_url'],
+                                                 r['user_info']['id'])
+
+        d.add_items(x=20, y=590, path=avatar_img, isresize=True, width=60, height=60)
         d.add_items(rank_x % rank, 80, 595)
-        # d.add_text(120, 590, '%s  #%s' % (udict.get(u, 'None'), me_idx + 1), font_size=25, ttype='en')
-        d.add_text(120, 620, '得分: %s' % (format(int(r[u][0]), ',')), font_size=20, ttype='cn')
-        d.add_text(300, 620, '(%sx)' % (format(int(r[u][1]), ',')), font_size=20, ttype='en')
+        d.add_text(120, 590, '%s  #%s' % (r['user_info']['username'], me_idx + 1), font_size=25, ttype='en')
+        d.add_text(120, 620, '得分: %s' % (format(int(r['top_score']['legacy_total_score']), ',')), font_size=20, ttype='cn')
+        d.add_text(300, 620, '(%sx)' % (format(int(r['top_score']['max_combo']), ',')), font_size=20, ttype='en')
         d.add_text(450 - 20 * len(mds_l), 600, '%s' % (m), font_size=20, ttype='en')
-        d.add_text(410, 620, '%s%%' % (r[u][3]), font_size=18, ttype='en')
-    elif len(bestinfo) > 0:
-        mds = int(bestinfo['enabled_mods'])
-        mds_l = []
-        if 'NONE' in mds_l:
-            mds_l.remove('NONE')
-        m_str = ','.join(mds_l) if mds > 0 else ''
-        rank = 'D' if bestinfo['rank'] == 'F' else bestinfo['rank']
-        d.add_items(x=20, y=590, path='image/userimg/%s.jpg' % me, isresize=True, width=60, height=60)
-        d.add_items(rank_x % rank, 80, 595)
-        d.add_text(120, 590, f"{uname}  #50+", font_size=25, ttype='en')
-        d.add_text(120, 620, f"得分: {int(bestinfo['score']):,}    ({int(bestinfo['maxcombo']):,}x)", font_size=20,
-                   ttype='cn')
-        d.add_text(450 - 20 * len(mds_l), 597, '%s' % (m_str), font_size=20, ttype='en')
-        # acc = mods.get_acc(bestinfo['count300'], bestinfo['count100'], bestinfo['count50'], bestinfo['countmiss'])
-        acc = bestinfo['accuracy']
-        d.add_text(410, 620, f"{acc:.2f}%", font_size=18, ttype='en')
+        d.add_text(410, 620, '%.2f%%' % (r['top_score']['accuracy']*100), font_size=18, ttype='en')
+    # elif len(bestinfo) > 0:
+    #     # mds = int(bestinfo['enabled_mods'])
+    #     mds_l = bestinfo['enabled_mods']
+    #     if 'NONE' in mds_l:
+    #         mds_l.remove('NONE')
+    #     m_str = ','.join(mds_l) if len(mds_l) > 0 else ''
+    #     rank = 'D' if bestinfo['rank'] == 'F' else bestinfo['rank']
+    #     d.add_items(x=20, y=590, path='image/userimg/%s.jpg' % me, isresize=True, width=60, height=60)
+    #     d.add_items(rank_x % rank, 80, 595)
+    #     d.add_text(120, 590, f"{uname}  #50+", font_size=25, ttype='en')
+    #     d.add_text(120, 620, f"得分: {int(bestinfo['score']):,}    ({int(bestinfo['maxcombo']):,}x)", font_size=20,
+    #                ttype='cn')
+    #     d.add_text(450 - 20 * len(mds_l), 597, '%s' % (m_str), font_size=20, ttype='en')
+    #     # acc = mods.get_acc(bestinfo['count300'], bestinfo['count100'], bestinfo['count50'], bestinfo['countmiss'])
+    #     acc = bestinfo['accuracy']
+    #     d.add_text(410, 620, f"{acc:.2f}%", font_size=18, ttype='en')
     else:
         d.add_text(130, 600, '你倒是快刚榜啊', font_size=25, ttype='cn')
 
@@ -278,40 +355,66 @@ def drawR(mapjson, rankjson, userjson, bestinfo={}):
             break
         oi = i + 6
         r = rankjson[oi]
-        u = uids[oi]
-        mds = int(r[u][5])
-        mds_l = []
-        m = ','.join(mds_l) if mds > 0 else ''
-        rank = 'D' if r[u][4] == 'F' else r[u][4]
+
+        mds_l = [mod['acronym'] for mod in r['top_score']['mods']]
+        m = mods_to_str(r['top_score']['mods'])
+        # 处理评级显示，F级显示为D
+
+        stb_rank = calculate_rank_for_stable(r['top_score']["statistics"]["great"], r['top_score']["statistics"]["ok"],
+                                             r['top_score']["statistics"]["meh"], r['top_score']["statistics"]["miss"])
+
+        has_hd_or_fl = any(m["acronym"] in {"HD", "FL"} for m in r['top_score']['mods'])
+
+        if has_hd_or_fl:
+            if stb_rank == "S":
+                stb_rank = "SH"
+            elif stb_rank == "SS":
+                stb_rank = "XH"
+
+        r['top_score']["rank"] = stb_rank
+
+        rank = 'D' if stb_rank == 'F' else stb_rank
+
+        avatar_img = avatar_path / f'{r['user_info']['id']}.jpeg'
+        if avatar_img.exists() is True:
+            pass
+        else:
+            await Download.download_avatar_async(r['user_info']['avatar_url'],
+                                                 r['user_info']['id'])
+
         d.draw_rectangle(x=620, y=160 + i * offset1, width=460, height=60, fill=(0, 0, 0, 50))
-        d.add_items(x=620, y=160 + i * offset1, path='image/userimg/%s.jpg' % u, isresize=True, width=60, height=60)
+        d.add_items(x=620, y=160 + i * offset1, path=avatar_img, isresize=True, width=60, height=60)
         d.add_items(rank_x % rank, 680, 170 + i * offset1)
-        # d.add_text(720, 160 + i * offset1, '%s' % (udict.get(u, 'None')), font_size=25, ttype='en')
-        d.add_text(720, 190 + i * offset1, '得分: %s' % (format(int(r[u][0]), ',')), font_size=20, ttype='cn')
-        d.add_text(900, 190 + i * offset1, '(%sx)' % (format(int(r[u][1]), ',')), font_size=20, ttype='en')
+        d.add_text(720, 160 + i * offset1, '%s' % (r['user_info']['username']), font_size=25, ttype='en')
+        d.add_text(720, 190 + i * offset1, '得分: %s' % (format(int(r['top_score']['legacy_total_score']), ',')), font_size=20, ttype='cn')
+        d.add_text(900, 190 + i * offset1, '(%sx)' % (format(int(r['top_score']['max_combo']), ',')), font_size=20, ttype='en')
         d.add_text(1050 - 20 * len(mds_l), 165 + i * offset1, '%s' % (m), font_size=20, ttype='en')
-        d.add_text(1010, 190 + i * offset1, '%s%%' % (r[u][3]), font_size=18, ttype='en')
+        d.add_text(1010, 190 + i * offset1, '%.2f%%' % (r['top_score']['accuracy']*100), font_size=18, ttype='en')
 
-    n = random.randint(0, 100)
-    p = 'rank%s.png' % n
-    pfs = 'rank%s-fs8.png' % n
-    f = '/static/interbot/image/%s' % p
-    d.save(f)
-    # 压缩
-    os.system('pngquant -f %s' % f)
-    logging.info('[%s]榜单生成成功!' % pfs)
-    return pfs
+    img_bytes = BytesIO()
+    img_rgb = d.RecImg.convert('RGB')  # 强制丢弃 Alpha 通道
+    img_rgb.save(img_bytes, format='JPEG')
+    # d.RecImg.save(img_bytes, format="PNG")
+    img_bytes.seek(0)
+
+    return img_bytes
+
+    # d.save(f)
+    # # 压缩
+    # os.system('pngquant -f %s' % f)
+    # logging.info('[%s]榜单生成成功!' % pfs)
+    # return pfs
 
 
-def start(bid='847314', groupid='614892339', hid=1, mods=-1, uid='8505303', bestinfo={}):
-    mapjson, rankjson = draw_data.map_ranks_info(str(bid), groupid, hid, mods)
-    ppyIns = ppyHandler.ppyHandler()
-    # 历史问题导致遗漏的情况
-    if not mapjson:
-        mapsinfo = [ppyIns.getOsuBeatMapInfo(bid)]
-        map_args = score.args_format('map', mapsinfo)
-        score.map2db(map_args)
-        mapjson, rankjson = draw_data.map_ranks_info(str(bid), groupid, hid, mods)
-    userjson = ppyIns.getOsuUserInfo(uid)[0]
-    mapjson = ppyIns.getOsuBeatMapInfo(bid)[0]
-    return drawR(mapjson, rankjson, userjson, bestinfo)
+# def start(bid='847314', groupid='614892339', hid=1, mods=-1, uid='8505303', bestinfo={}):
+#     mapjson, rankjson = draw_data.map_ranks_info(str(bid), groupid, hid, mods)
+#     ppyIns = ppyHandler.ppyHandler()
+#     # 历史问题导致遗漏的情况
+#     if not mapjson:
+#         mapsinfo = [ppyIns.getOsuBeatMapInfo(bid)]
+#         map_args = score.args_format('map', mapsinfo)
+#         score.map2db(map_args)
+#         mapjson, rankjson = draw_data.map_ranks_info(str(bid), groupid, hid, mods)
+#     userjson = ppyIns.getOsuUserInfo(uid)[0]
+#     mapjson = ppyIns.getOsuBeatMapInfo(bid)[0]
+#     return drawR(mapjson, rankjson, userjson, bestinfo)

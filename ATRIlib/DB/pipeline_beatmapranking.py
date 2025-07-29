@@ -85,6 +85,7 @@ def get_beatmapranking_list_from_unrankscore_db(base_user_id, beatmap_id, group_
         {
             "$project": {
                 "id": 1,
+                "user_info.id": 1,
                 "user_info.username": 1,
                 "user_info.avatar_url": 1,
                 "top_score": 1
@@ -169,6 +170,7 @@ def get_beatmapranking_list_from_unrankscore_db_old(base_user_id, beatmap_id, gr
         {
             "$project": {
                 "id": 1,
+                "user_info.id": 1,
                 "user_info.username": 1,
                 "user_info.avatar_url": 1,
                 "top_score": 1
@@ -252,6 +254,7 @@ def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist
         {
             "$project": {
                 "id": 1,
+                "user_info.id": 1,
                 "user_info.username": 1,
                 "user_info.avatar_url": 1,
                 "top_score": 1
@@ -336,6 +339,7 @@ def get_beatmapranking_list_from_db_old(base_user_id, beatmap_id, group_id, mods
         {
             "$project": {
                 "id": 1,
+                "user_info.id": 1,
                 "user_info.username": 1,
                 "user_info.avatar_url": 1,
                 "top_score": 1

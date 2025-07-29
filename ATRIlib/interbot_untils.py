@@ -18,33 +18,84 @@ def convert_mapjson(data):
         'beatmapset_id': str(beatmapset.get('id', '')),
         'beatmap_id': str(beatmap.get('id', '')),
         'approved': '1' if beatmap.get('status') in ['ranked', 'approved'] else '0',
-        'total_length': str(beatmap.get('total_length', '')),
-        'hit_length': str(beatmap.get('hit_length', '')),
+        'total_length': int(beatmap.get('total_length', 0)),
+        'hit_length': int(beatmap.get('hit_length', 0)),
         'version': beatmap.get('version', ''),
-        'diff_size': str(beatmap.get('cs', '')),
-        'diff_overall': str(beatmap.get('accuracy', '')),
-        'diff_approach': str(beatmap.get('ar', '')),
-        'diff_drain': str(beatmap.get('drain', '')),
+        'diff_size': float(beatmap.get('cs', 0.0)),
+        'diff_overall': float(beatmap.get('accuracy', 0.0)),
+        'diff_approach': float(beatmap.get('ar', 0.0)),
+        'diff_drain': float(beatmap.get('drain', 0.0)),
         'mode': '0',  # Assuming osu!standard
-        'count_normal': str(beatmap.get('count_circles', '')),
-        'count_slider': str(beatmap.get('count_sliders', '')),
-        'count_spinner': str(beatmap.get('count_spinners', '')),
+        'count_normal': int(beatmap.get('count_circles', 0)),
+        'count_slider': int(beatmap.get('count_sliders', 0)),
+        'count_spinner': int(beatmap.get('count_spinners', 0)),
         'artist': beatmapset.get('artist', ''),
         'artist_unicode': beatmapset.get('artist_unicode', ''),
         'title': beatmapset.get('title', ''),
         'title_unicode': beatmapset.get('title_unicode', ''),
         'creator': beatmapset.get('creator', ''),
         'creator_id': str(beatmapset.get('user_id', '')),
-        'bpm': str(beatmap.get('bpm', '')),
+        'bpm': float(beatmap.get('bpm', 0.00)),
         'source': beatmapset.get('source', ''),
         'tags': '',
         'genre_id': '0',
         'language_id': '0',
-        'difficultyrating': str(beatmap.get('difficulty_rating', '')),
-        'max_combo': str(data.get('max_combo', '')),
-        'playcount': str(beatmap.get('playcount', '')),
-        'passcount': str(beatmap.get('passcount', ''))
+        'difficultyrating': float(beatmap.get('difficulty_rating', 0.00)),
+        'max_combo': int(data.get('max_combo', 0)),
+        'playcount': int(beatmap.get('playcount', 0)),
+        'passcount': int(beatmap.get('passcount', 0))
     }
+
+
+def convert_beatmap_data(data):
+    # 判断数据是来自mapjson还是API格式
+    if 'beatmap' in data and 'beatmapset' in data:
+        # mapjson格式处理
+        beatmap = data.get('beatmap', {})
+        beatmapset = data.get('beatmapset', {})
+        max_combo = data.get('max_combo', 0)
+    else:
+        # API格式处理
+        beatmap = data
+        beatmapset = data.get('beatmapset', {})
+        max_combo = beatmap.get('max_combo', 0)
+
+    # 统一提取字段
+    status = beatmap.get('status', '')
+    approved = '1' if status in ['ranked', 'approved'] else '0'
+
+    return {
+        'beatmapset_id': str(beatmapset.get('id', beatmap.get('beatmapset_id', ''))),
+        'beatmap_id': str(beatmap.get('id', '')),
+        'approved': approved,
+        'total_length': int(beatmap.get('total_length', 0)),
+        'hit_length': int(beatmap.get('hit_length', 0)),
+        'version': beatmap.get('version', ''),
+        'diff_size': float(beatmap.get('cs', 0.0)),
+        'diff_overall': float(beatmap.get('accuracy', 0.0)),
+        'diff_approach': float(beatmap.get('ar', 0.0)),
+        'diff_drain': float(beatmap.get('drain', 0.0)),
+        'mode': '0',  # 默认osu!standard
+        'count_normal': int(beatmap.get('count_circles', 0)),
+        'count_slider': int(beatmap.get('count_sliders', 0)),
+        'count_spinner': int(beatmap.get('count_spinners', 0)),
+        'artist': beatmapset.get('artist', ''),
+        'artist_unicode': beatmapset.get('artist_unicode', ''),
+        'title': beatmapset.get('title', ''),
+        'title_unicode': beatmapset.get('title_unicode', ''),
+        'creator': beatmapset.get('creator', ''),
+        'creator_id': str(beatmapset.get('user_id', '')),
+        'bpm': float(beatmap.get('bpm', 0.00)),
+        'source': beatmapset.get('source', ''),
+        'tags': beatmapset.get('tags', ''),
+        'genre_id': str(beatmapset.get('genre_id', '0')),
+        'language_id': str(beatmapset.get('language_id', '0')),
+        'difficultyrating': float(beatmap.get('difficulty_rating', 0.00)),
+        'max_combo': int(max_combo),
+        'playcount': int(beatmap.get('playcount', 0)),
+        'passcount': int(beatmap.get('passcount', 0))
+    }
+
 
 
 def convert_recinfo(data):
@@ -65,13 +116,13 @@ def convert_recinfo(data):
 
     return {
         'score_id': str(data.get('id', '')),
-        'score': str(data.get('legacy_total_score', '')),
+        'score': int(data.get('legacy_total_score', 0)),
         'username': data.get('user', {}).get('username', ''),
-        'maxcombo': str(data.get('max_combo', '')),
-        'count50': str(stats.get('meh', '')),
-        'count100': str(stats.get('ok', '')),
-        'count300': str(stats.get('great', '')),
-        'countmiss': str(stats.get('miss', '')),
+        'maxcombo': int(data.get('max_combo', 0)),
+        'count50': int(stats.get('meh', 0)),
+        'count100': int(stats.get('ok', 0)),
+        'count300': int(stats.get('great', 0)),
+        'countmiss': int(stats.get('miss', 0)),
         'countkatu': '0',  # Not available in new format
         'countgeki': '0',  # Not available in new format
         'perfect': '1' if data.get('legacy_perfect', False) else '0',
@@ -79,9 +130,9 @@ def convert_recinfo(data):
         'user_id': str(data.get('user_id', '')),
         'date': ended_at_utc8,
         'rank': data.get('rank', ''),
-        'pp': 0 if data.get('pp', 0) is None else float(data.get('pp', 0)),
+        'pp': 0 if data.get('pp', 0) is None else float(data.get('pp', 0.00)),
         'replay_available': '1' if data.get('has_replay', False) else '0',
-        'accuracy': str(data.get('accuracy', ''))
+        'accuracy': float(data.get('accuracy', 0.00))
     }
 
 

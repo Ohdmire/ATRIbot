@@ -263,7 +263,7 @@ async def fetch_bind(item:IName):
     return str(result)
 
 @app.api_route("/qq/brkup", methods=["GET", "POST"])
-async def jobs(item:IName):
+async def fetch_brk_up(item:IName):
     # Cache logic and cleanup moved to ATRIproxy.format_brk_up
     result = await ATRIproxy.format_brk_up(item.qq_id, item.osuname,item.beatmap_id, item.group_id)
 
@@ -276,12 +276,25 @@ async def jobs(item:IName):
         return str(result) # Or a more specific error message
 
 @app.api_route("/qq/brk", methods=["GET", "POST"])
-async def jobs(item:IName):
+async def fetch_brk(item:IName):
     img_bytes = await ATRIproxy.format_brk(item.qq_id, item.osuname,item.beatmap_id,item.group_id,item.mods_list,item.is_old)
     if type(img_bytes) is BytesIO:
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
         return str(img_bytes)
+
+@app.api_route("/qq/bd", methods=["GET", "POST"])
+async def fetch_bd(item:IName):
+    img_bytes = await ATRIproxy.format_bd(item.qq_id, item.osuname,item.beatmap_id,item.group_id,item.mods_list,item.is_old)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+
+@app.api_route("/qq/update", methods=["GET", "POST"])
+async def fetch_update_avatar(item:IName):
+    result = await ATRIproxy.format_update_avatar(item.qq_id, item.osuname)
+    return str(result)
 
 @app.api_route("/qq/brk/pr", methods=["GET", "POST"])
 async def jobs(item:IName):
