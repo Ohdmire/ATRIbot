@@ -77,7 +77,7 @@ def convert_recinfo(data):
         'user_id': str(data.get('user_id', '')),
         'date': ended_at_utc8,
         'rank': data.get('rank', ''),
-        'pp': data.get('pp', 0),
+        'pp': 0 if data.get('pp', 0) is None else int(data.get('pp', 0)),
         'replay_available': '1' if data.get('has_replay', False) else '0',
         'accuracy': str(data.get('accuracy', ''))
     }
@@ -225,7 +225,7 @@ async def calculate_rctpp(userstruct):
 
 
     kwargs = {
-        "pp": 0,
+        "pp": ppresult['pp'],
         "fcpp": ppresult['fcpp'],
         "acpp": ppresult['100fcpp'],
     }
