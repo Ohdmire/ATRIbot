@@ -158,14 +158,7 @@ async def formatRctpp2New(data,ppresult):
     )
     return out
 
-async def calculate_rctpp_text(userstruct):
-    user_id = userstruct['id']
-
-    # 计算pr分数
-    data = await get_user_recentscore_info_stable(user_id)
-    if len(data) == 0:
-        raise ValueError("无法找到最近游玩的成绩")
-    data = data[0]
+async def calculate_rctpp_text(data):
 
     if "great" not in data["statistics"]:
         data["statistics"]["great"] = 0

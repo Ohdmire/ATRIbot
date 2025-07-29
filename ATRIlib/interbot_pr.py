@@ -1,7 +1,6 @@
 from ATRIlib.Config.path_config import cover_path
 from ATRIlib.DRAW import draw_rctpp
 from ATRIlib.Config import path_config
-from ATRIlib.API.PPYapiv2 import get_user_recentscore_info_stable
 from ATRIlib.PP.Rosu import fetch_beatmap_file_async_one,calculate_pp_if_all_stable
 from ATRIlib.TOOLS.CommonTools import calculate_rank_for_stable
 
@@ -47,15 +46,7 @@ from ATRIlib.interbot_untils import convert_mapjson,convert_userjson,convert_rec
 #     "acpp": 180.514,
 # }
 
-async def calculate_rctpp(userstruct):
-
-    user_id = userstruct['id']
-
-    # 计算pr分数
-    data = await get_user_recentscore_info_stable(user_id)
-    if len(data) == 0:
-        raise ValueError("无法找到最近游玩的成绩")
-    data = data[0]
+async def calculate_rctpp(data,userstruct):
 
     if "great" not in data["statistics"]:
         data["statistics"]["great"] = 0

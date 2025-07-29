@@ -29,6 +29,8 @@ from ATRIlib.interbot_pr import calculate_rctpp
 from ATRIlib.interbot_rctpp import calculate_rctpp_text
 
 from ATRIlib.API.PPYapiv2 import get_token,get_user_passrecent_info
+from ATRIlib.API.PPYapiv2 import get_user_recentscore_info_stable
+
 from ATRIlib.whatif import calculate_pp,calculate_rank
 
 from ATRIlib.medal import calculate_medal, download_all_medals, calculate_medal_pr,calculate_uu_medal,calculate_special_medal
@@ -145,20 +147,32 @@ async def format_test2(qq_id, osuname):
     return raw
 
 @handle_exceptions
-async def format_rctpp(qq_id, osuname):
+async def format_rctpp(qq_id, osuname,index):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
-    # user_id = userstruct["id"]
+    user_id = userstruct["id"]
 
-    raw = await calculate_rctpp(userstruct)
+    # 计算pr分数
+    data = await get_user_recentscore_info_stable(user_id)
+    if len(data) == 0:
+        raise ValueError("无法找到最近游玩的成绩")
+    data = data[index - 1]
+
+    raw = await calculate_rctpp(data,userstruct)
 
     return raw
 
 @handle_exceptions
-async def format_rctpp2(qq_id, osuname):
+async def format_rctpp2(qq_id, osuname,index):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
-    # user_id = userstruct["id"]
+    user_id = userstruct["id"]
 
-    raw = await calculate_rctpp_text(userstruct)
+    # 计算pr分数
+    data = await get_user_recentscore_info_stable(user_id)
+    if len(data) == 0:
+        raise ValueError("无法找到最近游玩的成绩")
+    data = data[index - 1]
+
+    raw = await calculate_rctpp_text(data)
 
     return raw
 
