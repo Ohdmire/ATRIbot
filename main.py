@@ -247,6 +247,11 @@ async def fetch_rctpp(item:IName):
     else:
         return str(img_bytes)
 
+@app.api_route("/qq/rctpp2", methods=["GET", "POST"])
+async def fetch_rctpp2(item:IName):
+    result = await ATRIproxy.format_rctpp2(item.qq_id,item.osuname)
+    return str(result)
+
 # @app.api_route("/qq/skill", methods=["GET", "POST"])
 # async def fetch_skill(item:IName):
 #     result = await ATRIproxy.format_skill(item.qq_id,item.osuname)

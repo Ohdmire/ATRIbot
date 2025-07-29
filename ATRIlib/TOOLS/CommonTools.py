@@ -118,6 +118,12 @@ def get_relative_path(target_path: str, parent_level: int) -> Path:
     parent_prefix = "../" * parent_level
     return Path(f"{parent_prefix}{target_path}")
 
+def mods_to_str(mods_list):
+
+    mods_str = ", ".join(mod["acronym"] for mod in mods_list)
+    reversed_mods = ", ".join(reversed(mods_str.split(", ")))
+    return reversed_mods
+
 
 def calculate_rank_for_stable(count_300, count_100, count_50, count_miss):
     """

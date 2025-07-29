@@ -26,6 +26,7 @@ from ATRIlib.bind import update_bind_info
 from ATRIlib.interbot_test import health_check,check2
 
 from ATRIlib.interbot_pr import calculate_rctpp
+from ATRIlib.interbot_rctpp import calculate_rctpp_text
 
 from ATRIlib.API.PPYapiv2 import get_token,get_user_passrecent_info
 from ATRIlib.whatif import calculate_pp,calculate_rank
@@ -149,6 +150,15 @@ async def format_rctpp(qq_id, osuname):
     # user_id = userstruct["id"]
 
     raw = await calculate_rctpp(userstruct)
+
+    return raw
+
+@handle_exceptions
+async def format_rctpp2(qq_id, osuname):
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    # user_id = userstruct["id"]
+
+    raw = await calculate_rctpp_text(userstruct)
 
     return raw
 
