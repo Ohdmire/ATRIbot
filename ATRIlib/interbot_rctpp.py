@@ -98,7 +98,7 @@ async def formatRctpp2New(data,ppresult):
     missStr = missReply(data["statistics"]["miss"], data["accuracy"], modd_map_attrs['ar'],
                         data['max_combo'], modd_map_attrs['max_combo_map'], stars=stars)
 
-    bpm = factBpm(float(data['beatmap']['bpm']), data['mods'])
+    bpm = factBpm(float(data['beatmap']['bpm']), mods_to_str(data['mods']))
     ar = round(modd_map_attrs['ar'], 2)
 
     stb_rank = calculate_rank_for_stable(data["statistics"]["great"], data["statistics"]["ok"], data["statistics"]["meh"], data["statistics"]["miss"])
