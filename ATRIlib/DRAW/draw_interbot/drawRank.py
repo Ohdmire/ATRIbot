@@ -207,8 +207,8 @@ async def drawR(mapjson, rankjson, userjson):
     if avatar_img.exists() is True:
         pass
     else:
-        await Download.download_avatar_async(userjson['avatar_url'],
-                                             userjson['user_id'])
+        await Download.download_avatar_async([userjson['avatar_url']],
+                                             [userjson['user_id']])
 
     # 头像
     d.add_items(x=690, y=675, path=avatar_img, isresize=True, width=90, height=90)
@@ -284,8 +284,8 @@ async def drawR(mapjson, rankjson, userjson):
         if avatar_img.exists() is True:
             pass
         else:
-            await Download.download_avatar_async(r['user_info']['avatar_url'],
-                                                 r['user_info']['id'])
+            await Download.download_avatar_async([r['user_info']['avatar_url']],
+                                                 [r['user_info']['id']])
         d.add_items(x=20, y=160 + i * offset1, path=avatar_img, isresize=True, width=60, height=60)
         d.add_items(rank_x % rank, 80, 170 + i * offset1)
         d.add_text(120, 160 + i * offset1, '%s' % (r['user_info']['username']), font_size=25, ttype='en')
@@ -320,8 +320,8 @@ async def drawR(mapjson, rankjson, userjson):
         if avatar_img.exists() is True:
             pass
         else:
-            await Download.download_avatar_async(r['user_info']['avatar_url'],
-                                                 r['user_info']['id'])
+            await Download.download_avatar_async([r['user_info']['avatar_url']],
+                                                 [r['user_info']['id']])
 
         d.add_items(x=20, y=590, path=avatar_img, isresize=True, width=60, height=60)
         d.add_items(rank_x % rank, 80, 595)
@@ -379,8 +379,8 @@ async def drawR(mapjson, rankjson, userjson):
         if avatar_img.exists() is True:
             pass
         else:
-            await Download.download_avatar_async(r['user_info']['avatar_url'],
-                                                 r['user_info']['id'])
+            await Download.download_avatar_async([r['user_info']['avatar_url']],
+                                                 [r['user_info']['id']])
 
         d.draw_rectangle(x=620, y=160 + i * offset1, width=460, height=60, fill=(0, 0, 0, 50))
         d.add_items(x=620, y=160 + i * offset1, path=avatar_img, isresize=True, width=60, height=60)
