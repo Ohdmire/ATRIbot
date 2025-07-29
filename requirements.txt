@@ -34,7 +34,7 @@ pyparsing==3.1.4
 python-dateutil==2.9.0.post0
 pytz==2024.2
 requests==2.32.3
-rosu-pp-py==2.0.1
+rosu-pp-py==3.1.0
 scipy==1.14.1
 seaborn==0.13.2
 six==1.16.0

@@ -2,7 +2,7 @@ from ATRIlib.Config.path_config import cover_path
 from ATRIlib.DRAW import draw_rctpp
 from ATRIlib.Config import path_config
 from ATRIlib.API.PPYapiv2 import get_user_recentscore_info_stable
-from ATRIlib.PP.Rosu import fetch_beatmap_file_async_one,calculate_pp_if_all
+from ATRIlib.PP.Rosu import fetch_beatmap_file_async_one,calculate_pp_if_all_stable
 from ATRIlib.TOOLS.CommonTools import calculate_rank_for_stable
 
 from datetime import datetime, timezone, timedelta
@@ -77,7 +77,7 @@ def convert_recinfo(data):
         'user_id': str(data.get('user_id', '')),
         'date': ended_at_utc8,
         'rank': data.get('rank', ''),
-        'pp': 0 if data.get('pp', 0) is None else int(data.get('pp', 0)),
+        'pp': 0 if data.get('pp', 0) is None else float(data.get('pp', 0)),
         'replay_available': '1' if data.get('has_replay', False) else '0',
         'accuracy': str(data.get('accuracy', ''))
     }
@@ -180,20 +180,6 @@ async def calculate_rctpp(userstruct):
         raise ValueError("无法找到最近游玩的成绩")
     data = data[0]
 
-    if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
-        # 永久保存谱面
-        await fetch_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
-
-        ppresult = await calculate_pp_if_all(
-            data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=False)
-    else:
-        # 临时保存谱面
-        await fetch_beatmap_file_async_one(data["beatmap"]["id"], Temp=True)
-
-        ppresult = await calculate_pp_if_all(
-            data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"], Temp=True)
-
-
     if "great" not in data["statistics"]:
         data["statistics"]["great"] = 0
     if "ok" not in data["statistics"]:
@@ -203,6 +189,18 @@ async def calculate_rctpp(userstruct):
     if "miss" not in data["statistics"]:
         data["statistics"]["miss"] = 0
 
+    if data["beatmap"]["status"] == "ranked" or data["beatmap"]["status"] == "loved":
+        # 永久保存谱面
+        await fetch_beatmap_file_async_one(data["beatmap"]["id"], Temp=False)
+
+        ppresult = await calculate_pp_if_all_stable(
+            data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"],data["statistics"], Temp=False)
+    else:
+        # 临时保存谱面
+        await fetch_beatmap_file_async_one(data["beatmap"]["id"], Temp=True)
+
+        ppresult = await calculate_pp_if_all_stable(
+            data["beatmap"]["id"], data["mods"], data["accuracy"] * 100, data["max_combo"],data["statistics"], Temp=True)
 
     data['mods'] = [m for m in data['mods'] if m["acronym"] != "CL"]
 
@@ -225,7 +223,7 @@ async def calculate_rctpp(userstruct):
 
 
     kwargs = {
-        "pp": ppresult['pp'],
+        "pp": recinfo["pp"] if recinfo["pp"] != 0 else ppresult["pp"],
         "fcpp": ppresult['fcpp'],
         "acpp": ppresult['100fcpp'],
     }

@@ -70,3 +70,44 @@ async def calculate_pp_if_all(beatmap_id, mods, acc, combo, Temp=True):
     result['difficulty'] = attrs.difficulty.stars
 
     return result
+
+# 计算pp(ranked or unranked)
+async def calculate_pp_if_all_stable(beatmap_id, mods, acc, combo, judge_statistic,Temp=True):
+
+    result = {}
+
+    await fetch_beatmap_file_async_one(beatmap_id, Temp=Temp)
+
+    if Temp:
+        file_path = beatmaps_path_tmp / f'{beatmap_id}.osu'
+    else:
+        file_path = beatmaps_path / f'{beatmap_id}.osu'
+
+    map = rosu.Beatmap(path=str(file_path))
+
+    perf = rosu.Performance(mods=mods,lazer=False)
+
+    perf.set_n300(judge_statistic['great'])
+    perf.set_n100(judge_statistic['ok'])
+    perf.set_n50(judge_statistic['meh'])
+    perf.set_misses(judge_statistic['miss'])
+    perf.set_combo(combo)
+    perf.set_accuracy(acc)
+    attrs = perf.calculate(map)
+    result['pp'] = attrs.pp
+
+    perf.set_combo(None)
+    perf.set_misses(0)
+    attrs = perf.calculate(map)
+    result['fcpp'] = attrs.pp
+
+    perf.set_accuracy(100)
+    perf.set_n300(None)
+    perf.set_n100(None)
+    perf.set_n50(None)
+    attrs = perf.calculate(map)
+    result['100fcpp'] = attrs.pp
+
+    print(result)
+
+    return result
