@@ -1,5 +1,6 @@
 import operator
 import base64
+from pathlib import Path
 
 def calc_diff_color(star):
     bottom, top = None, None
@@ -100,3 +101,69 @@ def get_base64_encoded_data(content, mime_type):
     """
     encoded_string = base64.b64encode(content).decode("utf-8")
     return f"data:{mime_type};base64,{encoded_string}"
+
+
+def get_relative_path(target_path: str, parent_level: int) -> Path:
+    """
+    根据目录和父级层级生成相对路径
+
+    Args:
+        target_path (str): 目标Path
+        parent_level (int): 需要返回几层父目录
+
+    Returns:
+        Path: 生成的路径，如 "../../../assets/grade"
+
+    """
+    parent_prefix = "../" * parent_level
+    return Path(f"{parent_prefix}{target_path}")
+
+
+def calculate_rank_for_stable(count_300, count_100, count_50, count_miss):
+    """
+    根据游戏成绩计算Rank
+
+    参数:
+    count_300 (int): 300分的数量
+    count_100 (int): 100分的数量
+    count_50 (int): 50分的数量
+    count_miss (int): Miss的数量
+
+    返回:
+    str: 对应的Rank (SS, S, A, B, C, D)
+    """
+    total_hits = count_300 + count_100 + count_50 + count_miss
+
+    if total_hits == 0:
+        return "D"
+
+    accuracy = count_300 / total_hits
+    percent_300 = count_300 / total_hits * 100
+    percent_50 = count_50 / total_hits * 100 if total_hits > 0 else 0
+
+    # SS: 100% accuracy
+    if count_300 == total_hits:
+        return "SS"
+
+    # S: Over 90% 300s, at most 1% 50s, and no misses
+    if (percent_300 > 90 and
+            percent_50 <= 1 and
+            count_miss == 0):
+        return "S"
+
+    # A: Over 80% 300s and no misses OR over 90% 300s
+    if ((percent_300 > 80 and count_miss == 0) or
+            percent_300 > 90):
+        return "A"
+
+    # B: Over 70% 300s and no misses OR over 80% 300s
+    if ((percent_300 > 70 and count_miss == 0) or
+            percent_300 > 80):
+        return "B"
+
+    # C: Over 60% 300s
+    if percent_300 > 60:
+        return "C"
+
+    # D: Anything else
+    return "D"

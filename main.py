@@ -239,10 +239,18 @@ async def fetch_test2(item:IName):
     result = await ATRIproxy.format_test2(item.qq_id,item.osuname)
     return str(result)
 
-@app.api_route("/qq/skill", methods=["GET", "POST"])
-async def fetch_skill(item:IName):
-    result = await ATRIproxy.format_skill(item.qq_id,item.osuname)
-    return str(result)
+@app.api_route("/qq/rctpp", methods=["GET", "POST"])
+async def fetch_rctpp(item:IName):
+    img_bytes = await ATRIproxy.format_rctpp(item.qq_id,item.osuname)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+
+# @app.api_route("/qq/skill", methods=["GET", "POST"])
+# async def fetch_skill(item:IName):
+#     result = await ATRIproxy.format_skill(item.qq_id,item.osuname)
+#     return str(result)
 
 @app.api_route("/qq/bind", methods=["GET", "POST"])
 async def fetch_bind(item:IName):

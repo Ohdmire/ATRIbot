@@ -1,4 +1,4 @@
-from ATRIlib.config import deepseek_key,translate_prompt
+from ATRIlib.Config.config import deepseek_key,translate_prompt
 from openai import OpenAI
 
 try:

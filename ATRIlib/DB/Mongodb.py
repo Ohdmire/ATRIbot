@@ -1,6 +1,5 @@
 from pymongo import MongoClient, UpdateOne
-import os
-from ATRIlib.config import mongodb_uri
+from ATRIlib.Config.config import mongodb_uri
 
 
 class Mongodb:

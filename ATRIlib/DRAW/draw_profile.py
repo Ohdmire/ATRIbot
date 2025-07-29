@@ -11,11 +11,12 @@ from urllib.parse import urlparse
 import shutil
 import math
 from io import BytesIO
+from ATRIlib.Config import path_config
 
 Image.MAX_IMAGE_PIXELS = None
 
-profile_result_path = Path('./data/tmp/profile')
-ERROR_IMAGE_PATH = Path('./assets/error/error-404.png')
+profile_result_path = path_config.profile_result_path
+ERROR_IMAGE_PATH = path_config.ERROR_IMAGE_PATH
 
 def extract_last_frame_from_gif(gif_content):
     """从GIF内容中提取最后一帧"""

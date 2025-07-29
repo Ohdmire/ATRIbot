@@ -7,19 +7,21 @@ from ATRIlib.TOOLS.CommonTools import calc_diff_color
 from ATRIlib.TOOLS import Download
 import os
 from io import BytesIO
+from ATRIlib.Config import path_config
+from ATRIlib.TOOLS.CommonTools import get_relative_path
 
-pr_template_file_path = Path('./assets/customPanels/result.svg')
+pr_template_file_path = path_config.pr_template_file_path
 
-garde_path_forsvg = Path('../../../assets/grade')
-mods_path_forsvg = Path('../../../assets/mods')
-rank_path_forsvg = Path('../../../assets/RankingStatus')
-logo_path_forsvg = Path('../../../assets/logo')
-avatar_path_forsvg = Path('../../../data/avatar')
-cover_path_forsvg = Path('../../../data/cover')
+garde_path_forsvg = get_relative_path(path_config.garde_path,3)
+mods_path_forsvg = get_relative_path(path_config.mods_path,3)
+rank_path_forsvg = get_relative_path(path_config.rank_path,3)
+logo_path_forsvg = get_relative_path(path_config.logo_path,3)
+avatar_path_forsvg = get_relative_path(path_config.avatar_path,3)
+cover_path_forsvg = get_relative_path(path_config.cover_path,3)
 
-avatar_path = Path('./data/avatar')
-cover_path = Path('./data/cover')
-score_result_path = Path('./data/tmp/pr')
+avatar_path = path_config.avatar_path
+cover_path = path_config.cover_path
+score_result_path = path_config.score_result_path
 
 with open(pr_template_file_path, 'rb') as f:
     svg_data = f.read()

@@ -1,6 +1,6 @@
 from ATRIlib.API.github import get_news_url
 from ATRIlib.API.deepseek import translate
-from ATRIlib.TOOLS.Download import download_news_markdown,news_path
+from ATRIlib.TOOLS.Download import download_news_markdown
 from ATRIlib.DRAW.draw_news import draw_news
 import re
 

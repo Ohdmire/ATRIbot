@@ -3,6 +3,7 @@ from ATRIlib.PP.Rosu import fetch_beatmap_file_async_one,calculate_pp_if_all
 from ATRIlib.DRAW.draw_score import draw_result_screen
 from ATRIlib.Manager.ScoreManager import update_score_many
 
+
 async def calculate_pr_score(user_id):
     # 计算pr分数
     data = await get_user_passrecent_info(user_id)

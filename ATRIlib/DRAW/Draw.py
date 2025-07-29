@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import datetime
 import subprocess
 from copy import deepcopy
-from ATRIlib.TOOLS.CommonTools import calc_diff_color
+from ATRIlib.TOOLS.CommonTools import calc_diff_color,get_relative_path
 from ATRIlib.TOOLS import Download
-
+from ATRIlib.Config import path_config
 
 
 def draw_tdba_vs(user1bps, user2bps, times, user1x_list, user1y_list, user2x_list, user2y_list, osuname, vsname):
@@ -37,22 +37,24 @@ def draw_tdba_vs(user1bps, user2bps, times, user1x_list, user1y_list, user2x_lis
     plt.close()
     return f'{osuname}-{vsname}-vs.png'
 
-result_svg_file_path = Path('./assets/customPanels/result.svg')
-garde_path = Path('../../../assets/grade')
-mods_path = Path('../../../assets/mods')
-rank_path = Path('../../../assets/RankingStatus')
-logo_path = Path('../../../assets/logo')
-avatar_true_path = Path('../../../data/avatar')
-cover_true_path = Path('../../../data/cover')
-result_result_path = Path('./data/tmp/pr')
+result_svg_file_path = path_config.result_svg_file_path
+result_result_path = path_config.result_result_path
+
+garde_path_forsvg = get_relative_path(path_config.garde_path,3)
+mods_path_forsvg = get_relative_path(path_config.mods_path,3)
+rank_path_forsvg = get_relative_path(path_config.rank_path,3)
+logo_path_forsvg = get_relative_path(path_config.logo_path,3)
+avatar_path_forsvg = get_relative_path(path_config.avatar_path,3)
+cover_path_forsvg = get_relative_path(path_config.cover_path,3)
+
 
 with open(result_svg_file_path, 'rb') as f:
     svg_data = f.read()
     parser = etree.XMLParser()
     result_svg_tree = etree.fromstring(svg_data, parser)
 
-avatar_path = Path('./data/avatar')
-cover_path = Path('./data/cover')
+avatar_path = path_config.avatar_path
+cover_path = path_config.cover_path
 
 async def draw_result_screen(data, ppresult):
 
@@ -63,7 +65,7 @@ async def draw_result_screen(data, ppresult):
     logo_ele = svg_tree.xpath(
         '//*[@id="$logo"]')[0]
     logo_ele.tag = 'image'
-    logo_ele.set('xlink', f'{logo_path}/quaver.png')
+    logo_ele.set('xlink', f'{logo_path_forsvg}/quaver.png')
 
     combo_ele = svg_tree.xpath(
         '//*[@id="$combo"]')[0]
@@ -325,12 +327,12 @@ async def draw_result_screen(data, ppresult):
     avatar.tag = 'image'
     # avatar.set('xlink', data['user']['avatar_url'])
     avatar.set(
-        'xlink', f'{avatar_true_path}/{data["user"]["id"]}.jpeg')
+        'xlink', f'{avatar_path_forsvg}/{data["user"]["id"]}.jpeg')
 
     grade = svg_tree.xpath(
         '//*[@id="$grade"]')[0]
     grade.tag = 'image'
-    grade.set('xlink', f'{garde_path}/{data["rank"]}.png')
+    grade.set('xlink', f'{garde_path_forsvg}/{data["rank"]}.png')
 
     reverse_modslist = data["mods"]
     reverse_modslist.reverse()
@@ -344,12 +346,12 @@ async def draw_result_screen(data, ppresult):
     for i in reverse_modslist:
         if isFirstMod is True:
             mod_ele.tag = 'image'
-            mod_ele.set('xlink', f'{mods_path}/{i}.svg')
+            mod_ele.set('xlink', f'{mods_path_forsvg}/{i}.svg')
             isFirstMod = False
         else:
             new_mod_ele = deepcopy(mod_ele)
             new_mod_ele.tag = 'image'
-            new_mod_ele.set('xlink', f'{mods_path}/{i}.svg')
+            new_mod_ele.set('xlink', f'{mods_path_forsvg}/{i}.svg')
             new_mod_ele.set('x', f'{mod_ele_x-60*count}')
             count += 1
             mod_ele.getparent().append(new_mod_ele)
@@ -374,7 +376,7 @@ async def draw_result_screen(data, ppresult):
     beatmap_cover.tag = 'image'
     # coverurl = data['user']['avatar_url']
     beatmap_cover.set(
-        'xlink', f'{cover_true_path}/{data["beatmapset"]["id"]}.jpg')
+        'xlink', f'{cover_path_forsvg}/{data["beatmapset"]["id"]}.jpg')
     beatmap_cover.set('preserveAspectRatio', 'xMidYMin slice')
     beatmap_cover.set('height', '560')
     beatmap_cover.set('y', '-300')
@@ -441,20 +443,12 @@ async def draw_result_screen(data, ppresult):
 
     return f'{data["user"]["username"]}-pr.png'
 
-beatmap_rank_file_path = Path('./assets/customPanels/ranking.svg')
-garde_path = Path('../../../assets/grade')
-mods_path = Path('../../../assets/mods')
-rank_path = Path('../../../assets/RankingStatus')
-logo_path = Path('../../../assets/logo')
-avatar_true_path = Path('../../../data/avatar')
-cover_true_path = Path('../../../data/cover')
-beatmap_rank_result_path = Path('./data/tmp/brk')
+beatmap_rank_file_path = path_config.beatmap_rank_template_file_path
+beatmap_rank_result_path = path_config.beatmap_rank_result_path
+
 with open(beatmap_rank_file_path, 'rb') as f:
     svg_data = f.read()
     parser = etree.XMLParser()
     beatmap_rank_svg_tree = etree.fromstring(svg_data, parser)
-
-avatar_path = Path('./data/avatar')
-cover_path = Path('./data/cover')
 
 

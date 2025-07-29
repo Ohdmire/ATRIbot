@@ -1,7 +1,8 @@
 from pathlib import Path
 from io import BytesIO
+from ATRIlib.Config import path_config
 
-help_file_path = Path('./assets/help/help.png')
+help_file_path = path_config.help_file_path
 
 def get_help():
     with open(help_file_path, 'rb') as f:

@@ -3,25 +3,27 @@ from lxml import etree
 import datetime
 import subprocess
 from copy import deepcopy
-from ATRIlib.TOOLS.CommonTools import calc_diff_color
+
+from ATRIlib.TOOLS.CommonTools import calc_diff_color,get_relative_path
 from ATRIlib.TOOLS import Download
+from ATRIlib.Config import path_config
 import os
 from io import BytesIO
 
 
-beatmap_rank_template_file_path = Path('./assets/customPanels/ranking.svg')
+beatmap_rank_template_file_path = path_config.beatmap_rank_template_file_path
 
-garde_path_forsvg = Path('../../../assets/grade')
-mods_path_forsvg = Path('../../../assets/mods')
-rank_path_forsvg = Path('../../../assets/RankingStatus')
-logo_path_forsvg = Path('../../../assets/logo')
-avatar_path_forsvg = Path('../../../data/avatar')
-cover_path_forsvg = Path('../../../data/cover')
+garde_path_forsvg = get_relative_path(path_config.garde_path,3)
+mods_path_forsvg = get_relative_path(path_config.mods_path,3)
+rank_path_forsvg = get_relative_path(path_config.rank_path,3)
+logo_path_forsvg = get_relative_path(path_config.logo_path,3)
+avatar_path_forsvg = get_relative_path(path_config.avatar_path,3)
+cover_path_forsvg = get_relative_path(path_config.cover_path,3)
 
 
-avatar_path = Path('./data/avatar')
-cover_path = Path('./data/cover')
-beatmap_rank_result_path = Path('./data/tmp/brk')
+avatar_path = path_config.avatar_path
+cover_path = path_config.cover_path
+beatmap_rank_result_path = path_config.beatmap_rank_result_path
 
 with open(beatmap_rank_template_file_path, 'rb') as f:
     svg_data = f.read()

@@ -6,13 +6,14 @@ from io import BytesIO
 import logging
 import base64
 import mimetypes
+from ATRIlib.Config import path_config
 
-beatmaps_path = Path('./data/beatmaps/')
-beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
-avatar_path = Path('./data/avatar/')
-cover_path = Path('./data/cover/')
-medal_path = Path('./assets/medal/')
-news_path = Path('./data/news/')
+beatmaps_path = path_config.beatmaps_path
+beatmaps_path_tmp = path_config.beatmaps_path_tmp
+avatar_path = path_config.avatar_path
+cover_path = path_config.cover_path
+medal_path = path_config.medal_path
+news_path = path_config.news_path
 
 semaphore = asyncio.Semaphore(16)
 semaphore_small = asyncio.Semaphore(4)

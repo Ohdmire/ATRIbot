@@ -1,12 +1,12 @@
 import markdown
 from playwright.async_api import async_playwright
-from ATRIlib.TOOLS.Download import news_path
 import logging
 from pathlib import Path
 import io
+from ATRIlib.Config import path_config
 
-news_result_path = Path('./data/tmp/news')
-css_file_path = Path('./assets/css/')
+news_result_path = path_config.news_result_path
+css_file_path = path_config.css_file_path
 
 async def draw_news(title,translated_content):
     result = await html_to_image(title,translated_content)

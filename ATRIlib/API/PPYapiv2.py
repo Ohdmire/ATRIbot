@@ -3,7 +3,7 @@ import aiohttp
 import asyncio
 import functools
 import logging
-from ATRIlib.config import osuclientid, osuclientsecret
+from ATRIlib.Config.config import osuclientid, osuclientsecret
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -111,6 +111,15 @@ async def get_user_scores_info(user_id, beatmap_id):
 @rate_limited()
 async def get_user_passrecent_info(user_id):
     url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?legacy_only=0&include_fails=0&mode=osu&limit=100'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            data = await response.json()
+            return data
+
+@rate_limited()
+async def get_user_recentscore_info_stable(user_id):
+    url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/recent?legacy_only=1&include_fails=1&mode=osu&limit=100'
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:

@@ -1,11 +1,11 @@
 import rosu_pp_py as rosu
-from pathlib import Path
 
 from ATRIlib.TOOLS.Download import fetch_beatmap_file_async_one
-from ATRIlib.TOOLS.Download import beatmaps_path,beatmaps_path_tmp
 
-# beatmaps_path = Path('./data/beatmaps/')
-# beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
+from ATRIlib.Config import path_config
+
+beatmaps_path = path_config.beatmaps_path
+beatmaps_path_tmp = path_config.beatmaps_path_tmp
 
 # 计算pp(ranked or unranked)
 async def calculate_pp_if_all(beatmap_id, mods, acc, combo, Temp=True):

@@ -14,6 +14,9 @@ from datetime import datetime
 from datetime import timedelta
 import seaborn as sns
 
+from ATRIlib.TOOLS.CommonTools import get_relative_path
+from ATRIlib.Config import path_config
+
 def warp_text(text,max_chars_per_line):
 
     words = text.split(' ')
@@ -108,16 +111,17 @@ class SVGElement:
         self.element.getparent().remove(self.element)
 
 
-medal_template_file_path = Path('./assets/customPanels/medal.svg')
-medal_path_forsvg = Path('../../../assets/medal')
-medal_result_path = Path('./data/tmp/medal')
-avatar_path_forsvg = Path('../../../data/avatar')
 
+medal_template_file_path = path_config.medal_template_file_path
+medal_result_path = path_config.medal_result_path
 
-avatar_path = Path('./data/avatar')
+medal_path_forsvg = get_relative_path(path_config.medal_path,3)
+avatar_path_forsvg = get_relative_path(path_config.avatar_path,3)
 
-medal_pr_template_file_path = Path('./assets/customPanels/medal_pr.svg')
-medal_pr_result_path = Path('./data/tmp/medal_pr')
+avatar_path = path_config.avatar_path
+
+medal_pr_template_file_path = path_config.medal_pr_template_file_path
+medal_pr_result_path = path_config.medal_pr_result_path
 
 with open(medal_template_file_path, 'rb') as f:
     svg_data = f.read()
