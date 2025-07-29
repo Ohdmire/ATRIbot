@@ -99,7 +99,7 @@ async def formatRctpp2New(data,ppresult):
                         data['max_combo'], modd_map_attrs['max_combo_map'], stars=stars)
 
     bpm = factBpm(float(data['beatmap']['bpm']), mods_to_str(data['mods']))
-    ar = round(modd_map_attrs['ar'], 2)
+    ar = round(modd_map_attrs['ar'], 1)
 
     stb_rank = calculate_rank_for_stable(data["statistics"]["great"], data["statistics"]["ok"], data["statistics"]["meh"], data["statistics"]["miss"])
 
@@ -135,7 +135,7 @@ async def formatRctpp2New(data,ppresult):
         ar=ar,
         cs = round(modd_map_attrs['cs'], 1),
         od=round(modd_map_attrs['od'], 1),
-        hp=modd_map_attrs['hp'],
+        hp=round(modd_map_attrs['hp'], 1),
         stars=stars,
         # oldstar = round(ojson['stars'], 2),
         combo=data['max_combo'],
