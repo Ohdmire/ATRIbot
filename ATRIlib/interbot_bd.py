@@ -6,14 +6,20 @@ from ATRIlib.interbot_untils import convert_mapjson,convert_recinfo,convert_user
 
 from ATRIlib.DRAW.draw_interbot.drawRank import drawR
 
-from ATRIlib.TOOLS.CommonTools import mods_to_str
+from ATRIlib.TOOLS.CommonTools import mods_to_str,mod_list_to_newlist
 
 async def calculate_bd(userstruct,user_id,beatmap_id,group_id,mods_list,is_ranked=True):
 
     if "NM" in mods_list:
-        mods_list = []
-    if "None" in mods_list:
+        mods_list = [{
+            "acronym": "CL"
+        }]
+    elif "None" in mods_list:
         mods_list = None
+    else:
+        mods_list = mod_list_to_newlist(mods_list)
+        # Stable自动添加CL
+        mods_list.append({"acronym": "CL"})
 
     beatmapinfo = await get_beatmap_info(beatmap_id)
 

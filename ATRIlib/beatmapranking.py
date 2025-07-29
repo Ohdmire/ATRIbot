@@ -5,6 +5,7 @@ from ATRIlib.TASKS.Jobs import multi_update_users_beatmap_score_async,job_update
 from ATRIlib.DRAW.draw_brk import draw_beatmap_rank_screen
 from datetime import datetime, timedelta
 import logging
+from ATRIlib.TOOLS.CommonTools import mod_list_to_newlist
 
 brkup_cache = {}
 BRKUP_CACHE_DURATION = timedelta(minutes=10)  # Unified cache duration
@@ -73,9 +74,16 @@ async def calculate_beatmapranking_update(user_id,beatmap_id, group_id):
 
 async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_old=False,is_ranked=True):
     if "NM" in mods_list:
-        mods_list = []
-    if "None" in mods_list:
+        mods_list = [{
+            "acronym": "CL"
+        }]
+    elif "None" in mods_list:
         mods_list = None
+    else:
+        mods_list = mod_list_to_newlist(mods_list)
+        # 老成绩自动添加CL
+        if is_old:
+            mods_list.append({"acronym": "CL"})
 
     beatmapinfo = await get_beatmap_info(beatmap_id)
 

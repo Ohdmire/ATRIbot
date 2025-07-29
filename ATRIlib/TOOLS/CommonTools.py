@@ -124,6 +124,12 @@ def mods_to_str(mods_list):
     reversed_mods = ", ".join(reversed(mods_str.split(", ")))
     return reversed_mods
 
+def mod_list_to_newlist(mods_list):
+    new_mod_list = []
+    for mod in mods_list:
+        new_mod_list.append({"acronym" : mod})
+    return new_mod_list
+
 
 def calculate_rank_for_stable(count_300, count_100, count_50, count_miss):
     """
