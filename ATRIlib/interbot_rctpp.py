@@ -6,7 +6,7 @@ from ATRIlib.TOOLS.CommonTools import calculate_rank_for_stable,mods_to_str
 from ATRIlib.PP.Rosu import fetch_beatmap_file_async_one,calculate_pp_if_all_stable
 from datetime import datetime, timezone, timedelta
 
-bg_thumb = '[CQ:image,cache=0,file=https://b.ppy.sh/thumb/{sid}l.jpg]'
+bg_thumb = '[CQ:image,file=https://b.ppy.sh/thumb/{sid}l.jpg]'
 
 
 def missReply(miss, acc, ar, cb, maxcb, stars):
