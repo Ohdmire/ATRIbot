@@ -165,6 +165,7 @@ async def format_rctpp(qq_id, osuname,index):
 async def format_rctpp2(qq_id, osuname,index):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
+    username= userstruct["username"]
 
     # 计算pr分数
     data = await get_user_recentscore_info_stable(user_id)
@@ -174,7 +175,9 @@ async def format_rctpp2(qq_id, osuname,index):
 
     raw = await calculate_rctpp_text(data)
 
-    return raw
+    result = f"{username}\n{raw}"
+
+    return result
 
 
 @handle_exceptions
