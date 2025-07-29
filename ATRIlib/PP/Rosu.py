@@ -108,6 +108,4 @@ async def calculate_pp_if_all_stable(beatmap_id, mods, acc, combo, judge_statist
     attrs = perf.calculate(map)
     result['100fcpp'] = attrs.pp
 
-    print(result)
-
     return result
