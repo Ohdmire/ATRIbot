@@ -72,7 +72,7 @@ async def calculate_beatmapranking_update(user_id,beatmap_id, group_id):
 
     return {"status": "success", "result": result,"is_ranked":is_ranked}  # Return status and result
 
-async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_old=False,is_ranked=True):
+async def calculate_beatmapranking(user_id, beatmap_id, beatmap_info,group_id, mods_list,is_old=False,is_ranked=True):
     if "NM" in mods_list:
         mods_list = [{
             "acronym": "CL"
@@ -85,7 +85,7 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_o
         if is_old:
             mods_list.append({"acronym": "CL"})
 
-    beatmapinfo = await get_beatmap_info(beatmap_id)
+
 
     if is_old:
         if is_ranked:
@@ -114,7 +114,7 @@ async def calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list,is_o
     if user_record is None:
         user_record = {"top_score": {"user_id" : user_id , "total_score" : -1, "legacy_total_score" : -1}}
 
-    result = await draw_beatmap_rank_screen(user_record, raw, beatmapinfo, mods_list,is_old)
+    result = await draw_beatmap_rank_screen(user_record, raw, beatmap_info, mods_list,is_old)
 
     return result
 

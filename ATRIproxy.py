@@ -60,7 +60,7 @@ from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
 from ATRIlib.news import calculate_news
 
 from ATRIlib.github import get_commit_content
-
+from ATRIlib.API.PPYapiv2 import get_beatmap_info
 from io import BytesIO
 
 import traceback
@@ -494,9 +494,12 @@ async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
 
+    # 提前获取beatmap_info
+    beatmap_info = await get_beatmap_info(beatmap_id)
+
     await update_scores_to_db(user_id, beatmap_id)
     raw = await calculate_beatmapranking_update(user_id,beatmap_id,group_id)
-    result = await calculate_beatmapranking(user_id,beatmap_id,group_id,mods_list,is_old,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
+    result = await calculate_beatmapranking(user_id,beatmap_id,beatmap_info,group_id,mods_list,is_old,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
     return result
 
 @handle_exceptions
@@ -505,9 +508,12 @@ async def format_bd(qq_id, osuname,beatmap_id,group_id,mods_list):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
 
+    # 提前获取beatmap_info
+    beatmap_info = await get_beatmap_info(beatmap_id)
+
     await update_scores_to_db(user_id, beatmap_id)
     raw = await calculate_beatmapranking_update(user_id,beatmap_id,group_id)
-    result = await calculate_bd(userstruct,user_id,beatmap_id,group_id,mods_list,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
+    result = await calculate_bd(userstruct,user_id,beatmap_id,beatmap_info,group_id,mods_list,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
     return result
 
 @handle_exceptions
@@ -540,9 +546,12 @@ async def format_brkpr(qq_id, osuname,group_id,index,is_old):
     data = data[index-1]
     beatmap_id = data["beatmap_id"]
 
+    # 提前获取beatmap_info
+    beatmap_info = await get_beatmap_info(beatmap_id)
+
     await update_scores_to_db(user_id, beatmap_id)
     raw = await calculate_beatmapranking_update(user_id, beatmap_id, group_id)
-    result = await calculate_beatmapranking(user_id, beatmap_id, group_id, mods_list, is_old,
+    result = await calculate_beatmapranking(user_id, beatmap_id,beatmap_info, group_id, mods_list, is_old,
                                             is_ranked=raw["is_ranked"])  # Pass raw data to calculate_beatmapranking
     return result
 

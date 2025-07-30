@@ -8,7 +8,7 @@ from ATRIlib.DRAW.draw_interbot.drawRank import drawR
 
 from ATRIlib.TOOLS.CommonTools import mods_to_str,mod_list_to_newlist
 
-async def calculate_bd(userstruct,user_id,beatmap_id,group_id,mods_list,is_ranked=True):
+async def calculate_bd(userstruct,user_id,beatmap_id,beatmap_info,group_id,mods_list,is_ranked=True):
 
     if "NM" in mods_list:
         mods_list = [{
@@ -20,8 +20,6 @@ async def calculate_bd(userstruct,user_id,beatmap_id,group_id,mods_list,is_ranke
         mods_list = mod_list_to_newlist(mods_list)
         # Stable自动添加CL
         mods_list.append({"acronym": "CL"})
-
-    beatmapinfo = await get_beatmap_info(beatmap_id)
 
     if is_ranked:
         raw = get_beatmapranking_list_from_db_old(user_id, beatmap_id, group_id, mods_list)
@@ -48,7 +46,7 @@ async def calculate_bd(userstruct,user_id,beatmap_id,group_id,mods_list,is_ranke
     # if user_record is None:
     #     user_record = {"top_score": {"user_id" : user_id , "total_score" : -1, "legacy_total_score" : -1}}
 
-    mapjson = convert_beatmap_data(beatmapinfo)
+    mapjson = convert_beatmap_data(beatmap_info)
     userjson = convert_userjson(userstruct)
 
 
