@@ -88,7 +88,7 @@ async def get_user_info_fromid(osuid):
 
 @rate_limited()
 async def get_user_best_all_info(user_id):
-    url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/best?mode=osu&limit=100'
+    url = f'https://osu.ppy.sh/api/v2/users/{user_id}/scores/best?mode=osu&limit=200'
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
