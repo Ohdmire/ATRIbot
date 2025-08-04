@@ -253,8 +253,6 @@ async def format_avgstar(qq_id, osuname, pp_range,star_min,star_max):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
     user_pp = userstruct["statistics"]["pp"]
-    # username = userstruct["username"]
-    bpstruct = await get_bpstruct(user_id)
 
     result = calculate_avg_star(user_id,user_pp, pp_range,star_min,star_max)
 
