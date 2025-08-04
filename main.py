@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse    
+from fastapi.responses import StreamingResponse
 
 from contextlib import asynccontextmanager
 
@@ -28,6 +28,8 @@ with open('./log_config.ini', 'r', encoding='utf-8') as f:
 class IName(BaseModel):
     qq_id: int
     pp_range : Optional[int] = None
+    star_min: Optional[float] = 5.00
+    star_max: Optional[float] = 5.00
     osuname: Optional[str] = None
     pt_range: Optional[int] = None
     tth_range :Optional[int] = None
@@ -49,7 +51,7 @@ class ItemN(BaseModel):
     group_member_list: Optional[list] = []
     medalid: Optional[int] = None
     news_index: Optional[int] = 0
-    is_raw_news: Optional[bool] = False
+    is_raw_news: Optional[bool] = True
 
 scheduler = AsyncIOScheduler()
 
@@ -359,6 +361,14 @@ async def fetch_bpsim(item:IName):
 async def fetch_joindate(item:IName):
     result = await ATRIproxy.format_joindate(item.qq_id,item.group_id, item.osuname, item.pp_range,item.group_member_list)
     return str(result)
+
+@app.api_route("/qq/avgstar", methods=["GET", "POST"])
+async def fetch_avgstar(item:IName):
+    img_bytes = await ATRIproxy.format_avgstar(item.qq_id, item.osuname,item.pp_range,item.star_min,item.star_max)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
 
 @app.api_route("/qq/avgpp", methods=["GET", "POST"])
 async def fetch_avgpp(item:IName):

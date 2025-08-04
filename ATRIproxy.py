@@ -3,6 +3,7 @@ import logging
 from ATRIlib.bpsim import calculate_bpsim
 from ATRIlib.joindate import calculate_joindate
 from ATRIlib.avg import calculate_avg_pp,calculate_avg_pt,calculate_avg_tth
+from ATRIlib.avgstar import calculate_avg_star
 from ATRIlib.choke import calculate_choke_pp
 from utils import get_userstruct_automatically,get_bpstruct
 from ATRIlib.TOOLS.CommonTools import sort_dict_by_value
@@ -246,6 +247,19 @@ async def format_joindate(qq_id, group_id, osuname, pp_range,group_member_list):
     result_text = result_text1 + result_text2
 
     return result_text
+
+async def format_avgstar(qq_id, osuname, pp_range,star_min,star_max):
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    user_pp = userstruct["statistics"]["pp"]
+    # username = userstruct["username"]
+    bpstruct = await get_bpstruct(user_id)
+
+    result = calculate_avg_star(user_id,user_pp, pp_range,star_min,star_max)
+
+    return result
+
 
 @handle_exceptions
 async def format_avgpp(qq_id, osuname, pp_range):

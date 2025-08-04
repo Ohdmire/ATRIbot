@@ -14,7 +14,6 @@ def update_bind(qq_id, userdata):
 # 更新用户bp
 def update_bp(bpdatas):
     user_id = bpdatas[0]['user']['id']
-
     # 使用列表推导式构建数据
     processed_bps = [{
         'id': user_id,
@@ -37,7 +36,8 @@ def update_bp(bpdatas):
         'bps_statistics': [bp['statistics'] for bp in bpdatas],
         'bps_maxcombo': [bp['max_combo'] for bp in bpdatas],
         'bps_acc': [bp['accuracy'] for bp in bpdatas],
-        'bps_mods': [bp['mods'] for bp in bpdatas]
+        'bps_mods': [bp['mods'] for bp in bpdatas],
+        'bps_star': [bp['beatmap']['difficulty_rating'] for bp in bpdatas]
     }
 
     # 批量更新 score 表

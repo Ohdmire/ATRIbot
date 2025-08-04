@@ -3,6 +3,9 @@ from ATRIlib.API.deepseek import translate
 from ATRIlib.TOOLS.Download import download_news_markdown
 from ATRIlib.DRAW.draw_news import draw_news
 import re
+from ATRIlib.Config import  path_config
+
+news_path = path_config.news_path
 
 def format_markdown(content):
     # 提取 title 和 date
@@ -29,7 +32,7 @@ def complete_url_in_markdown(content):
 
 
 
-async def calculate_news(index,is_raw_news=False):
+async def calculate_news(index,is_raw_news=True):
     url,markdown_name = await get_news_url(index)
 
     # 判断是否存在文件
