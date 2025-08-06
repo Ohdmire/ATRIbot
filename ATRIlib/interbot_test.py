@@ -277,11 +277,11 @@ def skillvs(username1, ppp_data1, username2, ppp_data2):
 
         # 格式化输出
         if pp_value1 > pp_value2:
-            line = f"{skill_name}: {int(pp_value1)}(+{diff}) ←→ {int(pp_value2)}"
+            line = f"{skill_name}: {int(pp_value1)}(+{diff}) - {int(pp_value2)}"
         elif pp_value1 < pp_value2:
-            line = f"{skill_name}: {int(pp_value1)} ←→ {int(pp_value2)}(+{diff})"
+            line = f"{skill_name}: {int(pp_value1)} - {int(pp_value2)}(+{diff})"
         else:
-            line = f"{skill_name}: {int(pp_value1)} ←→ {int(pp_value2)}"
+            line = f"{skill_name}: {int(pp_value1)} - {int(pp_value2)}"
 
         result += line + "\n"
 
