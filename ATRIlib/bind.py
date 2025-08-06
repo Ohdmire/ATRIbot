@@ -15,17 +15,21 @@ async def update_bind_info(qq_id,osuname):
         raise ValueError(f'无法在ppy的数据库中找到{osuname}')
 
 # 通过bind数据库获取userstruct
-def get_userstruct_from_bind(qq_id):
+def get_userstruct_from_bind(qq_id,isOther):
     bindstruct = find_bind(qq_id)
     if bindstruct is None:
+        if isOther:
+            raise ValueError("让对方绑定吧")
         raise ValueError(f'无法在数据库中找到qq={qq_id}绑定的对象\n尝试输入 !getbind')
     else:
         userstruct = db_user.find_one({'id': bindstruct["user_id"]})
         return userstruct
 
-async def get_userstrct_update_from_bind(qq_id):
-    userstruct = get_userstruct_from_bind(qq_id)
+async def get_userstrct_update_from_bind(qq_id,isOther):
+    userstruct = get_userstruct_from_bind(qq_id,isOther)
     if userstruct is None:
+        if isOther:
+            raise ValueError("让对方绑定吧")
         raise ValueError(f'无法在数据库中找到qq={qq_id}绑定的对象\n尝试输入 !getbind')
     else:
         userstruct = await update_user_info(userstruct['username'])

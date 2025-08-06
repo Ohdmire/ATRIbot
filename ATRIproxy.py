@@ -24,7 +24,7 @@ from ATRIlib.group import update_group_info
 
 from ATRIlib.bind import update_bind_info
 
-from ATRIlib.interbot_test import health_check,check2,skill
+from ATRIlib.interbot_test import health_check,check2,skill,skillvs
 
 from ATRIlib.interbot_pr import calculate_rctpp
 from ATRIlib.interbot_rctpp import calculate_rctpp_text
@@ -167,6 +167,24 @@ async def format_skill(qq_id, osuname):
     ppp_data = await get_user_ppp_info(user_id)
 
     raw = skill(username,ppp_data["data"]["performances"])
+
+    return raw
+
+@handle_exceptions
+async def format_skill_vs(qq_id,vs_qq_id, osuname,vsname):
+    userstruct1 = await get_userstruct_automatically(qq_id, osuname)
+    userstruct2 = await get_userstruct_automatically(vs_qq_id, vsname,isOther=True)
+    user1_id = userstruct1["id"]
+    user1name = userstruct1["username"]
+
+    user2_id = userstruct2["id"]
+    user2name = userstruct2["username"]
+
+    ppp_data1 = await get_user_ppp_info(user1_id)
+
+    ppp_data2 = await get_user_ppp_info(user2_id)
+
+    raw = skillvs(user1name,ppp_data1["data"]["performances"],user2name,ppp_data2["data"]["performances"])
 
     return raw
 

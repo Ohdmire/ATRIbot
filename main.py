@@ -27,10 +27,12 @@ with open('./log_config.ini', 'r', encoding='utf-8') as f:
 
 class IName(BaseModel):
     qq_id: int
+    vs_qq_id: Optional[int] = None
     pp_range : Optional[int] = None
     star_min: Optional[float] = 5.00
     star_max: Optional[float] = 5.00
     osuname: Optional[str] = None
+    vsname: Optional[str] = None
     pt_range: Optional[int] = None
     tth_range :Optional[int] = None
     pp_lists :Optional[list] = []
@@ -264,6 +266,11 @@ async def fetch_rctpp2(item:IName):
 @app.api_route("/qq/skill", methods=["GET", "POST"])
 async def fetch_skill(item:IName):
     result = await ATRIproxy.format_skill(item.qq_id,item.osuname)
+    return str(result)
+
+@app.api_route("/qq/skill/vs", methods=["GET", "POST"])
+async def fetch_skill(item:IName):
+    result = await ATRIproxy.format_skill_vs(item.qq_id,item.vs_qq_id,item.osuname,item.vsname)
     return str(result)
 
 @app.api_route("/qq/bind", methods=["GET", "POST"])

@@ -247,3 +247,42 @@ def skill(username,ppp_data):
         result += f"{skill_name}: {int(pp_value)} {'*' * stars}\n"
 
     return result.strip()  # 移除末尾的换行符
+
+
+def skillvs(username1, ppp_data1, username2, ppp_data2):
+    """对比两个玩家的技能数据"""
+    skill_map = [
+        ('JumpAim', 'ppJumpAim'),
+        ('FlowAim', 'ppFlowAim'),
+        ('Precision', 'ppPrecision'),
+        ('Speed', 'ppSpeed'),
+        ('Stamina', 'ppStamina'),
+        ('Accuracy', 'ppAcc'),
+    ]
+
+    # 构建结果字符串
+    result = f"{username1} vs {username2}\n"
+
+    for skill_name, pp_key in skill_map:
+        pp_value1 = ppp_data1.get(pp_key, 0)
+        pp_value2 = ppp_data2.get(pp_key, 0)
+
+        # 计算每个玩家的星级（保持和skill()相同的算法）
+        ratio1 = pp_value1 / max(ppp_data1.get("pp", 1), 1)
+
+        ratio2 = pp_value2 / max(ppp_data2.get("pp", 1), 1)
+
+        # 计算差值
+        diff = round(abs(pp_value1 - pp_value2))
+
+        # 格式化输出
+        if pp_value1 > pp_value2:
+            line = f"{skill_name}: {int(pp_value1)}(+{diff}) ←→ {int(pp_value2)}"
+        elif pp_value1 < pp_value2:
+            line = f"{skill_name}: {int(pp_value1)} ←→ {int(pp_value2)}(+{diff})"
+        else:
+            line = f"{skill_name}: {int(pp_value1)} ←→ {int(pp_value2)}"
+
+        result += line + "\n"
+
+    return result.strip()
