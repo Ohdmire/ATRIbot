@@ -1,6 +1,7 @@
 import aiohttp
 import math
 from ATRIlib.Manager.UserManager import get_bp_score_struct
+import logging
 
 # async def get_interbot_test1(osuname):
 #     data = {"osuname": osuname}
@@ -221,3 +222,28 @@ def check2(user):
     ret += f"bp10(acc):{bpacc/10:.1f}   指标值:{bpacc_c:.0f} (权重:{bpacc_w:.3f})\n"
     ret += f"bp10(pp):{bppp/10:.1f}   指标值:{bppp_c:.0f} (权重:{bppp_w:.3f})"
     return ret
+
+def skill(username,ppp_data):
+
+    skill_map = [
+        ('JumpAim', 'ppJumpAim'),
+        ('FlowAim', 'ppFlowAim'),
+        ('Precision', 'ppPrecision'),
+        ('Speed', 'ppSpeed'),
+        ('Stamina', 'ppStamina'),
+        ('Accuracy', 'ppAcc'),
+    ]
+
+    # 构建结果字符串
+    result = f"{username}'s skill\n"
+
+    total_pp = max(ppp_data.get("pp", 1), 1)
+
+    for skill_name, pp_key in skill_map:
+        pp_value = ppp_data.get(pp_key, 0)
+
+        ratio = pp_value / total_pp
+        stars = min(max(round(ratio * 8), 1), 5)  # 比例×8，但限制1~5★
+        result += f"{skill_name}: {int(pp_value)} {'*' * stars}\n"
+
+    return result.strip()  # 移除末尾的换行符

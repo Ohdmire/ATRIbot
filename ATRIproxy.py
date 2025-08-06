@@ -24,7 +24,7 @@ from ATRIlib.group import update_group_info
 
 from ATRIlib.bind import update_bind_info
 
-from ATRIlib.interbot_test import health_check,check2
+from ATRIlib.interbot_test import health_check,check2,skill
 
 from ATRIlib.interbot_pr import calculate_rctpp
 from ATRIlib.interbot_rctpp import calculate_rctpp_text
@@ -34,6 +34,8 @@ from ATRIlib.update import update_user_avatar
 
 from ATRIlib.API.PPYapiv2 import get_token,get_user_passrecent_info
 from ATRIlib.API.PPYapiv2 import get_user_recentscore_info_stable
+
+from ATRIlib.API.PPPapi import get_token_ppp,get_user_ppp_info
 
 from ATRIlib.whatif import calculate_pp,calculate_rank
 
@@ -123,6 +125,13 @@ def format_help():
     return raw
 
 @handle_exceptions
+def format_token_ppp():
+
+    get_token_ppp()
+
+    return 'success'
+
+@handle_exceptions
 def format_token():
 
     get_token()
@@ -147,6 +156,17 @@ async def format_test2(qq_id, osuname):
     await get_bpstruct(user_id)
 
     raw = check2(userstruct)
+
+    return raw
+
+@handle_exceptions
+async def format_skill(qq_id, osuname):
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+    ppp_data = await get_user_ppp_info(user_id)
+
+    raw = skill(username,ppp_data["data"]["performances"])
 
     return raw
 

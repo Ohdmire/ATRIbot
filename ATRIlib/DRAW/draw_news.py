@@ -1,10 +1,10 @@
 import markdown
 from playwright.async_api import async_playwright
 import logging
-from pathlib import Path
 import io
 from ATRIlib.Config import path_config
 
+news_path = path_config.news_path
 news_result_path = path_config.news_result_path
 css_file_path = path_config.css_file_path
 

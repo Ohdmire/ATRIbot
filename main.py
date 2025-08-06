@@ -85,6 +85,8 @@ async def app_lifespan(app: FastAPI):
     
     scheduler.add_job(job_fetch_token,
                       trigger="interval", seconds=3600) #定时获取token
+    scheduler.add_job(job_fetch_token_ppp,
+                      trigger="interval", seconds=3600)  # 定时获取ppptoken
     scheduler.add_job(job_shift_database,
                       trigger="cron", hour=4) #定时转移数据库
     scheduler.add_job(job_update_bind_all,
@@ -196,6 +198,11 @@ def job_fetch_token():
     result = ATRIproxy.format_token()
     return str(result)
 
+@app.api_route("/job/token/ppp", methods=["GET", "POST"])
+def job_fetch_token_ppp():
+    result = ATRIproxy.format_token_ppp()
+    return str(result)
+
 @app.api_route("/job/shift", methods=["GET", "POST"])
 def job_shift_database():
     result = ATRIproxy.format_job_shift_database()
@@ -254,10 +261,10 @@ async def fetch_rctpp2(item:IName):
     result = await ATRIproxy.format_rctpp2(item.qq_id,item.osuname,item.index)
     return str(result)
 
-# @app.api_route("/qq/skill", methods=["GET", "POST"])
-# async def fetch_skill(item:IName):
-#     result = await ATRIproxy.format_skill(item.qq_id,item.osuname)
-#     return str(result)
+@app.api_route("/qq/skill", methods=["GET", "POST"])
+async def fetch_skill(item:IName):
+    result = await ATRIproxy.format_skill(item.qq_id,item.osuname)
+    return str(result)
 
 @app.api_route("/qq/bind", methods=["GET", "POST"])
 async def fetch_bind(item:IName):
