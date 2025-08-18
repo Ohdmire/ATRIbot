@@ -156,3 +156,39 @@ async def get_most_played_beatmaps(user_id, played_count):
                 results.append(result)
     
     return results
+
+@rate_limited()
+async def get_changelog_list():
+    url = f'https://osu.ppy.sh/api/v2/changelog'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            data = await response.json()
+            return data
+
+@rate_limited()
+async def get_stable_changelog():
+    url = f'https://osu.ppy.sh/api/v2/changelog?stream=stable40'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            data = await response.json()
+            return data
+
+@rate_limited()
+async def get_lazer_changelog():
+    url = f'https://osu.ppy.sh/api/v2/changelog?stream=lazer'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            data = await response.json()
+            return data
+
+@rate_limited()
+async def get_tachyon_changelog():
+    url = f'https://osu.ppy.sh/api/v2/changelog?stream=tachyon'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            data = await response.json()
+            return data

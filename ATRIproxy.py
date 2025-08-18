@@ -62,6 +62,8 @@ from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
 
 from ATRIlib.news import calculate_news
 
+from ATRIlib.changelog import calculate_changelog_draw,get_changelog_status
+
 from ATRIlib.github import get_commit_content
 from ATRIlib.API.PPYapiv2 import get_beatmap_info
 from io import BytesIO
@@ -105,6 +107,37 @@ def handle_exceptions(func):
             try:
                 s_result = func(*args, **kwargs)
                 logging.info(s_result)
+                return s_result
+            except Exception as e:
+                error_message = f"An error occurred in {func.__name__}:\n"
+                error_message += traceback.format_exc()
+                logging.error(error_message)
+                if type(e) == ValueError:
+                    return str(e)
+                else:
+                    logging.error("Unexpected error")
+                    return "发生了预期外的错误"
+    return wrapper
+
+def handle_exceptions_silent(func):
+    if asyncio.iscoroutinefunction(func):
+        async def wrapper(*args, **kwargs):
+            try:
+                s_result = await func(*args, **kwargs)
+                return s_result
+            except Exception as e:
+                error_message = f"An error occurred in {func.__name__}:\n <args:{args}>\n <kwargs:{kwargs}>\n"
+                error_message += traceback.format_exc()
+                logging.error(error_message)
+                if type(e) == ValueError:
+                    return str(e)
+                else:
+                    logging.error("Unexpected error")
+                    return "发生了预期外的错误"
+    else:
+        def wrapper(*args, **kwargs):
+            try:
+                s_result = func(*args, **kwargs)
                 return s_result
             except Exception as e:
                 error_message = f"An error occurred in {func.__name__}:\n"
@@ -816,6 +849,18 @@ async def format_news(index,is_raw_news):
     return result
 
 @handle_exceptions
+async def format_changelog_draw(stream,index,cache):
+    result = await calculate_changelog_draw(stream,index,cache)
+    return result
+
+@handle_exceptions_silent
+async def format_changelog_status(stream):
+    stauts = await get_changelog_status(stream)
+    builds = stauts['builds']
+    version = f"{builds[0]['update_stream']['name']}-{builds[0]['display_version']}"
+    return version
+
+@handle_exceptions
 async def format_monitor_profile(group_id,group_member_list):
 
     if group_member_list:
@@ -841,8 +886,11 @@ async def format_lazer_update():
 
     raw = await get_lazer_update()
 
+    utc_time = datetime.strptime(raw["published_at"], "%Y-%m-%dT%H:%M:%SZ")
+    utc8_time = utc_time + timedelta(hours=8)
+
     result_text = f'Lazer最新版本号{raw["tag_name"]}'
-    result_text += f'\n发布时间:{raw["published_at"]}'
+    result_text += f'\n发布时间:{utc8_time}'
     result_text += f'\n镜像下载链接:'
     for i in raw['proxy_url']:
         result_text += f'\n{i}'

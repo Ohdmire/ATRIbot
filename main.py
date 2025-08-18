@@ -52,7 +52,10 @@ class ItemN(BaseModel):
     group_id: Optional[int] = None
     group_member_list: Optional[list] = []
     medalid: Optional[int] = None
+    stream_name: Optional[str] = "lazer"
     news_index: Optional[int] = 0
+    index: Optional[int] = 1
+    cache: Optional[bool] = True
     is_raw_news: Optional[bool] = True
 
 scheduler = AsyncIOScheduler()
@@ -77,6 +80,8 @@ async def app_lifespan(app: FastAPI):
         "data/tmp/profile",
         "data/tmp/news",
         "data/news",
+        "data/changelog",
+        "data/tmp/changelog",
     ]
     
     # 检查并创建目录
@@ -416,6 +421,19 @@ async def fetch_activity(item:ItemN):
         return StreamingResponse(img_bytes, media_type="image/jpeg")
     else:
         return str(img_bytes)
+
+@app.api_route("/qq/changelog/draw", methods=["GET", "POST"])
+async def fetch_changelog_draw(item:ItemN):
+    img_bytes = await ATRIproxy.format_changelog_draw(item.stream_name,item.index,item.cache)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/jpeg")
+    else:
+        return str(img_bytes)
+
+@app.api_route("/qq/changelog", methods=["GET", "POST"])
+async def fetch_changelog(item:ItemN):
+    result = await ATRIproxy.format_changelog_status(item.stream_name)
+    return str(result)
 
 @app.api_route("/job/update_bind_all", methods=["GET", "POST"])
 async def job_update_bind_all():

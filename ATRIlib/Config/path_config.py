@@ -15,6 +15,9 @@ ERROR_IMAGE_PATH = Path('./assets/error/error-404.png')
 news_path = Path('./data/news/')
 news_result_path = Path('./data/tmp/news')
 
+changelog_path = Path('./data/changelog/')
+changelog_result_path = Path('./data/tmp/changelog')
+
 beatmaps_path = Path('./data/beatmaps/')
 beatmaps_path_tmp = Path('./data/beatmaps_tmp/')
 beatmap_rank_result_path = Path('./data/tmp/brk/')
