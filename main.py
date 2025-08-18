@@ -109,6 +109,8 @@ app = FastAPI(lifespan=app_lifespan)
 # 限制 /qq/profile 路由的并发请求数量
 profile_route_semaphore = Semaphore(1)
 
+changelog_draw_route_semaphore = Semaphore(1)
+
 @app.api_route("/qq/mostplayed", methods=["GET", "POST"])
 async def fetch_test2(item:IName):
     result = await ATRIproxy.format_most_played_beatmap(item.qq_id,item.osuname)
@@ -424,11 +426,12 @@ async def fetch_activity(item:ItemN):
 
 @app.api_route("/qq/changelog/draw", methods=["GET", "POST"])
 async def fetch_changelog_draw(item:ItemN):
-    img_bytes = await ATRIproxy.format_changelog_draw(item.stream_name,item.index,item.cache)
-    if type(img_bytes) is BytesIO:
-        return StreamingResponse(img_bytes, media_type="image/jpeg")
-    else:
-        return str(img_bytes)
+    async with changelog_draw_route_semaphore:
+        img_bytes = await ATRIproxy.format_changelog_draw(item.stream_name,item.index,item.cache)
+        if type(img_bytes) is BytesIO:
+            return StreamingResponse(img_bytes, media_type="image/jpeg")
+        else:
+            return str(img_bytes)
 
 @app.api_route("/qq/changelog", methods=["GET", "POST"])
 async def fetch_changelog(item:ItemN):
