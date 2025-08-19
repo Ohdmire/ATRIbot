@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import traceback
+import time
 
 from contextlib import asynccontextmanager
 
@@ -110,6 +114,46 @@ app = FastAPI(lifespan=app_lifespan)
 profile_route_semaphore = Semaphore(1)
 
 changelog_draw_route_semaphore = Semaphore(1)
+
+
+# 中间件记录请求和响应
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    # 记录基本信息（不读取请求体）
+    logging.info(f"请求: {request.method} {request.url}")
+
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+
+    logging.info(f"响应状态: {response.status_code}")
+    logging.info(f"处理时间: {process_time:.3f}s")
+
+    return response
+
+# 专门处理 ValueError
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError):
+    logging.error(f"ValueError: {exc}")
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": "Bad Request",
+            "message": str(exc)  # 返回具体的 ValueError 消息
+        }
+    )
+
+# 处理其他所有异常
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    logging.error(f"Unexpected error: {exc}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal Server Error",
+            "message": "发生了预期外的错误"  # 返回固定的未知错误文本
+        }
+    )
 
 @app.api_route("/qq/mostplayed", methods=["GET", "POST"])
 async def fetch_test2(item:IName):

@@ -86,92 +86,24 @@ async def cleanup_brk_cache():
         logging.info(f"Removed expired brkup cache entry for key: {key}")
     logging.info("Brkup cache cleanup finished.")
 
-def handle_exceptions(func):
-    if asyncio.iscoroutinefunction(func):
-        async def wrapper(*args, **kwargs):
-            try:
-                s_result = await func(*args, **kwargs)
-                logging.info(f'[{func.__name__}] <args:{args}>\n <kwargs:{kwargs}>\n{s_result}')
-                return s_result
-            except Exception as e:
-                error_message = f"An error occurred in {func.__name__}:\n <args:{args}>\n <kwargs:{kwargs}>\n"
-                error_message += traceback.format_exc()
-                logging.error(error_message)
-                if type(e) == ValueError:
-                    return str(e)
-                else:
-                    logging.error("Unexpected error")
-                    return "发生了预期外的错误"
-    else:
-        def wrapper(*args, **kwargs):
-            try:
-                s_result = func(*args, **kwargs)
-                logging.info(s_result)
-                return s_result
-            except Exception as e:
-                error_message = f"An error occurred in {func.__name__}:\n"
-                error_message += traceback.format_exc()
-                logging.error(error_message)
-                if type(e) == ValueError:
-                    return str(e)
-                else:
-                    logging.error("Unexpected error")
-                    return "发生了预期外的错误"
-    return wrapper
-
-def handle_exceptions_silent(func):
-    if asyncio.iscoroutinefunction(func):
-        async def wrapper(*args, **kwargs):
-            try:
-                s_result = await func(*args, **kwargs)
-                return s_result
-            except Exception as e:
-                error_message = f"An error occurred in {func.__name__}:\n <args:{args}>\n <kwargs:{kwargs}>\n"
-                error_message += traceback.format_exc()
-                logging.error(error_message)
-                if type(e) == ValueError:
-                    return str(e)
-                else:
-                    logging.error("Unexpected error")
-                    return "发生了预期外的错误"
-    else:
-        def wrapper(*args, **kwargs):
-            try:
-                s_result = func(*args, **kwargs)
-                return s_result
-            except Exception as e:
-                error_message = f"An error occurred in {func.__name__}:\n"
-                error_message += traceback.format_exc()
-                logging.error(error_message)
-                if type(e) == ValueError:
-                    return str(e)
-                else:
-                    logging.error("Unexpected error")
-                    return "发生了预期外的错误"
-    return wrapper
-
-@handle_exceptions
 def format_help():
 
     raw = get_help()
 
     return raw
 
-@handle_exceptions
 def format_token_ppp():
 
     get_token_ppp()
 
     return 'success'
 
-@handle_exceptions
 def format_token():
 
     get_token()
 
     return 'success'
 
-@handle_exceptions
 async def format_test1(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -182,7 +114,6 @@ async def format_test1(qq_id, osuname):
     return raw
 
 
-@handle_exceptions
 async def format_test2(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -192,7 +123,6 @@ async def format_test2(qq_id, osuname):
 
     return raw
 
-@handle_exceptions
 async def format_skill(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -203,7 +133,6 @@ async def format_skill(qq_id, osuname):
 
     return raw
 
-@handle_exceptions
 async def format_skill_vs(qq_id,vs_qq_id, osuname,vsname):
     userstruct1 = await get_userstruct_automatically(qq_id, osuname)
     userstruct2 = await get_userstruct_automatically(vs_qq_id, vsname,isOther=True)
@@ -221,7 +150,6 @@ async def format_skill_vs(qq_id,vs_qq_id, osuname,vsname):
 
     return raw
 
-@handle_exceptions
 async def format_rctpp(qq_id, osuname,index):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -236,7 +164,6 @@ async def format_rctpp(qq_id, osuname,index):
 
     return raw
 
-@handle_exceptions
 async def format_rctpp2(qq_id, osuname,index):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -255,7 +182,6 @@ async def format_rctpp2(qq_id, osuname,index):
     return result
 
 
-@handle_exceptions
 async def format_bpsim(qq_id, osuname, pp_range):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -270,14 +196,12 @@ async def format_bpsim(qq_id, osuname, pp_range):
 
     return result_text
 
-@handle_exceptions
 def format_job_shift_database():
 
     raw = job_shift_database()
 
     return raw
 
-@handle_exceptions
 async def format_joindate(qq_id, group_id, osuname, pp_range,group_member_list):
 
     if group_member_list:
@@ -330,7 +254,6 @@ async def format_avgstar(qq_id, osuname, pp_range,star_min,star_max):
     return result
 
 
-@handle_exceptions
 async def format_avgpp(qq_id, osuname, pp_range):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -376,7 +299,6 @@ async def format_avgpp(qq_id, osuname, pp_range):
 
     return result_text
 
-@handle_exceptions
 async def format_avgpt(qq_id, osuname, pt_range):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -428,7 +350,6 @@ async def format_avgpt(qq_id, osuname, pt_range):
 
     return result_text
 
-@handle_exceptions
 async def format_avgtth(qq_id, osuname, tth_range):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -480,7 +401,6 @@ async def format_avgtth(qq_id, osuname, tth_range):
 
     return result_text
 
-@handle_exceptions
 async def format_choke(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -513,7 +433,6 @@ async def format_choke(qq_id, osuname):
 
     return result_text
 
-@handle_exceptions
 async def format_addpp(qq_id, osuname,pp_lists):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -541,7 +460,6 @@ async def format_addpp(qq_id, osuname,pp_lists):
 
     return result_text
 
-@handle_exceptions
 async def format_pttpp(qq_id, osuname, pp_range):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -561,7 +479,6 @@ async def format_pttpp(qq_id, osuname, pp_range):
     return result_text
 
 
-@handle_exceptions
 async def format_brk_up(qq_id, osuname,beatmap_id,group_id):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -571,7 +488,6 @@ async def format_brk_up(qq_id, osuname,beatmap_id,group_id):
     return raw
 
 
-@handle_exceptions
 async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -585,7 +501,6 @@ async def format_brk(qq_id, osuname,beatmap_id,group_id,mods_list,is_old):
     result = await calculate_beatmapranking(user_id,beatmap_id,beatmap_info,group_id,mods_list,is_old,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
     return result
 
-@handle_exceptions
 async def format_bd(qq_id, osuname,beatmap_id,group_id,mods_list):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -599,7 +514,6 @@ async def format_bd(qq_id, osuname,beatmap_id,group_id,mods_list):
     result = await calculate_bd(userstruct,user_id,beatmap_id,beatmap_info,group_id,mods_list,is_ranked=raw["is_ranked"]) # Pass raw data to calculate_beatmapranking
     return result
 
-@handle_exceptions
 async def format_update_avatar(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -615,7 +529,6 @@ async def format_update_avatar(qq_id, osuname):
 
 
 
-@handle_exceptions
 async def format_brkpr(qq_id, osuname,group_id,index,is_old):
 
     mods_list = ["None"]
@@ -638,14 +551,12 @@ async def format_brkpr(qq_id, osuname,group_id,index,is_old):
                                             is_ranked=raw["is_ranked"])  # Pass raw data to calculate_beatmapranking
     return result
 
-@handle_exceptions
 async def format_medal(medalid):
 
     raw = calculate_medal(medalid)
 
     return raw
 
-@handle_exceptions
 async def format_medal_pr(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -654,7 +565,6 @@ async def format_medal_pr(qq_id, osuname):
 
     return raw
 
-@handle_exceptions
 async def format_uu_medal(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -668,7 +578,6 @@ async def format_uu_medal(qq_id, osuname):
 
     return result_text
 
-@handle_exceptions
 async def format_special_medal(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
@@ -681,7 +590,6 @@ async def format_special_medal(qq_id, osuname):
 
     return img
 
-@handle_exceptions
 async def format_download_medal():
 
     raw = await download_all_medals()
@@ -689,7 +597,6 @@ async def format_download_medal():
     return raw
 
 
-@handle_exceptions
 async def format_pr(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -698,7 +605,6 @@ async def format_pr(qq_id, osuname):
 
     return raw
 
-@handle_exceptions
 async def format_tdba(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -711,7 +617,6 @@ async def format_tdba(qq_id, osuname):
     return raw
 
 
-@handle_exceptions
 async def format_score(qq_id, osuname,beatmapid):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -722,7 +627,6 @@ async def format_score(qq_id, osuname,beatmapid):
     return raw
 
 
-@handle_exceptions
 async def format_tdba_sim(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -739,14 +643,12 @@ async def format_tdba_sim(qq_id, osuname):
 
     return result_text
 
-@handle_exceptions
 async def format_calculate_rank(pp):
     raw = await calculate_rank(pp)
     result_text = f'{pp}pp对应的排名为\n#{raw:,}'
 
     return result_text
 
-@handle_exceptions
 async def format_calculate_pp(rank):
     raw = await calculate_pp(rank)
 
@@ -755,7 +657,6 @@ async def format_calculate_pp(rank):
     return result_text
 
 
-@handle_exceptions
 async def format_most_played_beatmap(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -765,7 +666,6 @@ async def format_most_played_beatmap(qq_id, osuname):
 
     return raw
 
-@handle_exceptions
 async def format_finddiff(group_id,group_member_list):
 
     if group_member_list:
@@ -795,7 +695,6 @@ async def format_finddiff(group_id,group_member_list):
 
     return result_text
 
-@handle_exceptions
 async def format_finddiff_details(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -817,7 +716,6 @@ async def format_finddiff_details(qq_id, osuname):
 
     return result_text
 
-@handle_exceptions
 async def format_beatmap_type_ba(qq_id, osuname):
 
     userstruct = await get_userstruct_automatically(qq_id, osuname)
@@ -836,31 +734,26 @@ async def format_beatmap_type_ba(qq_id, osuname):
         result_text += f'\n(只计算了{count_bp}张bp之后再试试吧)'
     return result_text
 
-@handle_exceptions
 async def format_profile(qq_id, osuname,is_yesterday=False):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
     result = await calculate_profile(user_id,is_yesterday)
     return result
 
-@handle_exceptions
 async def format_news(index,is_raw_news):
     result = await calculate_news(index,is_raw_news)
     return result
 
-@handle_exceptions
 async def format_changelog_draw(stream,index,cache):
     result = await calculate_changelog_draw(stream,index,cache)
     return result
 
-@handle_exceptions_silent
 async def format_changelog_status(stream):
     stauts = await get_changelog_status(stream)
     builds = stauts['builds']
     version = f"{builds[0]['update_stream']['name']}-{builds[0]['display_version']}"
     return version
 
-@handle_exceptions
 async def format_monitor_profile(group_id,group_member_list):
 
     if group_member_list:
@@ -881,7 +774,6 @@ async def format_monitor_profile(group_id,group_member_list):
 
     return result_text
 
-@handle_exceptions
 async def format_lazer_update():
 
     raw = await get_lazer_update()
@@ -897,12 +789,10 @@ async def format_lazer_update():
 
     return result_text
 
-@handle_exceptions
 async def format_pprework_progress():
     raw = await get_commit_content()
     return raw
 
-@handle_exceptions
 async def format_activity(group_id,group_member_list):
 
     if group_member_list:
@@ -915,28 +805,24 @@ async def format_activity(group_id,group_member_list):
 
     return raw
 
-@handle_exceptions
 async def format_job_update_all_bind_users_info():
 
     raw = await job_update_all_bind_user_info()
 
     return raw
 
-@handle_exceptions
 async def format_job_update_all_users_info():
 
     raw = await job_update_all_user_info()
 
     return raw
 
-@handle_exceptions
 async def format_job_update_all_users_bp():
 
     raw = await job_update_all_user_bp()
 
     return raw
 
-@handle_exceptions
 async def format_job_update_all_bind_users_bp():
 
     raw = await job_update_all_bind_user_bps()
@@ -944,7 +830,6 @@ async def format_job_update_all_bind_users_bp():
     return raw
 
 
-@handle_exceptions
 def format_job_compress_score_database():
 
     raw = job_compress_score_database()
@@ -957,7 +842,6 @@ def format_job_compress_score_database():
     return result_text
 
 
-@handle_exceptions
 def format_job_update_group_list(group_id,group_members_list):
 
     raw = update_group_info(group_id,group_members_list)
@@ -965,7 +849,6 @@ def format_job_update_group_list(group_id,group_members_list):
     return raw
 
 
-@handle_exceptions
 def format_bind(qq_id, osuname):
 
     raw = update_bind_info(qq_id,osuname)

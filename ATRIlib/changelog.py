@@ -135,7 +135,3 @@ async def calculate_changelog_draw(stream_name,index,cache):
         html_result = await format_changelog_entries_markdown(builds[index - 1]['changelog_entries'])
         result = await html_to_image(version, html_result)
         return result
-
-
-
-
