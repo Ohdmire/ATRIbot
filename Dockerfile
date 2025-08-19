@@ -11,6 +11,8 @@ RUN echo "deb https://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free
 
 # 安装系统依赖、Chrome、Inkscape、curl 和 Playwright 依赖
 RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libx264-dev \
     libfreetype6-dev \
     libjpeg-dev \
     libpng-dev \
