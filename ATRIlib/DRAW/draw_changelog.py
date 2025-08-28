@@ -15,6 +15,10 @@ async def html_to_image(title, content, max_body_width=1000):
     with open(css_file_path / "github-markdown-dark.css", 'r') as file:
         css_content = file.read()
 
+    # 修改content 把注释内容添加为标签
+    content = content.replace("[INDENT]", '<div style="margin-left: 20px;">')
+    content = content.replace("[/INDENT]", '</div>')
+
     html_content = """
         <meta name="color-scheme" content="dark">
         <meta charset="UTF-8">

@@ -38,7 +38,7 @@ async def async_translate(text: str) -> str:
     osu!taiko
     osu!catch
     osu!mania
-保持原文不翻译。lazer/tachyon为游戏发布流，保持原文。如果遇到markdown格式，保持markdown格式不变。段落之间用'---SEP---'分隔。"""},
+保持原文不翻译。lazer/tachyon为游戏发布流，保持原文。如果遇到markdown格式，保持markdown格式不变。段落之间用'---SEP---'分隔，请你严格按照此分隔。"""},
                 {"role": "user", "content": text},
             ],
             stream=False
@@ -106,7 +106,7 @@ async def batch_translate(texts: List[str]) -> List[str]:
         if not text.strip():
             translated_texts[i] = ""
 
-    logging.debug(f"待翻译批次: {batches}")
+    logging.info(f"待翻译批次: {batches}")
 
     for batch in batches:
         batch_indices = [item[0] for item in batch]
@@ -131,7 +131,7 @@ async def batch_translate(texts: List[str]) -> List[str]:
                 else:
                     batch_results = batch_results[:len(batch_texts)]
 
-            logging.debug(f'翻译结果: {batch_results}')
+            logging.info(f'翻译结果: {batch_results}')
 
             # 写入最终结果
             for idx, result in zip(batch_indices, batch_results):

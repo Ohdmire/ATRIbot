@@ -89,9 +89,9 @@ async def format_changelog_entries_markdown(changelog_entries):
 
             # 添加消息内容（只有有message时才添加）
             if entry.get("message"):
-                raw_md += f"<div style='margin-left: 20px;'>{message_trans}</div>"
-                # raw_md += f'<br/>'
-                raw_md += f"<div style='font-size: 0.8em; color: #aaaaaa; margin-left: 20px;'>{entry['message']}</div>\n\n"
+                raw_md += f"[INDENT]\n\n"
+                raw_md += f"{message_trans}\n\n{entry['message']}\n\n"
+                raw_md += f"[/INDENT]\n\n"
 
     html_raw = markdown.markdown(raw_md, extensions=['extra'])
     return html_raw
