@@ -50,7 +50,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
     if cover_img.exists() is True:
         pass
     else:
-        await Download.download_cover(f'https://assets.ppy.sh/beatmaps/{beatmap_info["beatmapset"]["id"]}/covers/raw.jpg', beatmap_info["beatmapset"]["id"])
+        await Download.download_cover(f'https://assets.ppy.sh/beatmaps/{beatmap_info["beatmapset"]["id"]}/covers/fullsize.jpg', beatmap_info["beatmapset"]["id"])
 
     beatmap_cover = svg_tree.xpath(
         '//*[@id="$beatmap_cover"]')[0]

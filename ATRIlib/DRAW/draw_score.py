@@ -347,7 +347,7 @@ async def draw_result_screen(data, ppresult):
     if cover_img.exists() is True:
         pass
     else:
-        await Download.download_cover(f'https://assets.ppy.sh/beatmaps/{data["beatmapset"]["id"]}/covers/raw.jpg', data["beatmapset"]["id"])
+        await Download.download_cover(f'https://assets.ppy.sh/beatmaps/{data["beatmapset"]["id"]}/covers/fullsize.jpg', data["beatmapset"]["id"])
 
     beatmap_cover = svg_tree.xpath(
         '//*[@id="$beatmap_cover"]')[0]

@@ -149,7 +149,7 @@ async def drawRec(mapjson, recinfo, bestinfo, userjson, debug=0, **kw):
         pass
     else:
         await Download.download_cover(
-            f'https://assets.ppy.sh/beatmaps/{mapjson["beatmapset_id"]}/covers/raw.jpg',
+            f'https://assets.ppy.sh/beatmaps/{mapjson["beatmapset_id"]}/covers/fullsize.jpg',
             mapjson["beatmapset_id"])
 
     d.add_items(isresize=True, path=cover_img, factor=0.95)

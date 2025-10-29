@@ -177,7 +177,7 @@ async def drawR(mapjson, rankjson, userjson):
         pass
     else:
         await Download.download_cover(
-            f'https://assets.ppy.sh/beatmaps/{mapjson["beatmapset_id"]}/covers/raw.jpg',
+            f'https://assets.ppy.sh/beatmaps/{mapjson["beatmapset_id"]}/covers/fullsize.jpg',
             mapjson["beatmapset_id"])
 
     # d.add_items(isresize=True, path='image/bg/default.jpg')
