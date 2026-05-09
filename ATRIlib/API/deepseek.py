@@ -1,23 +1,29 @@
-from ATRIlib.Config.config import deepseek_key,translate_prompt
-from openai import OpenAI
-from typing import List
 import asyncio
 import logging
 import re
+from typing import List
+
+from openai import OpenAI
+
+from ATRIlib.Config.config import deepseek_key, translate_prompt
 
 try:
     client = OpenAI(api_key=deepseek_key, base_url="https://api.deepseek.com")
 except:
     pass
 
+
 def translate(mycontent):
     response = client.chat.completions.create(
-        model="deepseek-chat",
+        model="deepseek-v4-pro",
         messages=[
-            {"role": "system", "content": "You are a helpful translator. Translate the user's markdown text into Chinese. Keep markdown style."},
-            {"role": "user", "content": translate_prompt+mycontent},
+            {
+                "role": "system",
+                "content": "You are a helpful translator. Translate the user's markdown text into Chinese. Keep markdown style.",
+            },
+            {"role": "user", "content": translate_prompt + mycontent},
         ],
-        stream=False
+        stream=False,
     )
 
     return response.choices[0].message.content
@@ -32,23 +38,23 @@ async def async_translate(text: str) -> str:
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
-                {"role": "system",
-                 "content": """你是一个专业的翻译助手，你将翻译一个名为osu!的音乐节奏游戏的更新日志，其中beatmap翻译为谱面，游戏一共有4个模式，
+                {
+                    "role": "system",
+                    "content": """你是一个专业的翻译助手，你将翻译一个名为osu!的音乐节奏游戏的更新日志，其中beatmap翻译为谱面，游戏一共有4个模式，
     osu!
     osu!taiko
     osu!catch
     osu!mania
-保持原文不翻译。lazer/tachyon为游戏发布流，保持原文。如果遇到markdown格式，保持markdown格式不变。段落之间用'---SEP---'分隔，请你严格按照此分隔。"""},
+保持原文不翻译。lazer/tachyon为游戏发布流，保持原文。如果遇到markdown格式，保持markdown格式不变。段落之间用'---SEP---'分隔，请你严格按照此分隔。""",
+                },
                 {"role": "user", "content": text},
             ],
-            stream=False
+            stream=False,
         )
         return response.choices[0].message.content
 
     # 将同步函数放到单独的线程中执行
     return await asyncio.to_thread(sync_translate)
-
-
 
 
 # 最大单次翻译的字符数 (根据API限制调整)
@@ -67,15 +73,15 @@ async def batch_translate(texts: List[str]) -> List[str]:
     # 预处理：删除媒体标签并记录原始索引和文本
     processed_texts = []
     media_tag_pattern = re.compile(
-        r'</?(img|video|source)[^>]*>',  # 匹配开标签、闭标签和自闭合标签
-        re.IGNORECASE
+        r"</?(img|video|source)[^>]*>",  # 匹配开标签、闭标签和自闭合标签
+        re.IGNORECASE,
     )
 
     for i, text in enumerate(texts):
         if not text.strip():
             continue
         # 删除所有img和video标签
-        cleaned_text = media_tag_pattern.sub('', text).strip()
+        cleaned_text = media_tag_pattern.sub("", text).strip()
         if cleaned_text:  # 只有删除标签后仍有内容才处理
             processed_texts.append((i, cleaned_text))
 
@@ -86,8 +92,10 @@ async def batch_translate(texts: List[str]) -> List[str]:
 
     for i, text in processed_texts:
         text_size = len(text)
-        if (current_size + text_size > MAX_BATCH_SIZE or
-                len(current_batch) >= MAX_BATCH_ITEMS):
+        if (
+            current_size + text_size > MAX_BATCH_SIZE
+            or len(current_batch) >= MAX_BATCH_ITEMS
+        ):
             batches.append(current_batch)
             current_batch = []
             current_size = 0
@@ -117,7 +125,7 @@ async def batch_translate(texts: List[str]) -> List[str]:
             response = await async_translate(batch_text)
 
             # 分割逻辑
-            sep_pattern = re.compile(r'\n*---SEP---\n*', re.IGNORECASE)
+            sep_pattern = re.compile(r"\n*---SEP---\n*", re.IGNORECASE)
             batch_results = re.split(sep_pattern, response)
             batch_results = [res.strip() for res in batch_results if res.strip()]
 
@@ -129,9 +137,9 @@ async def batch_translate(texts: List[str]) -> List[str]:
                 if len(batch_results) < len(batch_texts):
                     batch_results += [""] * (len(batch_texts) - len(batch_results))
                 else:
-                    batch_results = batch_results[:len(batch_texts)]
+                    batch_results = batch_results[: len(batch_texts)]
 
-            logging.info(f'翻译结果: {batch_results}')
+            logging.info(f"翻译结果: {batch_results}")
 
             # 写入最终结果
             for idx, result in zip(batch_indices, batch_results):
@@ -144,4 +152,3 @@ async def batch_translate(texts: List[str]) -> List[str]:
                 translated_texts[idx] = processed_texts[idx][1]  # 使用已清理的原文
 
     return translated_texts
-
