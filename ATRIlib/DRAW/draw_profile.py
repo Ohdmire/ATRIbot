@@ -1,22 +1,27 @@
-from bs4 import BeautifulSoup
-from pathlib import Path
-import os
-import logging
-from PIL import Image, ImageSequence
-import io
-from playwright.async_api import async_playwright
-from ATRIlib.TOOLS.Download import download_resource_async
 import hashlib
-from urllib.parse import urlparse
-import shutil
+import io
+import logging
 import math
+import os
+import re
+import shutil
 from io import BytesIO
+from pathlib import Path
+from urllib.parse import urlparse
+
+from bs4 import BeautifulSoup
+from PIL import Image, ImageSequence
+
 from ATRIlib.Config import path_config
+from ATRIlib.DRAW.html_renderer import render_html_to_jpeg
+from ATRIlib.TOOLS.Download import download_resource_async
 
 Image.MAX_IMAGE_PIXELS = None
+KEEP_PROFILE_HTML = True
 
 profile_result_path = path_config.profile_result_path
 ERROR_IMAGE_PATH = path_config.ERROR_IMAGE_PATH
+
 
 def extract_last_frame_from_gif(gif_content):
     """从GIF内容中提取最后一帧"""
@@ -24,61 +29,85 @@ def extract_last_frame_from_gif(gif_content):
         # 如果不是GIF,直接返回原图
         if not getattr(img, "is_animated", False):
             return gif_content
-        
+
         # 获取最后一帧
         last_frame = None
         for frame in ImageSequence.Iterator(img):
             last_frame = frame.copy()
-        
+
         # 将最后一帧转换为bytes
         output = io.BytesIO()
-        last_frame.save(output, format='PNG')
+        last_frame.save(output, format="PNG")
         return output.getvalue()
+
 
 async def process_html(html_string):
     """
     处理HTML，下载资源并更新链接为相对路径
     """
-    soup = BeautifulSoup(html_string, 'html.parser')
+    soup = BeautifulSoup(html_string, "html.parser")
     resources_to_download = []
     resources_to_update = []
 
     # 确保资源目录存在
-    resource_dir = profile_result_path / 'resources'
+    resource_dir = profile_result_path / "resources"
     resource_dir.mkdir(parents=True, exist_ok=True)
 
     # 复制错误图片到资源目录（如果不存在）
-    error_image_dest = resource_dir / 'error-404.png'
+    error_image_dest = resource_dir / "error-404.png"
     if not error_image_dest.exists():
         shutil.copy(ERROR_IMAGE_PATH, error_image_dest)
 
     # 收集所有需要处理的资源
-    for tag in soup.find_all(['img', 'link', 'script', 'svg']):
-        if tag.name in ['img', 'svg']:
-            src = tag.get('src') or tag.get('data')
-            if src and src.startswith(('http://', 'https://')):
-                resources_to_update.append((src, tag, 'src' if tag.name == 'img' else 'data'))
-        elif tag.name == 'link' and tag.get('rel') == ['stylesheet']:
-            href = tag.get('href')
-            if href and href.startswith(('http://', 'https://')):
-                resources_to_update.append((href, tag, 'href'))
-        elif tag.name == 'script' and tag.get('src'):
-            src = tag.get('src')
-            if src and src.startswith(('http://', 'https://')):
-                resources_to_update.append((src, tag, 'src'))
+    for tag in soup.find_all(["img", "link", "script", "svg"]):
+        if tag.name in ["img", "svg"]:
+            src = tag.get("src") or tag.get("data")
+            if src and src.startswith(("http://", "https://")):
+                resources_to_update.append(
+                    (src, tag, "src" if tag.name == "img" else "data")
+                )
+        elif tag.name == "link" and tag.get("rel") == ["stylesheet"]:
+            href = tag.get("href")
+            if href and href.startswith(("http://", "https://")):
+                resources_to_update.append((href, tag, "href"))
+        elif tag.name == "script" and tag.get("src"):
+            src = tag.get("src")
+            if src and src.startswith(("http://", "https://")):
+                resources_to_update.append((src, tag, "src"))
 
     # 处理 proportional-container
-    for span in soup.find_all('span', class_='proportional-container'):
-        if 'data-src' in span.attrs:
-            del span['data-src']
+    for span in soup.find_all("span", class_="proportional-container"):
+        if "data-src" in span.attrs:
+            del span["data-src"]
+
+    # WeasyPrint 62 不支持 aspect-ratio。把 osu! 页面给的 data-width /
+    # data-height 显式转成 CSS 高度，避免图片高度估算偏大。
+    for img in soup.find_all("img"):
+        data_width = img.get("data-width") or img.get("width")
+        data_height = img.get("data-height") or img.get("height")
+        style = img.get("style") or ""
+        if data_width and data_height and "height:" not in style:
+            try:
+                source_width = float(data_width)
+                source_height = float(data_height)
+            except ValueError:
+                continue
+
+            width_match = re.search(r"width\s*:\s*([0-9.]+)px", style)
+            if width_match and source_width > 0:
+                rendered_width = float(width_match.group(1))
+                rendered_height = rendered_width * source_height / source_width
+                img["style"] = f"{style.rstrip(';')}; height: {rendered_height:.4f}px;"
 
     # 清空所有 href 以 https://osu.ppy.sh/users/ 开头的链接
-    for link in soup.find_all('a', href=lambda href: href and href.startswith('https://')):
-        link['href'] = ""
+    for link in soup.find_all(
+        "a", href=lambda href: href and href.startswith("https://")
+    ):
+        link["href"] = ""
 
     # 检查本地是否已有资源，如果没有则添加到下载列表
     for url, tag, attr in resources_to_update:
-        file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
+        file_ext = os.path.splitext(urlparse(url).path)[1].lower() or ".bin"
         filename = hashlib.md5(url.encode()).hexdigest() + file_ext
         # 特殊处理 如果是gif 则直接找转换过的png
         local_path = resource_dir / filename
@@ -95,11 +124,13 @@ async def process_html(html_string):
         results = await download_resource_async(resources_to_download)
 
         # 更新HTML的链接
-        for (url, tag, attr), (_, content, file_type) in zip(resources_to_download, results):
+        for (url, tag, attr), (_, content, file_type) in zip(
+            resources_to_download, results
+        ):
             if content:
                 logging.info(f"处理新下载的资源: {url}, 文件类型: {file_type}")
 
-                if file_type == 'svg':
+                if file_type == "svg":
                     # SVG 处理
                     try:
                         # file_ext = '.bin'
@@ -109,18 +140,18 @@ async def process_html(html_string):
                         # with open(local_path, 'wb') as f:
                         #     f.write(content)
 
-                        svg_content = content.decode('utf-8')
-                        svg_soup = BeautifulSoup(svg_content, 'html.parser')
-                        svg_tag = svg_soup.find('svg')
+                        svg_content = content.decode("utf-8")
+                        svg_soup = BeautifulSoup(svg_content, "html.parser")
+                        svg_tag = svg_soup.find("svg")
                         if svg_tag:
                             # 保存原始 img 标签的属性
                             original_attrs = dict(tag.attrs)
                             # 将原来的 img 标签替换�� svg 标签
-                            tag.name = 'svg'
+                            tag.name = "svg"
                             # 合并原始属性和 SVG 属性，保留 img 的样式
                             tag.attrs.update(svg_tag.attrs)
                             # 确保保留原始的 class 和 style 属性
-                            for attr in ['class', 'style']:
+                            for attr in ["class", "style"]:
                                 if attr in original_attrs:
                                     tag[attr] = original_attrs[attr]
                             # 添加 SVG 内容
@@ -133,37 +164,42 @@ async def process_html(html_string):
                         # 如果处理失败，保留原始URL
                         logging.info(f"保留原始SVG URL: {url}")
                         tag[attr] = url
-                elif file_type == 'gif':
+                elif file_type == "gif":
                     # GIF 处理
                     content = extract_last_frame_from_gif(content)
-                    file_ext = '.bin'
+                    file_ext = ".bin"
                     filename = hashlib.md5(url.encode()).hexdigest() + file_ext
                     local_path = resource_dir / filename
-                    
-                    with open(local_path, 'wb') as f:
+
+                    with open(local_path, "wb") as f:
                         f.write(content)
-                    
+
                     tag[attr] = f"resources/{filename}"
-                    logging.info(f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)")
+                    logging.info(
+                        f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)"
+                    )
                 else:
                     # 其他资源的处理
-                    file_ext = os.path.splitext(urlparse(url).path)[1].lower() or '.bin'
+                    file_ext = os.path.splitext(urlparse(url).path)[1].lower() or ".bin"
                     filename = hashlib.md5(url.encode()).hexdigest() + file_ext
                     local_path = resource_dir / filename
-                    
-                    with open(local_path, 'wb') as f:
+
+                    with open(local_path, "wb") as f:
                         f.write(content)
-                    
+
                     tag[attr] = f"resources/{filename}"
                     logging.info(f"更新链接: {url} -> resources/{filename}")
             else:
                 logging.warning(f"无法下载: {url}")
-                if tag.name == 'img':
+                if tag.name == "img":
                     tag[attr] = "resources/error-404.png"
 
     return str(soup)
 
-async def html_to_image(html_string, max_body_width=1650, avatar_url=None, username=None, user_id=None):
+
+async def html_to_image(
+    html_string, max_body_width=1000, avatar_url=None, username=None, user_id=None
+):
     """
     将HTML字符串渲染成图片，写入文件，然后返回BytesIO对象
     """
@@ -178,10 +214,16 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
             <img src="{avatar_url}" style="width: 200px; height: 200px; border-radius: 50%;">
         </div>
         '''
-    username_html = f'<div class="user-name" style="text-align: center; margin-bottom: 20px;">{username}</div>' if username else ""
-    
+    username_html = (
+        f'<div class="user-name" style="text-align: center; margin-bottom: 20px;">{username}</div>'
+        if username
+        else ""
+    )
+
     # 添加分割线
-    divider_html = '<hr style="border: 0; height: 1px; background: #ffffff; margin: 20px 0;">'
+    divider_html = (
+        '<hr style="border: 0; height: 1px; background: #ffffff; margin: 20px 0;">'
+    )
 
     # 添加CSS样式
     css = f"""
@@ -195,6 +237,19 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
             box-sizing: border-box;
             color: white;
             background-color: #5c6570;
+        }}
+        img, svg {{
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }}
+        img {{
+            display: inline-block;
+        }}
+        p {{
+            text-align: left;
         }}
         h1 {{ font-size: 32px; }}
         h2 {{ font-size: 28px; }}
@@ -251,6 +306,31 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
             border-radius: 3px;
         }}
 
+        .bbcode__normal-line-height {{
+            line-height: inherit;
+        }}
+
+        .bbcode__list-title {{
+            list-style: none;
+            margin: 0;
+        }}
+
+        .bbcode__align-centre {{
+            --list-style-position: inside;
+            --list-padding-left: 0;
+            text-align: center;
+        }}
+
+        .bbcode__align-left {{
+            text-align: left;
+        }}
+
+        .bbcode__align-right {{
+            --list-style-position: inside;
+            --list-padding-left: 0;
+            text-align: right;
+        }}
+
         /* 新添加的 .proportional-container 相关样式 */
         .proportional-container {{
             max-width: 100%;
@@ -301,162 +381,38 @@ async def html_to_image(html_string, max_body_width=1650, avatar_url=None, usern
         }}
     </style>
     """
-    
-    # 修改 js 变量中的 JavaScript 代码
 
-    js = """
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 处理所有图片和SVG
-    var images = document.querySelectorAll('img, svg');
-    images.forEach(function(img) {
-        var parent = img.parentElement;
-        if (parent) {
-            parent.style.textAlign = 'center';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '100%';
-            img.style.width = 'auto';
-            img.style.height = 'auto';
-            img.style.objectFit = 'contain';
-        }
-    });
+    # 将CSS、头像、用户名和分割线插入到HTML内容中，并添加<html>标签
+    html_with_css = f"<html><head>{css}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
 
-    // 特别处理 proportional-container
-    var proportionalContainers = document.querySelectorAll('.proportional-container');
-    proportionalContainers.forEach(function(container) {
-        var content = container.querySelector('.proportional-container__content');
-        if (content) {
-            var img = content.querySelector('img, svg');
-            if (img) {
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '100%';
-                img.style.width = 'auto';
-                img.style.height = 'auto';
-                img.style.objectFit = 'contain';
-            }
-        }
-    });
-
-    // 确文字段落保持左对齐
-    var paragraphs = document.querySelectorAll('p');
-    paragraphs.forEach(function(p) {
-        p.style.textAlign = 'left';
-    });
-});
-</script>
-    """
-    
-    # 将CSS、JavaScript、头像、用户名和分割线插入到HTML内容中，并添加<html>标
-    html_with_css = f"<html><head>{css}{js}</head><body>{avatar_html}{username_html}{divider_html}{html_string}</body></html>"
-    
     # 将HTML内容写入临时文件
     temp_html_path = profile_result_path / f"{user_id}_temp.html"
-    with open(temp_html_path, 'w', encoding='utf-8') as f:
+    with open(temp_html_path, "w", encoding="utf-8") as f:
         f.write(html_with_css)
-    
-    async with async_playwright() as p:
-        browser = await p.firefox.launch()
-        context = await browser.new_context(viewport={'width': max_body_width, 'height': 1080})
-        page = await context.new_page()
-        try:
-            await page.goto(f"file://{temp_html_path.absolute()}")
-        except Exception as e:
-            logging.warning(f"页面初始化错误: {e}")
 
-        # 等待页面加载完成
-        try:
-            await page.wait_for_load_state('domcontentloaded')
-        except Exception as e:
-            logging.warning(f"页面加载错误: {e}")
+    img_byte_arr = render_html_to_jpeg(
+        html_with_css,
+        width=max_body_width,
+        base_url=temp_html_path.parent,
+        quality=95,
+    )
 
-        # 缓慢滚动到页面底部并返回总高度
-        page_height = await page.evaluate("""
-            () => {
-                return new Promise((resolve) => {
-                    let totalHeight = 0;
-                    let distance = 300;
-                    let timer = setInterval(() => {
-                        let scrollHeight = document.body.scrollHeight;
-                        window.scrollBy(0, distance);
-                        totalHeight += distance;
-                        if(totalHeight >= scrollHeight){
-                            clearInterval(timer);
-                            resolve(totalHeight);
-                        }
-                    }, 1);
-                });
-            }
-        """)
-
-        # 第一次获取个大概body
-        body_height = await page.evaluate("""
-            () => document.body.getBoundingClientRect().height
-        """)
-
-        # 滚动回顶部
-        # await page.evaluate("window.scrollTo(0, 0)")
-
-        max_height = 24000  # 稍微小于32767的值
-
-        if body_height > max_height:
-            scale = max_height / body_height
-        else:
-            scale = 1
-
-        # 缩放body元素
-        await page.evaluate(f"""
-        document.body.style.transform = `scale({scale})`;
-        document.body.style.transformOrigin = 'top left';
-        """)
-        
-        await page.set_viewport_size({"width": max_body_width, "height": page_height})
-
-        # 第二次获取个整个body
-        body_height = await page.evaluate("""
-            () => document.body.getBoundingClientRect().height
-        """)
-
-        logging.info(f"最终页面高度: {page_height}")
-        logging.info(f"body元素的高度: {body_height}")
-
-        screenshot = await page.screenshot(
-            full_page=False,
-            type='jpeg',
-            quality=95,
-            clip={'x': 0, 'y': 0, 'width': max_body_width*scale, 'height': body_height} # 使用缩放后的 body_height 设置 clip 高度
-            )
-
-        # screenshot_image = Image.open(io.BytesIO(screenshot))
-
-        await browser.close()
-
-    # # 保存为压缩的JPEG格式
-    # jpeg_output_path = profile_result_path / f"{user_id}.jpg"
-    # combined_image.save(jpeg_output_path, format='JPEG', quality=95, optimize=True)
-
-    # # 记录生成的JPEG文件大小
-    # jpeg_file_size = os.path.getsize(jpeg_output_path)
-    # logging.info(f"生成的JPEG文件大小: {jpeg_file_size / 1024 / 1024:.2f} MB")
-
-    # 将文件内容入内存
-    # with open(screenshot_image, 'rb') as f:
-    #     img_byte_arr = io.BytesIO(f.read())
-
-    # 清理临时文件
-    # os.remove(jpeg_output_path)
-    os.remove(temp_html_path)
+    if KEEP_PROFILE_HTML:
+        logging.info(f"保留profile调试HTML: {temp_html_path}")
+    else:
+        os.remove(temp_html_path)
     # 不再删除resources目录中的文件
     # for file in (profile_result_path / 'resources').glob('*'):
     #     os.remove(file)
-    img_byte_arr = io.BytesIO(screenshot)
-    img_byte_arr.seek(0)
-
-    image_size = img_byte_arr.getbuffer().nbytes
-
-    logging.info(f"图片大小: {image_size / 1024 / 1024:.2f} MB")
-
     return img_byte_arr
-async def draw_profile(html_content, avatar_url, username, user_id):
-    result = await html_to_image(html_content,max_body_width=1650, avatar_url=avatar_url, username=username, user_id=user_id)
-    return result
 
+
+async def draw_profile(html_content, avatar_url, username, user_id):
+    result = await html_to_image(
+        html_content,
+        max_body_width=1000,
+        avatar_url=avatar_url,
+        username=username,
+        user_id=user_id,
+    )
+    return result

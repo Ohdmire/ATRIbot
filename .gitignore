@@ -7,3 +7,5 @@ frame.png
 frame.svg
 logs/
 .env
+test_*
+tmp/

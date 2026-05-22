@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 osuclientid = os.getenv('OSU_CLIENT_ID')
 osuclientsecret = os.getenv('OSU_CLIENT_SECRET')
 mongodb_uri = os.getenv('MONGO_URI')

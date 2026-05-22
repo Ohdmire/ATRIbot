@@ -50,4 +50,7 @@ yarl==1.13.1
 openai==1.65.1
 markdown==3.7
 aiofiles==24.1.0
-playwright
+python-dotenv==1.0.1
+weasyprint==62.3
+pydyf==0.10.0
+pypdfium2==4.30.0
