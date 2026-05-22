@@ -287,6 +287,7 @@ async def html_to_image(
             border-radius: 4px;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
             color: #ffffff;  /* 确保文字在色背景上可见 */
+            text-align: center;
         }}
         .well blockquote {{
             border-color: #4a5258;
