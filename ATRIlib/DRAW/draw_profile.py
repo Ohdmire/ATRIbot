@@ -3,7 +3,6 @@ import io
 import logging
 import math
 import os
-import re
 import shutil
 from io import BytesIO
 from pathlib import Path
@@ -80,30 +79,25 @@ async def process_html(html_string):
         if "data-src" in span.attrs:
             del span["data-src"]
 
-    # WeasyPrint 62 不支持 aspect-ratio。把 osu! 页面给的 data-width /
-    # data-height 显式转成 CSS 高度，避免图片高度估算偏大。
-    for img in soup.find_all("img"):
-        data_width = img.get("data-width") or img.get("width")
-        data_height = img.get("data-height") or img.get("height")
-        style = img.get("style") or ""
-        if data_width and data_height and "height:" not in style:
-            try:
-                source_width = float(data_width)
-                source_height = float(data_height)
-            except ValueError:
-                continue
-
-            width_match = re.search(r"width\s*:\s*([0-9.]+)px", style)
-            if width_match and source_width > 0:
-                rendered_width = float(width_match.group(1))
-                rendered_height = rendered_width * source_height / source_width
-                img["style"] = f"{style.rstrip(';')}; height: {rendered_height:.4f}px;"
-
     # 清空所有 href 以 https://osu.ppy.sh/users/ 开头的链接
     for link in soup.find_all(
         "a", href=lambda href: href and href.startswith("https://")
     ):
         link["href"] = ""
+
+    for link in soup.select(".bbcode__align-centre a"):
+        meaningful_children = [
+            child
+            for child in link.contents
+            if not (isinstance(child, str) and child.strip() == "")
+        ]
+        if len(meaningful_children) == 1 and getattr(
+            meaningful_children[0], "name", None
+        ) in ("img", "svg"):
+            classes = link.get("class", [])
+            if "bbcode__image-link" not in classes:
+                classes.append("bbcode__image-link")
+            link["class"] = classes
 
     # 检查本地是否已有资源，如果没有则添加到下载列表
     for url, tag, attr in resources_to_update:
@@ -230,7 +224,7 @@ async def html_to_image(
     <style>
         body {{
             font-family: 'CustomFont', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            font-size: 36px;
+            font-size: 18px;
             max-width: {max_body_width}px;
             margin: 0 auto;
             padding: 20px;
@@ -251,9 +245,6 @@ async def html_to_image(
         p {{
             text-align: left;
         }}
-        h1 {{ font-size: 32px; }}
-        h2 {{ font-size: 28px; }}
-        p {{ font-size: 20px; }}
 
         .bbcode-spoilerbox__link {{
             text-align: left;
@@ -319,6 +310,19 @@ async def html_to_image(
             --list-style-position: inside;
             --list-padding-left: 0;
             text-align: center;
+        }}
+
+        .bbcode__align-centre .bbcode__image-link {{
+            display: inline-block;
+            font-size: 0;
+            line-height: 0;
+            vertical-align: top;
+        }}
+
+        .bbcode__align-centre .bbcode__image-link > img,
+        .bbcode__align-centre .bbcode__image-link > svg {{
+            display: block;
+            vertical-align: top;
         }}
 
         .bbcode__align-left {{
