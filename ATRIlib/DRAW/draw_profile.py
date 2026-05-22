@@ -287,7 +287,6 @@ async def html_to_image(
             border-radius: 4px;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
             color: #ffffff;  /* 确保文字在色背景上可见 */
-            text-align: center;
         }}
         .well blockquote {{
             border-color: #4a5258;
@@ -324,10 +323,23 @@ async def html_to_image(
             vertical-align: top;
         }}
 
+        .bbcode__image-link {{
+            display: inline-block;
+            max-width: 100%;
+            vertical-align: top;
+        }}
+
         .bbcode__align-centre .bbcode__image-link > img,
         .bbcode__align-centre .bbcode__image-link > svg {{
             display: block;
             vertical-align: top;
+        }}
+
+        .bbcode__image-link > img,
+        .bbcode__image-link > svg {{
+            display: block;
+            max-width: 100% !important;
+            height: auto !important;
         }}
 
         .bbcode__align-left {{
