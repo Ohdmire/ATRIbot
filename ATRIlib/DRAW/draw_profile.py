@@ -16,7 +16,7 @@ from ATRIlib.DRAW.html_renderer import render_html_to_jpeg
 from ATRIlib.TOOLS.Download import download_resource_async
 
 Image.MAX_IMAGE_PIXELS = None
-KEEP_PROFILE_HTML = True
+KEEP_PROFILE_HTML = None
 
 profile_result_path = path_config.profile_result_path
 ERROR_IMAGE_PATH = path_config.ERROR_IMAGE_PATH
