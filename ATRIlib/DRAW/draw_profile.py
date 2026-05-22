@@ -272,6 +272,11 @@ async def html_to_image(
             color: #90EE90;  /* 浅绿色 */
         }}
 
+        .spoiler {{
+            background-color: #000 !important;
+            color: #fff !important;
+        }}
+
         /* Wells */
         .well {{
             min-height: 20px;
@@ -282,7 +287,6 @@ async def html_to_image(
             border-radius: 4px;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
             color: #ffffff;  /* 确保文字在色背景上可见 */
-            text-align: left;  /* 添加这行来保持well内容左对齐 */
         }}
         .well blockquote {{
             border-color: #4a5258;
