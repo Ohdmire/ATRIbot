@@ -111,18 +111,14 @@ def render_html_to_jpeg(
         pdf.close()
 
     if image.size != (final_width, final_height):
-        image = image.crop((0, 0, min(final_width, image.width), min(final_height, image.height)))
-        if image.size != (final_width, final_height):
-            canvas = Image.new("RGB", (final_width, final_height), (255, 255, 255))
-            canvas.paste(image, (0, 0))
-            image = canvas
+        image = image.resize((final_width, final_height), Image.Resampling.LANCZOS)
 
     img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format="JPEG", quality=quality, optimize=True)
+    image.save(img_byte_arr, format="JPEG", quality=quality, optimize=True, subsampling=0)
     if output_path is not None:
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        image.save(output_path, format="JPEG", quality=quality, optimize=True)
+        image.save(output_path, format="JPEG", quality=quality, optimize=True, subsampling=0)
 
     img_byte_arr.seek(0)
     image_size = img_byte_arr.getbuffer().nbytes
