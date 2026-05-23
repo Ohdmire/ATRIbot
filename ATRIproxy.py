@@ -818,7 +818,7 @@ async def format_beatmap_type_ba(qq_id, osuname):
 
 async def format_profile(qq_id, osuname, vs_qq_id, is_yesterday=False):
     if vs_qq_id is not None:
-        userstruct = await get_userstruct_automatically(vs_qq_id, osuname)
+        userstruct = await get_userstruct_automatically(vs_qq_id, osuname, isOther=True)
         user_id = userstruct["id"]
     else:
         userstruct = await get_userstruct_automatically(qq_id, osuname)
