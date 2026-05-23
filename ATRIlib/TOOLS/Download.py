@@ -1,10 +1,8 @@
 import aiohttp
 import asyncio
-from pathlib import Path
 from PIL import Image
 from io import BytesIO
 import logging
-import base64
 import mimetypes
 from ATRIlib.Config import path_config
 
@@ -17,6 +15,35 @@ news_path = path_config.news_path
 
 semaphore = asyncio.Semaphore(16)
 semaphore_small = asyncio.Semaphore(4)
+PROFILE_IMAGE_BACKGROUND = (92, 101, 112)
+
+
+def compress_image_to_jpeg(content, background_color=PROFILE_IMAGE_BACKGROUND):
+    with Image.open(BytesIO(content)) as img:
+        if getattr(img, "is_animated", False):
+            # Animated images, including GIF, are flattened to their last frame.
+            last_frame = None
+            for frame in range(img.n_frames):
+                img.seek(frame)
+                last_frame = img.copy()
+            img = last_frame
+        else:
+            img = img.copy()
+
+    has_alpha = img.mode in ("RGBA", "LA") or (
+        img.mode == "P" and "transparency" in img.info
+    )
+    if has_alpha:
+        rgba = img.convert("RGBA")
+        background = Image.new("RGBA", rgba.size, background_color + (255,))
+        background.alpha_composite(rgba)
+        img = background.convert("RGB")
+    elif img.mode != "RGB":
+        img = img.convert("RGB")
+
+    img_io = BytesIO()
+    img.save(img_io, format='JPEG', quality=95, optimize=True)
+    return img_io.getvalue()
 
 
 # 下载ppy的资源(图片)
@@ -37,19 +64,11 @@ async def download_resource(session, url):
                         logging.info(f"下载了SVG文件: {url}")
                         return url, content, 'svg'
 
-                    # 检查是否为GIF文件
-                    if mime_type == 'image/gif' or content_type.startswith('image/gif'):
-                        logging.info(f"下载了GIF文件: {url}")
-                        return url, content, 'gif'
-
                     # 如果是其他类型的图片，进行压缩
-                    if content_type.startswith('image'):
-                        img = Image.open(BytesIO(content))
-                        if img.mode in ('RGBA', 'P'):
-                            img = img.convert('RGB')
-                        img_io = BytesIO()
-                        img.save(img_io, format='JPEG', quality=95, optimize=True)
-                        content = img_io.getvalue()
+                    if content_type.startswith('image') or (
+                        mime_type and mime_type.startswith('image/')
+                    ):
+                        content = compress_image_to_jpeg(content)
                         logging.info(f"下载资源 {url} 成功，压缩后大小为 {len(content)} 字节")
                         return url, content, 'image'
                     return url, content, 'other'

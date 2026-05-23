@@ -20,6 +20,7 @@
 OSU_CLIENT_ID=your_osu_client_id
 OSU_CLIENT_SECRET=your_osu_client_secret
 MONGO_URI=mongodb://mongodb:27017/osu
+DEBUG=false
 ```
 
 # 特别鸣谢
@@ -32,4 +33,3 @@ https://github.com/huhuibin147/interbotAPI
 ## 大土豪
 
 [Pouxba](https://osu.ppy.sh/users/16378561) 138元
-

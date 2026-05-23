@@ -1,43 +1,22 @@
 import hashlib
-import io
 import logging
 import math
 import os
 import shutil
-from io import BytesIO
-from pathlib import Path
-from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
-from PIL import Image, ImageSequence
+from PIL import Image
 
 from ATRIlib.Config import path_config
+from ATRIlib.Config.config import debug
 from ATRIlib.DRAW.html_renderer import render_html_to_jpeg
 from ATRIlib.TOOLS.Download import download_resource_async
 
 Image.MAX_IMAGE_PIXELS = None
-KEEP_PROFILE_HTML = None
+KEEP_PROFILE_HTML = debug
 
 profile_result_path = path_config.profile_result_path
 ERROR_IMAGE_PATH = path_config.ERROR_IMAGE_PATH
-
-
-def extract_last_frame_from_gif(gif_content):
-    """从GIF内容中提取最后一帧"""
-    with Image.open(io.BytesIO(gif_content)) as img:
-        # 如果不是GIF,直接返回原图
-        if not getattr(img, "is_animated", False):
-            return gif_content
-
-        # 获取最后一帧
-        last_frame = None
-        for frame in ImageSequence.Iterator(img):
-            last_frame = frame.copy()
-
-        # 将最后一帧转换为bytes
-        output = io.BytesIO()
-        last_frame.save(output, format="PNG")
-        return output.getvalue()
 
 
 async def process_html(html_string):
@@ -101,9 +80,7 @@ async def process_html(html_string):
 
     # 检查本地是否已有资源，如果没有则添加到下载列表
     for url, tag, attr in resources_to_update:
-        file_ext = os.path.splitext(urlparse(url).path)[1].lower() or ".bin"
-        filename = hashlib.md5(url.encode()).hexdigest() + file_ext
-        # 特殊处理 如果是gif 则直接找转换过的png
+        filename = hashlib.md5(url.encode()).hexdigest() + ".bin"
         local_path = resource_dir / filename
 
         if not local_path.exists():
@@ -158,24 +135,9 @@ async def process_html(html_string):
                         # 如果处理失败，保留原始URL
                         logging.info(f"保留原始SVG URL: {url}")
                         tag[attr] = url
-                elif file_type == "gif":
-                    # GIF 处理
-                    content = extract_last_frame_from_gif(content)
-                    file_ext = ".bin"
-                    filename = hashlib.md5(url.encode()).hexdigest() + file_ext
-                    local_path = resource_dir / filename
-
-                    with open(local_path, "wb") as f:
-                        f.write(content)
-
-                    tag[attr] = f"resources/{filename}"
-                    logging.info(
-                        f"更新链接: {url} -> resources/{filename} (GIF转换为PNG)"
-                    )
                 else:
                     # 其他资源的处理
-                    file_ext = os.path.splitext(urlparse(url).path)[1].lower() or ".bin"
-                    filename = hashlib.md5(url.encode()).hexdigest() + file_ext
+                    filename = hashlib.md5(url.encode()).hexdigest() + ".bin"
                     local_path = resource_dir / filename
 
                     with open(local_path, "wb") as f:
@@ -209,7 +171,7 @@ async def html_to_image(
         </div>
         '''
     username_html = (
-        f'<div class="user-name" style="text-align: center; margin-bottom: 20px;">{username}</div>'
+        f'<div class="user-name" style="text-align: center; font-size: 32px; margin-bottom: 20px;">{username}</div>'
         if username
         else ""
     )

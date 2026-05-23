@@ -11,6 +11,16 @@ deepseek_key = os.getenv('DEEPSEEK_KEY')
 pppclientid = os.getenv('PPP_CLIENT_ID')
 pppclientsecret = os.getenv('PPP_CLIENT_SECRET')
 
+
+def _get_bool_env(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
+debug = _get_bool_env('DEBUG')
+
 try:
     with open("translate_prompt.txt", 'r') as f:
         translate_prompt = f.read()
