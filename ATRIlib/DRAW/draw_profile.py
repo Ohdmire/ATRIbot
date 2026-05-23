@@ -185,7 +185,7 @@ async def html_to_image(
     css = f"""
     <style>
         body {{
-            font-family: 'Noto Sans CJK', "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Noto Color Emoji";
+            font-family: 'Noto Sans CJK', "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-size: 18px;
             max-width: {max_body_width}px;
             margin: 0 auto;
