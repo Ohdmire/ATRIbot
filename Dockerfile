@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     inkscape \
     fonts-noto-cjk \
+    fonts-noto-color-emoji \
     libglib2.0-0 \
     libpango-1.0-0 \
     libpangoft2-1.0-0 \
@@ -34,10 +35,6 @@ COPY requirements.txt .
 # 使用pip镜像并安装Python依赖
 RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple \
     && pip install --no-cache-dir -r requirements.txt
-
-# 设置时区为Asia/Shanghai
-ENV TZ=Asia/Shanghai
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 复制项目文件到工作目录
 COPY . .
