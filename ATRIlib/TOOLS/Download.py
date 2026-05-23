@@ -16,6 +16,8 @@ news_path = path_config.news_path
 semaphore = asyncio.Semaphore(16)
 semaphore_small = asyncio.Semaphore(4)
 PROFILE_IMAGE_BACKGROUND = (92, 101, 112)
+OSU_WEB_BASE_URL = "https://osu.ppy.sh"
+OSU_WEB_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0"
 
 
 def compress_image_to_jpeg(content, background_color=PROFILE_IMAGE_BACKGROUND):
@@ -82,6 +84,92 @@ async def download_resource_async(resources_to_download):
     async with aiohttp.ClientSession() as session:
         tasks = [download_resource(session, url) for url, _, _ in resources_to_download]
         return await asyncio.gather(*tasks)
+
+
+def normalize_osu_session_cookie(value):
+    cookie = value.strip()
+    if not cookie:
+        return ""
+    if cookie.startswith("osu_session=") or "; osu_session=" in cookie or ";osu_session=" in cookie:
+        return cookie
+    if cookie.startswith("Cookie:"):
+        cookie = cookie.removeprefix("Cookie:").strip()
+        if cookie.startswith("osu_session=") or "; osu_session=" in cookie or ";osu_session=" in cookie:
+            return cookie
+        return cookie
+    return f"osu_session={cookie}"
+
+
+async def download_replay_file_from_web(score_id, target_path, osu_session):
+    if not osu_session:
+        raise ValueError("OSU_TOKEN 未设置")
+    url = f"{OSU_WEB_BASE_URL}/scores/{score_id}/download"
+    headers = {
+        "Accept": "application/octet-stream",
+        "Cookie": normalize_osu_session_cookie(osu_session),
+        "Referer": f"{OSU_WEB_BASE_URL}/scores/{score_id}",
+        "User-Agent": OSU_WEB_USER_AGENT,
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=60)) as response:
+            if response.status == 404:
+                raise ValueError(f"score {score_id} 没有可下载 replay")
+            if response.status >= 400:
+                text = await response.text()
+                raise ValueError(f"replay 下载失败: HTTP {response.status} {text[:120]}")
+            content_type = response.headers.get("content-type", "")
+            if "text/html" in content_type:
+                raise ValueError(f"replay 下载返回 HTML，请检查 OSU_TOKEN 浏览器 cookie 是否有效: score {score_id}")
+            content = await response.read()
+    if not content:
+        raise ValueError(f"score {score_id} replay 下载结果为空")
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    partial = target_path.with_suffix(target_path.suffix + ".part")
+    partial.write_bytes(content)
+    partial.replace(target_path)
+
+
+async def download_replay_file_from_api(score_id, target_path, bearer_token):
+    if not bearer_token:
+        raise ValueError("API v2 token 不存在")
+    url = f"{OSU_WEB_BASE_URL}/api/v2/scores/{score_id}/download"
+    headers = {
+        "Accept": "application/octet-stream",
+        "Authorization": f"Bearer {bearer_token}",
+        "x-api-version": "20240529",
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=60)) as response:
+            if response.status == 404:
+                raise ValueError(f"score {score_id} 没有可下载 replay")
+            if response.status >= 400:
+                text = await response.text()
+                raise ValueError(f"API v2 replay 下载失败: HTTP {response.status} {text[:120]}")
+            content_type = response.headers.get("content-type", "")
+            if "text/html" in content_type:
+                raise ValueError(f"API v2 replay 下载返回 HTML: score {score_id}")
+            content = await response.read()
+    if not content:
+        raise ValueError(f"score {score_id} API v2 replay 下载结果为空")
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    partial = target_path.with_suffix(target_path.suffix + ".part")
+    partial.write_bytes(content)
+    partial.replace(target_path)
+
+
+async def download_replay_file(score_id, target_path, osu_session, bearer_token=None):
+    web_error = None
+    try:
+        await download_replay_file_from_web(score_id, target_path, osu_session)
+        return "web"
+    except Exception as e:
+        web_error = e
+
+    try:
+        await download_replay_file_from_api(score_id, target_path, bearer_token)
+        return "api_v2"
+    except Exception as e:
+        raise ValueError(f"replay 下载失败，web: {web_error}; api_v2: {e}")
 
 
 # 下载谱面

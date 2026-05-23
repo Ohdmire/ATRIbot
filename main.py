@@ -73,6 +73,7 @@ async def app_lifespan(app: FastAPI):
         "data",
         "data/beatmaps",
         "data/beatmaps_tmp",
+        "data/replay",
         "data/cover",
         "data/avatar",
         "logs",
@@ -416,6 +417,11 @@ async def fetch_choke(item:IName):
 @app.api_route("/qq/bpsim", methods=["GET", "POST"])
 async def fetch_bpsim(item:IName):
     result = await ATRIproxy.format_bpsim(item.qq_id, item.osuname, item.pp_range)
+    return str(result)
+
+@app.api_route("/qq/replay", methods=["GET", "POST"])
+async def fetch_replay_similarity(item:IName):
+    result = await ATRIproxy.format_replay_similarity(item.qq_id, item.vs_qq_id, item.osuname, item.vsname)
     return str(result)
 
 @app.api_route("/qq/joindate", methods=["GET", "POST"])

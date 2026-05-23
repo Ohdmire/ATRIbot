@@ -10,6 +10,7 @@ mongodb_uri = os.getenv('MONGO_URI')
 deepseek_key = os.getenv('DEEPSEEK_KEY')
 pppclientid = os.getenv('PPP_CLIENT_ID')
 pppclientsecret = os.getenv('PPP_CLIENT_SECRET')
+osu_token = os.getenv('OSU_TOKEN')
 
 
 def _get_bool_env(name, default=False):

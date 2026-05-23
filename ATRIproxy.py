@@ -56,6 +56,7 @@ from ATRIlib.profile import calculate_profile
 from ATRIlib.monitor import monitor_profile
 
 from ATRIlib.lazerupdate import get_lazer_update
+from ATRIlib.replay_similarity import calculate_replay_similarity
 
 from ATRIlib.DRAW.draw_medal import draw_special_medal
 from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
@@ -195,6 +196,30 @@ async def format_bpsim(qq_id, osuname, pp_range):
         result_text += f'\n{i["sim_count"]}张 --> {i["user_data"]["username"]}'
 
     return result_text
+
+async def format_replay_similarity(qq_id, vs_qq_id, osuname, vsname):
+    userstruct1 = await get_userstruct_automatically(qq_id, osuname)
+    userstruct2 = await get_userstruct_automatically(vs_qq_id, vsname, isOther=True)
+
+    raw = await calculate_replay_similarity(userstruct1, userstruct2)
+    left = raw["left"]
+    right = raw["right"]
+    logging.info(
+        "replay similarity %s(%s score=%s bid=%s) vs %s(%s score=%s bid=%s): similarity=%.2f",
+        left["username"],
+        left["source"],
+        left["score_id"],
+        left["beatmap_id"],
+        right["username"],
+        right["source"],
+        right["score_id"],
+        right["beatmap_id"],
+        raw["similarity"],
+    )
+    return (
+        f'{left["username"]} 与 {right["username"]} 的 replay 检测\n'
+        f'相似度: {raw["similarity"]:.2f}%'
+    )
 
 def format_job_shift_database():
 
@@ -854,10 +879,3 @@ def format_bind(qq_id, osuname):
     raw = update_bind_info(qq_id,osuname)
 
     return raw
-
-
-
-
-
-
-

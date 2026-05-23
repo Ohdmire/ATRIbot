@@ -54,3 +54,5 @@ python-dotenv==1.0.1
 weasyprint==62.3
 pydyf==0.10.0
 pypdfium2==4.30.0
+slider
+onnxruntime==1.20.1
