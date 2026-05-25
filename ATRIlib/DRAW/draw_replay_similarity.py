@@ -105,10 +105,14 @@ def draw_replay_similarity_distance(data):
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_color("#d0d7de")
     ax.spines["bottom"].set_color("#d0d7de")
-    max_x = max(float(np.max(np.abs(xs))) if len(xs) else 0.0, 0.05)
-    max_y = max(float(np.max(ys)) if len(ys) else 0.0, 0.05)
-    ax.set_xlim(-max_x * 1.2, max_x * 1.2)
-    ax.set_ylim(0, max_y * 1.2)
+    max_extent = max(
+        float(np.max(np.abs(xs))) if len(xs) else 0.0,
+        float(np.max(np.abs(ys))) if len(ys) else 0.0,
+        0.05,
+    )
+    ax.set_xlim(-max_extent * 1.2, max_extent * 1.2)
+    ax.set_ylim(0, max_extent * 1.2)
+    ax.set_aspect("equal", adjustable="box")
 
     img_bytes = BytesIO()
     plt.savefig(
