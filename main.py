@@ -492,7 +492,7 @@ async def fetch_replay_similarity(item: IName):
 @app.api_route("/qq/replaygroup", methods=["GET", "POST"])
 async def fetch_group_replay_similarity(item: IName):
     result = await ATRIproxy.format_group_replay_similarity(
-        item.qq_id, item.group_id, item.osuname
+        item.qq_id, item.group_id, item.osuname, item.group_member_list
     )
     return str(result)
 

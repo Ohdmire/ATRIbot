@@ -237,7 +237,10 @@ async def format_replay_similarity(qq_id, vs_qq_id, osuname, vsname):
     )
 
 
-async def format_group_replay_similarity(qq_id, group_id, osuname):
+async def format_group_replay_similarity(qq_id, group_id, osuname, group_member_list):
+    if group_member_list:
+        format_job_update_group_list(group_id, group_member_list)
+
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     raw = await calculate_group_replay_similarity(userstruct, group_id)
     if not raw["comparisons"]:
