@@ -44,7 +44,10 @@ def draw_replay_similarity_distance(data):
         label=data["base"]["username"],
     )
     label_positions = np.linspace(0.92, 0.08, len(shown)) if shown else []
-    for item, x, y, similarity, label_y in zip(shown, xs, ys, similarities, label_positions):
+    for index, (item, x, y, similarity, label_y) in enumerate(
+        zip(shown, xs, ys, similarities, label_positions),
+        start=1,
+    ):
         color = "#2d7dd2" if similarity < 0 else "#d64f6f"
         ax.scatter(
             [x],
@@ -56,12 +59,22 @@ def draw_replay_similarity_distance(data):
             alpha=0.92,
             zorder=3,
         )
-        ax.annotate(
-            f"{item['player']['username']} ({similarity:.1f}%)",
-            xy=(x, y),
-            xycoords="data",
-            xytext=(1.04, label_y),
-            textcoords=ax.transAxes,
+        ax.text(
+            x,
+            y,
+            str(index),
+            ha="center",
+            va="center",
+            fontsize=8,
+            color="#ffffff",
+            fontweight="bold",
+            zorder=4,
+        )
+        ax.text(
+            1.04,
+            label_y,
+            f"{index}. {item['player']['username']} ({similarity:.1f}%)",
+            transform=ax.transAxes,
             ha="left",
             va="center",
             fontsize=9,
@@ -72,15 +85,7 @@ def draw_replay_similarity_distance(data):
                 "edgecolor": color,
                 "alpha": 0.92,
             },
-            arrowprops={
-                "arrowstyle": "-",
-                "color": color,
-                "linewidth": 0.8,
-                "alpha": 0.65,
-                "shrinkA": 0,
-                "shrinkB": 4,
-            },
-            annotation_clip=False,
+            clip_on=False,
         )
     ax.text(
         0,
