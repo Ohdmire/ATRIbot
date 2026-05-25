@@ -255,7 +255,7 @@ async def format_group_replay_similarity(qq_id, group_id, osuname):
     result_text = f"{raw['base']['username']} 在本群 replay 相似度\n"
     result_text += "\n".join(
         f"{item['similarity']:.2f}%-->{item['player']['username']}"
-        for item in raw["comparisons"][:5]
+        for item in raw["comparisons"][:10]
     )
     return result_text
 
