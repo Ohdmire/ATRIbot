@@ -10,6 +10,8 @@ import numpy as np
 
 from ATRIlib.API import PPYapiv2
 from ATRIlib.Config.config import osu_token
+from ATRIlib.DB.Mongodb import db_user
+from ATRIlib.DB.pipeline_getgroupusers import get_group_users_id_list
 from ATRIlib.TOOLS.Download import download_replay_file, fetch_beatmap_file_async_one
 from ATRIlib.TOOLS.ReplayFeature import extract_replay_feature
 
@@ -71,6 +73,14 @@ def _replay_metadata_path(replay_path):
 
 def _feature_path_for_replay(replay_path):
     return replay_path.with_suffix(".npz")
+
+
+def _beatmap_id_from_path(replay_path):
+    stem_parts = replay_path.stem.split("_")
+    for part in reversed(stem_parts):
+        if part.isdigit():
+            return part
+    return None
 
 
 def _load_json(path):
@@ -206,6 +216,45 @@ async def _ensure_feature(user_id, username):
     return replay_data
 
 
+async def _ensure_existing_feature(user_id, username):
+    replay_path = _existing_replay(user_id)
+    if replay_path is None:
+        raise ValueError("没有本地 replay")
+
+    feature_path = _feature_path_for_replay(replay_path)
+    metadata = _load_json(_replay_metadata_path(replay_path))
+    beatmap_id = str(metadata.get("beatmap_id") or _beatmap_id_from_path(replay_path) or "")
+    if feature_path.exists():
+        return {
+            "user_id": str(user_id),
+            "username": username,
+            "replay_path": replay_path,
+            "feature_path": feature_path,
+            "score_id": str(metadata.get("score_id", "unknown")),
+            "beatmap_id": beatmap_id or "unknown",
+            "source": "cache",
+            "metadata": metadata,
+        }
+
+    if not beatmap_id:
+        raise ValueError("本地 replay 缺少 beatmap_id metadata")
+    beatmap_path = BEATMAP_DIR / f"{beatmap_id}.osu"
+    if not beatmap_path.exists():
+        raise ValueError(f"本地缺少谱面文件: {beatmap_id}")
+
+    await asyncio.to_thread(_extract_feature_sync, user_id, replay_path, beatmap_path, feature_path)
+    return {
+        "user_id": str(user_id),
+        "username": username,
+        "replay_path": replay_path,
+        "feature_path": feature_path,
+        "score_id": str(metadata.get("score_id", "unknown")),
+        "beatmap_id": beatmap_id,
+        "source": "cache",
+        "metadata": metadata,
+    }
+
+
 def _sample_windows(frames, max_windows):
     if frames.shape[0] == max_windows:
         return frames
@@ -265,6 +314,24 @@ def _cosine(left, right):
     return float(left @ right / (np.linalg.norm(left) * np.linalg.norm(right) + 1e-8))
 
 
+def _normalize_embedding(embedding):
+    return embedding / (np.linalg.norm(embedding) + 1e-8)
+
+
+def _relative_2d_coordinates(base_embedding, embeddings):
+    base = _normalize_embedding(base_embedding)
+    normalized = np.asarray([_normalize_embedding(embedding) for embedding in embeddings], dtype=np.float32)
+    deltas = normalized - base[None, :]
+    if deltas.shape[0] == 1:
+        return np.array([[float(np.linalg.norm(deltas[0])), 0.0]], dtype=np.float32)
+
+    _, _, vh = np.linalg.svd(deltas, full_matrices=False)
+    axes = vh[:2]
+    if axes.shape[0] == 1:
+        axes = np.vstack([axes, np.zeros_like(axes[0])])
+    return (deltas @ axes.T).astype(np.float32)
+
+
 def _asset_result(data):
     return {
         "user_id": data["user_id"],
@@ -275,6 +342,11 @@ def _asset_result(data):
         "score_id": data["score_id"],
         "source": data["source"],
     }
+
+
+def _user_name_from_db(user_id):
+    user = db_user.find_one({"id": int(user_id)}) or db_user.find_one({"id": str(user_id)}) or {}
+    return user.get("username") or str(user_id)
 
 
 async def calculate_replay_similarity(user1, user2):
@@ -300,5 +372,65 @@ async def calculate_replay_similarity(user1, user2):
         "is_same_player": bool(score >= threshold),
         "delta_percent": (score - threshold) * 100.0,
         "raw_score": score,
+        "method": "model",
+    }
+
+
+async def calculate_group_replay_similarity(user, group_id):
+    REPLAY_DIR.mkdir(parents=True, exist_ok=True)
+    model_path = _available_model_path()
+    if model_path is None:
+        raise ValueError("assets/models 中没有找到 replay 相似度模型")
+
+    base = await _ensure_feature(str(user["id"]), user["username"])
+    base_embedding = await asyncio.to_thread(_model_embedding, base["feature_path"], model_path)
+    threshold = float(_load_model_metadata(model_path).get("threshold", 0.0))
+
+    group_user_ids = [str(user_id) for user_id in get_group_users_id_list(group_id)]
+    skipped = []
+    candidates = []
+    for group_user_id in group_user_ids:
+        if group_user_id == str(user["id"]):
+            continue
+        username = _user_name_from_db(group_user_id)
+        try:
+            candidates.append(await _ensure_existing_feature(group_user_id, username))
+        except Exception as e:
+            skipped.append({"user_id": group_user_id, "username": username, "reason": str(e)})
+
+    if not candidates:
+        return {
+            "base": _asset_result(base),
+            "comparisons": [],
+            "skipped": skipped,
+            "threshold": threshold,
+            "method": "model",
+        }
+
+    embeddings = await asyncio.gather(
+        *[asyncio.to_thread(_model_embedding, candidate["feature_path"], model_path) for candidate in candidates]
+    )
+    comparisons = []
+    coordinates = _relative_2d_coordinates(base_embedding, embeddings)
+    for candidate, embedding, coordinate in zip(candidates, embeddings, coordinates):
+        score = _cosine(base_embedding, embedding)
+        comparisons.append(
+            {
+                "player": _asset_result(candidate),
+                "similarity": score * 100.0,
+                "distance": 1.0 - score,
+                "plot_distance": float(np.linalg.norm(coordinate)),
+                "x": float(coordinate[0]),
+                "y": float(coordinate[1]),
+                "raw_score": score,
+                "is_same_player": bool(score >= threshold),
+            }
+        )
+    comparisons.sort(key=lambda item: item["distance"])
+    return {
+        "base": _asset_result(base),
+        "comparisons": comparisons,
+        "skipped": skipped,
+        "threshold": threshold,
         "method": "model",
     }
