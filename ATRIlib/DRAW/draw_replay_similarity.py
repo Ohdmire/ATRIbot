@@ -100,7 +100,7 @@ def draw_replay_similarity_distance(data):
     ax.set_xlabel("Embedding PCA X relative to player", fontsize=12)
     ax.set_ylabel("Embedding PCA Y relative to player", fontsize=12)
     ax.set_title(
-        f"{data['base']['username']} 为原点的本群 replay 上半圆距离图",
+        f"{data['base']['username']} 在本群 replay 相似度距离图",
         fontsize=18,
         pad=16,
         color="#1f2933",
