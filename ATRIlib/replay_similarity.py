@@ -318,37 +318,6 @@ def _normalize_embedding(embedding):
     return embedding / (np.linalg.norm(embedding) + 1e-8)
 
 
-def _relative_2d_coordinates(base_embedding, embeddings):
-    base = _normalize_embedding(base_embedding)
-    normalized = np.asarray([_normalize_embedding(embedding) for embedding in embeddings], dtype=np.float32)
-    deltas = normalized - base[None, :]
-    radii = np.linalg.norm(deltas, axis=1)
-    if deltas.shape[0] == 1:
-        radius = float(radii[0])
-        return np.array([[0.0, radius]], dtype=np.float32)
-
-    _, _, vh = np.linalg.svd(deltas, full_matrices=False)
-    axes = vh[:2]
-    if axes.shape[0] == 1:
-        axes = np.vstack([axes, np.zeros_like(axes[0])])
-    projected = deltas @ axes.T
-    projected_angles = np.arctan2(projected[:, 1], projected[:, 0])
-
-    layout_angles = np.empty_like(projected_angles)
-    order = np.argsort(projected_angles)
-    angle_min = np.deg2rad(5.0)
-    angle_max = np.deg2rad(175.0)
-    for rank, index in enumerate(order):
-        layout_angles[index] = angle_min + (angle_max - angle_min) * rank / max(len(order) - 1, 1)
-
-    return np.column_stack(
-        [
-            radii * np.cos(layout_angles),
-            radii * np.sin(layout_angles),
-        ]
-    ).astype(np.float32)
-
-
 def _asset_result(data):
     return {
         "user_id": data["user_id"],
@@ -428,22 +397,18 @@ async def calculate_group_replay_similarity(user, group_id):
         *[asyncio.to_thread(_model_embedding, candidate["feature_path"], model_path) for candidate in candidates]
     )
     comparisons = []
-    coordinates = _relative_2d_coordinates(base_embedding, embeddings)
-    for candidate, embedding, coordinate in zip(candidates, embeddings, coordinates):
+    for candidate, embedding in zip(candidates, embeddings):
         score = _cosine(base_embedding, embedding)
         comparisons.append(
             {
                 "player": _asset_result(candidate),
                 "similarity": score * 100.0,
                 "distance": 1.0 - score,
-                "plot_distance": float(np.linalg.norm(coordinate)),
-                "x": float(coordinate[0]),
-                "y": float(coordinate[1]),
                 "raw_score": score,
                 "is_same_player": bool(score >= threshold),
             }
         )
-    comparisons.sort(key=lambda item: item["distance"])
+    comparisons.sort(key=lambda item: item["similarity"], reverse=True)
     return {
         "base": _asset_result(base),
         "comparisons": comparisons,

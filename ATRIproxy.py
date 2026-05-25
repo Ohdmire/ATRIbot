@@ -28,7 +28,6 @@ from ATRIlib.changelog import calculate_changelog_draw, get_changelog_status
 from ATRIlib.choke import calculate_choke_pp
 from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
 from ATRIlib.DRAW.draw_medal import draw_special_medal
-from ATRIlib.DRAW.draw_replay_similarity import draw_replay_similarity_distance
 from ATRIlib.finddiff import find_diff, find_diff_details
 from ATRIlib.github import get_commit_content
 from ATRIlib.group import update_group_info
@@ -61,7 +60,10 @@ from ATRIlib.myjobs import (
 from ATRIlib.news import calculate_news
 from ATRIlib.profile import calculate_profile
 from ATRIlib.pttpp import calculate_ptt_pp
-from ATRIlib.replay_similarity import calculate_group_replay_similarity, calculate_replay_similarity
+from ATRIlib.replay_similarity import (
+    calculate_group_replay_similarity,
+    calculate_replay_similarity,
+)
 from ATRIlib.score import calculate_pr_score, calculate_score, update_scores_to_db
 from ATRIlib.tdba import calculate_tdba, calculate_tdba_sim
 from ATRIlib.TOOLS.CommonTools import sort_dict_by_value
@@ -240,7 +242,7 @@ async def format_group_replay_similarity(qq_id, group_id, osuname):
     raw = await calculate_group_replay_similarity(userstruct, group_id)
     if not raw["comparisons"]:
         return (
-            f"{raw['base']['username']} 与本群 replay 检测\n"
+            f"{raw['base']['username']} 在本群 replay 检测\n"
             f"没有找到可比较的本地 replay，已跳过 {len(raw['skipped'])} 人"
         )
     logging.info(
@@ -250,7 +252,12 @@ async def format_group_replay_similarity(qq_id, group_id, osuname):
         len(raw["comparisons"]),
         len(raw["skipped"]),
     )
-    return draw_replay_similarity_distance(raw)
+    result_text = f"{raw['base']['username']} 在本群 replay 相似度\n"
+    result_text += "\n".join(
+        f"{item['similarity']:.2f}%-->{item['player']['username']}"
+        for item in raw["comparisons"][:5]
+    )
+    return result_text
 
 
 def format_job_shift_database():

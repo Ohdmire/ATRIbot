@@ -491,13 +491,10 @@ async def fetch_replay_similarity(item: IName):
 
 @app.api_route("/qq/replaygroup", methods=["GET", "POST"])
 async def fetch_group_replay_similarity(item: IName):
-    img_bytes = await ATRIproxy.format_group_replay_similarity(
+    result = await ATRIproxy.format_group_replay_similarity(
         item.qq_id, item.group_id, item.osuname
     )
-    if type(img_bytes) is BytesIO:
-        return StreamingResponse(img_bytes, media_type="image/jpeg")
-    else:
-        return str(img_bytes)
+    return str(result)
 
 
 @app.api_route("/qq/joindate", methods=["GET", "POST"])
