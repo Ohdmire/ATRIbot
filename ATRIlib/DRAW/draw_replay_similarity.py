@@ -13,18 +13,17 @@ def draw_replay_similarity_distance(data):
     if not comparisons:
         raise ValueError("没有可绘制的 replay 相似度数据")
 
-    shown = comparisons
     negative_examples = sorted(
         [item for item in comparisons if item["similarity"] < 0],
         key=lambda item: item["similarity"],
     )[:10]
-    labeled = []
-    labeled_ids = set()
+    shown = []
+    shown_ids = set()
     for item in comparisons[:10] + negative_examples:
         label_id = item["player"]["user_id"]
-        if label_id not in labeled_ids:
-            labeled.append(item)
-            labeled_ids.add(label_id)
+        if label_id not in shown_ids:
+            shown.append(item)
+            shown_ids.add(label_id)
     similarities = np.array([item["similarity"] for item in shown], dtype=float)
     xs = np.array([item["x"] for item in shown], dtype=float)
     ys = np.array([item["y"] for item in shown], dtype=float)
@@ -44,26 +43,19 @@ def draw_replay_similarity_distance(data):
         zorder=4,
         label=data["base"]["username"],
     )
-    scatter = ax.scatter(
+    colors = np.where(similarities < 0, "#2d7dd2", "#d64f6f")
+    ax.scatter(
         xs,
         ys,
         s=88,
-        c=similarities,
-        cmap="coolwarm",
-        vmin=-100,
-        vmax=100,
+        c=colors,
         edgecolors="#1f2933",
         linewidths=0.7,
         alpha=0.92,
         zorder=3,
     )
-    colorbar = fig.colorbar(scatter, ax=ax, fraction=0.046, pad=0.04)
-    colorbar.set_label("Cosine similarity (%)", fontsize=11)
 
-    labeled_xs = np.array([item["x"] for item in labeled], dtype=float)
-    labeled_ys = np.array([item["y"] for item in labeled], dtype=float)
-    labeled_similarities = np.array([item["similarity"] for item in labeled], dtype=float)
-    for item, x, y, similarity in zip(labeled, labeled_xs, labeled_ys, labeled_similarities):
+    for item, x, y, similarity in zip(shown, xs, ys, similarities):
         ax.text(
             x,
             y,
