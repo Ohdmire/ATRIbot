@@ -322,14 +322,31 @@ def _relative_2d_coordinates(base_embedding, embeddings):
     base = _normalize_embedding(base_embedding)
     normalized = np.asarray([_normalize_embedding(embedding) for embedding in embeddings], dtype=np.float32)
     deltas = normalized - base[None, :]
+    radii = np.linalg.norm(deltas, axis=1)
     if deltas.shape[0] == 1:
-        return np.array([[float(np.linalg.norm(deltas[0])), 0.0]], dtype=np.float32)
+        radius = float(radii[0])
+        return np.array([[0.0, radius]], dtype=np.float32)
 
     _, _, vh = np.linalg.svd(deltas, full_matrices=False)
     axes = vh[:2]
     if axes.shape[0] == 1:
         axes = np.vstack([axes, np.zeros_like(axes[0])])
-    return (deltas @ axes.T).astype(np.float32)
+    projected = deltas @ axes.T
+    projected_angles = np.arctan2(projected[:, 1], projected[:, 0])
+
+    layout_angles = np.empty_like(projected_angles)
+    order = np.argsort(projected_angles)
+    angle_min = np.deg2rad(5.0)
+    angle_max = np.deg2rad(175.0)
+    for rank, index in enumerate(order):
+        layout_angles[index] = angle_min + (angle_max - angle_min) * rank / max(len(order) - 1, 1)
+
+    return np.column_stack(
+        [
+            radii * np.cos(layout_angles),
+            radii * np.sin(layout_angles),
+        ]
+    ).astype(np.float32)
 
 
 def _asset_result(data):

@@ -17,10 +17,10 @@ def draw_replay_similarity_distance(data):
     negative_examples = sorted(
         [item for item in comparisons if item["similarity"] < 0],
         key=lambda item: item["similarity"],
-    )[:30]
+    )[:10]
     labeled = []
     labeled_ids = set()
-    for item in comparisons[:30] + negative_examples:
+    for item in comparisons[:10] + negative_examples:
         label_id = item["player"]["user_id"]
         if label_id not in labeled_ids:
             labeled.append(item)
@@ -86,7 +86,7 @@ def draw_replay_similarity_distance(data):
     ax.set_xlabel("Embedding PCA X relative to player", fontsize=12)
     ax.set_ylabel("Embedding PCA Y relative to player", fontsize=12)
     ax.set_title(
-        f"{data['base']['username']} 为原点的本群 replay 二维距离图",
+        f"{data['base']['username']} 为原点的本群 replay 上半圆距离图",
         fontsize=18,
         pad=16,
         color="#1f2933",
@@ -111,7 +111,7 @@ def draw_replay_similarity_distance(data):
         0.05,
     )
     ax.set_xlim(-max_extent * 1.2, max_extent * 1.2)
-    ax.set_ylim(-max_extent * 1.2, max_extent * 1.2)
+    ax.set_ylim(0, max_extent * 1.2)
     ax.set_aspect("equal", adjustable="box")
 
     img_bytes = BytesIO()
