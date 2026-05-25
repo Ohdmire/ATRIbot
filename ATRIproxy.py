@@ -232,7 +232,7 @@ async def format_replay_similarity(qq_id, vs_qq_id, osuname, vsname):
         raw["similarity"],
     )
     return (
-        f"{left['username']} 与 {right['username']} 的 replay 检测\n"
+        f"{left['username']} 与 {right['username']} 的 replay 轨迹\n"
         f"相似度: {raw['similarity']:.2f}%"
     )
 
@@ -252,7 +252,7 @@ async def format_group_replay_similarity(qq_id, group_id, osuname):
         len(raw["comparisons"]),
         len(raw["skipped"]),
     )
-    result_text = f"{raw['base']['username']} 在本群 replay 相似度\n"
+    result_text = f"{raw['base']['username']} 在本群 replay 轨迹相似度\n"
     result_text += "\n".join(
         f"{item['similarity']:.2f}%-->{item['player']['username']}"
         for item in raw["comparisons"][:10]
