@@ -124,3 +124,42 @@ def render_html_to_jpeg(
     image_size = img_byte_arr.getbuffer().nbytes
     logging.info(f"图片大小: {image_size / 1024 / 1024:.2f} MB")
     return img_byte_arr
+
+
+def render_html_to_png(
+    html_content: str,
+    width: int,
+    output_path: str | Path | None = None,
+    base_url: str | Path | None = None,
+    max_height: int = MAX_RENDER_HEIGHT,
+) -> io.BytesIO:
+    body_height = _measure_height(html_content, base_url, width)
+    scale = min(1, max_height / body_height)
+    final_height = max(1, min(max_height, int(body_height * scale + 0.999)))
+    final_width = max(1, int(width * scale + 0.999))
+
+    pdf_bytes = HTML(string=html_content, base_url=base_url).write_pdf(
+        stylesheets=[_page_css(width, int(body_height + 0.999))]
+    )
+    pdf = pdfium.PdfDocument(pdf_bytes)
+    try:
+        page = pdf[0]
+        bitmap = page.render(scale=PDF_TO_PX_SCALE * scale)
+        image = bitmap.to_pil().convert("RGBA")
+    finally:
+        pdf.close()
+
+    if image.size != (final_width, final_height):
+        image = image.resize((final_width, final_height), Image.Resampling.LANCZOS)
+
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format="PNG", optimize=True)
+    if output_path is not None:
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        image.save(output_path, format="PNG", optimize=True)
+
+    img_byte_arr.seek(0)
+    image_size = img_byte_arr.getbuffer().nbytes
+    logging.info(f"图片大小: {image_size / 1024 / 1024:.2f} MB")
+    return img_byte_arr

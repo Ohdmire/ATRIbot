@@ -652,9 +652,9 @@ async def format_brkpr(qq_id, osuname, group_id, index, is_old):
     return result
 
 
-async def format_medal(medalid):
+async def format_medal(medalid, cache=True):
 
-    raw = calculate_medal(medalid)
+    raw = calculate_medal(medalid, cache)
 
     return raw
 

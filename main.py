@@ -221,9 +221,9 @@ async def fetch_pprework_progress():
 
 @app.api_route("/qq/medal", methods=["GET", "POST"])
 async def fetch_medal(item: ItemN):
-    img_bytes = await ATRIproxy.format_medal(item.medalid)
+    img_bytes = await ATRIproxy.format_medal(item.medalid, item.cache)
     if type(img_bytes) is BytesIO:
-        return StreamingResponse(img_bytes, media_type="image/jpeg")
+        return StreamingResponse(img_bytes, media_type="image/png")
     else:
         return str(img_bytes)
 

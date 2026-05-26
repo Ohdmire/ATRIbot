@@ -26,7 +26,20 @@ def translate(mycontent):
         stream=False,
     )
 
-    return response.choices[0].message.content
+    return response.choices[0].message.content.strip()
+
+
+def translate_with_prompt(mycontent: str, system_prompt: str, user_prefix: str = "") -> str:
+    response = client.chat.completions.create(
+        model="deepseek-v4-pro",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prefix + mycontent},
+        ],
+        stream=False,
+    )
+
+    return response.choices[0].message.content.strip()
 
 
 async def async_translate(text: str) -> str:

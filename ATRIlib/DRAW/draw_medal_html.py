@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ATRIlib.Config import path_config
-from ATRIlib.DRAW.html_renderer import render_html_to_jpeg
-
+from ATRIlib.DRAW.html_renderer import render_html_to_png
 
 MEDAL_WIDTH = 966
 PROJECT_ROOT = path_config.medal_html_template_file_path.resolve().parents[2]
@@ -22,15 +21,23 @@ env = Environment(
 
 
 def _gamemode_name(gamemode):
-    return {"osu": "Standard", "fruits": "Catch", "mania": "Mania", "taiko": "Taiko"}.get(
-        gamemode, gamemode
-    )
+    return {
+        "osu": "Standard",
+        "fruits": "Catch",
+        "mania": "Mania",
+        "taiko": "Taiko",
+    }.get(gamemode, gamemode)
 
 
 def _plain_text(value):
     if value is None:
         return None
-    text = html.unescape(str(value)).replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n")
+    text = (
+        html.unescape(str(value))
+        .replace("<br>", "\n")
+        .replace("<br/>", "\n")
+        .replace("<br />", "\n")
+    )
     text = BeautifulSoup(text, "html.parser").get_text("\n")
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip() or None
@@ -54,16 +61,18 @@ def _notes(medal):
     packs = _plain_text(medal.get("Packs"))
 
     if mods:
-        notes.append({"kind": "allowed", "text": f"Allowed mods: {mods}."})
+        notes.append({"kind": "allowed", "text": f"允许的模组: {mods}."})
     if packs:
-        notes.append({"kind": "required", "text": f"Required pack(s): {packs}."})
+        notes.append({"kind": "required", "text": f"需要图包: {packs}."})
 
     gamemode = medal.get("Gamemode")
     if gamemode and gamemode != "all":
         mode_name = _gamemode_name(gamemode)
-        notes.append({"kind": "restricted", "text": f"This medal is only achievable in {mode_name}."})
-    if medal.get("Is_Restricted"):
-        notes.append({"kind": "restricted", "text": "This medal is restricted."})
+        notes.append(
+            {"kind": "restricted", "text": f"这个奖牌只能在 {mode_name} 模式中获取."}
+        )
+    # if medal.get("Is_Restricted"):
+    #     notes.append({"kind": "restricted", "text": "This medal is restricted."})
 
     return notes
 
@@ -75,10 +84,17 @@ def _frequency_text(medal):
     return f"{float(frequency):.2f}% achieved"
 
 
-def draw_medal_html(medal):
+def draw_medal_html(medal, output_path=None):
     medal = deepcopy(medal)
     medal.pop("_id", None)
-    for key in ("Name", "Description", "Instructions", "Solution", "Grouping", "Gamemode"):
+    for key in (
+        "Name",
+        "Description",
+        "Instructions",
+        "Solution",
+        "Grouping",
+        "Gamemode",
+    ):
         medal[key] = _plain_text(medal.get(key))
 
     medal["icon_src"] = _icon_src(medal)
@@ -91,9 +107,12 @@ def draw_medal_html(medal):
         medal=medal,
         font_src=FONT_PATH.as_uri(),
     )
-    return render_html_to_jpeg(
+    if output_path is None:
+        output_path = path_config.medal_result_path / f"{medal['Medal_ID']}.png"
+
+    return render_html_to_png(
         html_content,
         width=MEDAL_WIDTH,
-        output_path=path_config.medal_result_path / f"{medal['Medal_ID']}.jpg",
+        output_path=output_path,
         base_url=PROJECT_ROOT,
     )
