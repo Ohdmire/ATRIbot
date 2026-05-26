@@ -659,12 +659,36 @@ async def format_medal(medalid, cache=True):
     return raw
 
 
-async def format_medal_pr(qq_id, osuname):
+async def format_medal_pr(qq_id, osuname, index=1, cache=True):
 
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    achievements = userstruct.get("user_achievements") or []
+    if not achievements:
+        raise ValueError(f"{userstruct.get('username', userstruct.get('id'))} 没有可读取的奖牌解锁记录")
+
+    index = int(index or 1)
+    if index == 0:
+        raise ValueError("index 不能为 0")
+
+    achievements = sorted(
+        achievements,
+        key=lambda item: item.get("achieved_at") or "",
+        reverse=True,
+    )
+    if abs(index) > len(achievements):
+        raise ValueError(f"index 超出范围，该用户共有 {len(achievements)} 个奖牌解锁记录")
+
+    achievement = achievements[index - 1] if index > 0 else achievements[index]
+    medalid = achievement["achievement_id"]
+    raw = calculate_medal(medalid, cache)
+
+    return raw
+
+
+async def format_medal_pr_all(qq_id, osuname):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     user_id = userstruct["id"]
     raw = await calculate_medal_pr(user_id)
-
     return raw
 
 

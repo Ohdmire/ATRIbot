@@ -47,12 +47,7 @@ def _icon_src(medal):
     local_icon = (path_config.medal_path / f"{medal['Medal_ID']}.png").resolve()
     if local_icon.exists():
         return local_icon.as_uri()
-    link = medal.get("Link")
-    if link and str(link).startswith(("http://", "https://")):
-        return link
-    if link:
-        return f"https://inex.osekai.net/assets/osu/web/{link}"
-    return ""
+    raise FileNotFoundError(f"medal {medal['Medal_ID']} 本地图标不存在: {local_icon}")
 
 
 def _notes(medal):

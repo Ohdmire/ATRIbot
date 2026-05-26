@@ -4,19 +4,20 @@ import io
 import json
 import logging
 import re
+from datetime import datetime
 
 import aiohttp
+import requests
 
 from ATRIlib.API.deepseek import translate_with_prompt
 from ATRIlib.Config import path_config
 from ATRIlib.DB.Mongodb import db_medal, db_user
 from ATRIlib.DB.pipeline_medal import (
     get_medal_list_from_db,
-    get_user_medal_list_from_db,
     get_user_special_medal_list_from_db,
 )
-from ATRIlib.DRAW.draw_medal import draw_medal_pr
 from ATRIlib.DRAW.draw_medal_html import draw_medal_html
+from ATRIlib.DRAW.draw_user_medals_html import draw_user_medals_html
 from ATRIlib.TOOLS.Download import download_medal_async
 
 OSEKAI_MEDALS_API = "https://inex.osekai.net/medals/"
@@ -77,6 +78,31 @@ def _translate_medal(medal):
     return translated
 
 
+def _ensure_local_medal_icon(medal):
+    medal_id = medal["Medal_ID"]
+    local_icon = path_config.medal_path / f"{medal_id}.png"
+    if local_icon.exists():
+        return
+
+    link = medal.get("Link")
+    if not link:
+        raise FileNotFoundError(f"medal {medal_id} 没有 Link，无法下载图标")
+    if not link.startswith(("http://", "https://")):
+        link = f"{OSEKAI_MEDAL_ASSET_BASE_URL}/{link}"
+
+    try:
+        response = requests.get(link, timeout=20)
+        response.raise_for_status()
+        path_config.medal_path.mkdir(parents=True, exist_ok=True)
+        local_icon.write_bytes(response.content)
+    except Exception as e:
+        logging.warning(f"下载medal图标失败: {medal_id} {link} {type(e)} {e}")
+        raise FileNotFoundError(f"medal {medal_id} 图标不存在且下载失败: {link}") from e
+
+    if not local_icon.exists():
+        raise FileNotFoundError(f"medal {medal_id} 图标下载后仍不存在: {local_icon}")
+
+
 def calculate_medal(medalid, cache=True):
 
     medalstrct = get_medal_list_from_db(int(medalid))
@@ -85,6 +111,7 @@ def calculate_medal(medalid, cache=True):
         raise ValueError(f"无法在数据库中找到{medalid}的数据")
 
     medal = medalstrct[0]
+    _ensure_local_medal_icon(medal)
     medal_hash = _medal_hash(medal)
     cache_file = path_config.medal_result_path / f"{int(medalid)}-{medal_hash}.png"
 
@@ -98,14 +125,53 @@ def calculate_medal(medalid, cache=True):
 
 async def calculate_medal_pr(user_id):
 
-    medalprstrct = get_user_medal_list_from_db(user_id)
-
     userstruct = db_user.find_one({"id": user_id})
 
     if not userstruct:
         raise ValueError(f"无法在数据库中找到{user_id}的数据")
 
-    raw = await draw_medal_pr(medalprstrct, userstruct)
+    achievements = sorted(
+        userstruct.get("user_achievements") or [],
+        key=lambda item: item.get("achieved_at") or "",
+        reverse=True,
+    )
+    medals = []
+    missing_downloads = []
+    missing_ids = []
+    seen_medal_ids = set()
+    for item in achievements:
+        medal_id = item.get("achievement_id")
+        if not medal_id or medal_id in seen_medal_ids:
+            continue
+        seen_medal_ids.add(medal_id)
+
+        medal = db_medal.find_one({"Medal_ID": medal_id})
+        local_icon = path_config.medal_path / f"{medal_id}.png"
+        if medal and not local_icon.exists():
+            link = medal.get("Link")
+            if link:
+                if not link.startswith(("http://", "https://")):
+                    link = f"{OSEKAI_MEDAL_ASSET_BASE_URL}/{link}"
+                missing_downloads.append(link)
+                missing_ids.append(medal_id)
+        medals.append(
+            {
+                "id": medal_id,
+                "name": medal.get("Name") if medal else None,
+                "achieved_at": datetime.fromisoformat(
+                    str(item["achieved_at"]).replace("Z", "+00:00")
+                )
+                .astimezone()
+                .strftime("%Y-%m-%d %H:%M")
+                if item.get("achieved_at")
+                else None,
+            }
+        )
+
+    if missing_downloads:
+        await download_medal_async(missing_downloads, missing_ids)
+
+    raw = await draw_user_medals_html(userstruct, medals)
 
     return raw
 

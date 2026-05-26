@@ -40,6 +40,7 @@ class IName(BaseModel):
     is_yesterday: Optional[bool] = False
     is_old: Optional[bool] = False
     index: Optional[int] = 1
+    cache: Optional[bool] = True
 
 
 class ItemN(BaseModel):
@@ -230,9 +231,18 @@ async def fetch_medal(item: ItemN):
 
 @app.api_route("/qq/medal/pr", methods=["GET", "POST"])
 async def fetch_medal_pr(item: IName):
-    img_bytes = await ATRIproxy.format_medal_pr(item.qq_id, item.osuname)
+    img_bytes = await ATRIproxy.format_medal_pr(item.qq_id, item.osuname, item.index, item.cache)
     if type(img_bytes) is BytesIO:
-        return StreamingResponse(img_bytes, media_type="image/jpeg")
+        return StreamingResponse(img_bytes, media_type="image/png")
+    else:
+        return str(img_bytes)
+
+
+@app.api_route("/qq/medal/pr/all", methods=["GET", "POST"])
+async def fetch_medal_pr_all(item: IName):
+    img_bytes = await ATRIproxy.format_medal_pr_all(item.qq_id, item.osuname)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/png")
     else:
         return str(img_bytes)
 

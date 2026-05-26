@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    @font-face {
+      font-family: Torus;
+      src: url("{{ font_src }}");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Torus, "DejaVu Sans", sans-serif;
+      color: #f8edf7;
+      background: #160714;
+    }
+
+    .page {
+      width: 1000px;
+      padding: 30px;
+      background:
+        radial-gradient(circle at 85% 12%, rgba(89, 61, 126, 0.35), transparent 36%),
+        linear-gradient(145deg, #160714 0%, #21101f 54%, #2b1530 100%);
+    }
+
+    .header {
+      margin-bottom: 24px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    .summary {
+      margin-top: 6px;
+      font-size: 18px;
+      color: rgba(255, 247, 255, 0.68);
+    }
+
+    .grid {
+      font-size: 0;
+    }
+
+    .medal {
+      display: inline-block;
+      width: 176px;
+      min-height: 214px;
+      margin: 0 12px 14px 0;
+      padding: 14px 12px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.055);
+      text-align: center;
+      vertical-align: top;
+    }
+
+    .icon-wrap {
+      width: 112px;
+      height: 122px;
+      margin: 0 auto 10px;
+      text-align: center;
+    }
+
+    .icon {
+      display: block;
+      max-width: 112px;
+      max-height: 122px;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+
+    .placeholder {
+      width: 94px;
+      height: 94px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      color: rgba(255, 247, 255, 0.48);
+      font-size: 20px;
+    }
+
+    .name {
+      min-height: 42px;
+      font-size: 15px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .id {
+      margin-top: 6px;
+      font-size: 13px;
+      color: rgba(255, 247, 255, 0.56);
+    }
+
+    .time {
+      margin-top: 3px;
+      font-size: 12px;
+      color: rgba(255, 247, 255, 0.44);
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="header">
+      <h1 class="title">{{ username }}'s Medals</h1>
+      <div class="summary">{{ medals|length }} unlocked medals</div>
+    </section>
+
+    <section class="grid">
+      {% for medal in medals %}
+        <article class="medal">
+          <div class="icon-wrap">
+            {% if medal.icon_src %}
+              <img class="icon" src="{{ medal.icon_src }}" alt="">
+            {% else %}
+              <div class="placeholder">{{ medal.id }}</div>
+            {% endif %}
+          </div>
+          {% if medal.name %}
+            <div class="name">{{ medal.name }}</div>
+          {% endif %}
+          <div class="id">ID {{ medal.id }}</div>
+          {% if medal.achieved_at %}
+            <div class="time">{{ medal.achieved_at }}</div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </section>
+  </main>
+</body>
+</html>
