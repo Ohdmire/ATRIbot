@@ -41,6 +41,7 @@ from ATRIlib.lazerupdate import get_lazer_update
 from ATRIlib.medal import (
     calculate_medal,
     calculate_medal_pr,
+    calculate_medal_search,
     calculate_special_medal,
     calculate_uu_medal,
     download_all_medals,
@@ -656,6 +657,11 @@ async def format_medal(medalid, cache=True):
 
     raw = calculate_medal(medalid, cache)
 
+    return raw
+
+
+async def format_medal_search(medal_name, cache=True):
+    raw = calculate_medal_search(medal_name, cache)
     return raw
 
 

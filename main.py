@@ -50,6 +50,7 @@ class ItemN(BaseModel):
     group_id: Optional[int] = None
     group_member_list: Optional[list] = []
     medalid: Optional[int] = None
+    medal_name: Optional[str] = None
     stream_name: Optional[str] = "lazer"
     news_index: Optional[int] = 0
     index: Optional[int] = 1
@@ -223,6 +224,15 @@ async def fetch_pprework_progress():
 @app.api_route("/qq/medal", methods=["GET", "POST"])
 async def fetch_medal(item: ItemN):
     img_bytes = await ATRIproxy.format_medal(item.medalid, item.cache)
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/png")
+    else:
+        return str(img_bytes)
+
+
+@app.api_route("/qq/medal/search", methods=["GET", "POST"])
+async def fetch_medal_search(item: ItemN):
+    img_bytes = await ATRIproxy.format_medal_search(item.medal_name, item.cache)
     if type(img_bytes) is BytesIO:
         return StreamingResponse(img_bytes, media_type="image/png")
     else:

@@ -1,4 +1,5 @@
 import copy
+import difflib
 import hashlib
 import io
 import json
@@ -121,6 +122,44 @@ def calculate_medal(medalid, cache=True):
     raw = draw_medal_html(_translate_medal(medal), output_path=cache_file)
 
     return raw
+
+
+def search_medal_by_name(name):
+    query = str(name or "").strip()
+    if not query:
+        raise ValueError("medal_name 不能为空")
+
+    medals = list(db_medal.find({}))
+    if not medals:
+        raise ValueError("medal 数据库为空，请先调用 medal/update")
+
+    query_lower = query.lower()
+    best_medal = None
+    best_score = -1
+
+    for medal in medals:
+        medal_name = str(medal.get("Name") or "")
+        medal_name_lower = medal_name.lower()
+        if medal_name_lower == query_lower:
+            return medal
+
+        score = difflib.SequenceMatcher(None, query_lower, medal_name_lower).ratio()
+        if query_lower in medal_name_lower:
+            score += 0.5
+
+        if score > best_score:
+            best_score = score
+            best_medal = medal
+
+    if not best_medal:
+        raise ValueError(f"没有找到匹配的 medal: {query}")
+
+    return best_medal
+
+
+def calculate_medal_search(name, cache=True):
+    medal = search_medal_by_name(name)
+    return calculate_medal(medal["Medal_ID"], cache)
 
 
 async def calculate_medal_pr(user_id):
