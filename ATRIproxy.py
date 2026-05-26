@@ -233,7 +233,9 @@ async def format_replay_similarity(qq_id, vs_qq_id, osuname, vsname):
     )
     return (
         f"{left['username']} 与 {right['username']} 的 replay 轨迹\n"
-        f"相似度: {raw['similarity']:.2f}%"
+        f"相似度: {raw['similarity']:.2f}%\n"
+        f"https://osu.ppy.sh/scores/{left['score_id']}\n"
+        f"https://osu.ppy.sh/scores/{right['score_id']}"
     )
 
 
