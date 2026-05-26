@@ -252,8 +252,8 @@ async def fetch_special_medal(item: IName):
         return str(img_bytes)
 
 
-@app.api_route("/qq/medal/download", methods=["GET", "POST"])
-async def job_fetch_group_info():
+@app.api_route("/qq/medal/update", methods=["GET", "POST"])
+async def update_medals():
     result = await ATRIproxy.format_download_medal()
     return str(result)
 

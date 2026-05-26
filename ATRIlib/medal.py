@@ -1,32 +1,24 @@
 from ATRIlib.DB.pipeline_medal import get_medal_list_from_db,get_user_medal_list_from_db,get_user_special_medal_list_from_db
-from ATRIlib.DRAW.draw_medal import draw_medal,draw_medal_pr
+from ATRIlib.DRAW.draw_medal import draw_medal_pr
+from ATRIlib.DRAW.draw_medal_html import draw_medal_html
 from ATRIlib.DB.Mongodb import db_medal,db_user
+import aiohttp
+import json
 import re
 from ATRIlib.TOOLS.Download import download_medal_async
 
+OSEKAI_MEDALS_API = "https://inex.osekai.net/medals/"
+OSEKAI_MEDAL_ASSET_BASE_URL = "https://inex.osekai.net/assets/osu/web"
+
+
 def calculate_medal(medalid):
 
-    medalstrct = get_medal_list_from_db(medalid)
+    medalstrct = get_medal_list_from_db(int(medalid))
 
     if not medalstrct:
         raise ValueError(f'无法在数据库中找到{medalid}的数据')
 
-    medalstrctfix = medalstrct[0]
-
-    # 去除标签
-    pattern = re.compile(r'<[^>]+>', re.S)
-    if medalstrctfix['instructions'] is not None:
-        medalstrctfix['instructions'] = pattern.sub('', medalstrctfix['instructions'])
-
-    if f'<i style="font-size:12px">' in medalstrctfix['solution_data']['solution']:
-        medalstrctfix['solution_data']['solution_italic'] = medalstrctfix['solution_data']['solution'].split(f'<i style="font-size:12px">')[1].split(f'<i style="font-size:12px">')[0]
-        medalstrctfix['solution_data']['solution'] = medalstrctfix['solution_data']['solution'].split(f'<i style="font-size:12px">')[0]
-
-        medalstrctfix['solution_data']['solution'] = pattern.sub('', medalstrctfix['solution_data']['solution'])
-        medalstrctfix['solution_data']['solution_italic'] = pattern.sub('', medalstrctfix['solution_data']['solution_italic'])
-
-
-    raw = draw_medal(medalstrctfix)
+    raw = draw_medal_html(medalstrct[0])
 
     return raw
 
@@ -119,16 +111,34 @@ async def calculate_special_medal(user_id):
     return result_pass_dict,result_fc_dict
 
 async def download_all_medals():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(OSEKAI_MEDALS_API, timeout=aiohttp.ClientTimeout(total=60)) as response:
+            response.raise_for_status()
+            response_text = await response.text()
 
-    medalstruct = db_medal.find('')
+    match = re.search(r"const\s+medals_preload\s*=\s*(\{[\s\S]*?\});", response_text)
+    if not match:
+        raise ValueError("Osekai medals 页面中没有找到 medals_preload")
+    payload = json.loads(match.group(1))
+
+    medalstruct = payload.get("content")
+    if not isinstance(medalstruct, list):
+        raise ValueError("Osekai medals API 返回的数据中没有 content 列表")
+
+    db_medal.drop()
+    if medalstruct:
+        db_medal.insert_many(medalstruct)
 
     medals_urls = []
-    medals_ids =  []
+    medals_ids = []
 
-    for i in medalstruct:
-        medals_urls.append(i['link'])
-        medals_ids.append(i['medalid'])
+    for medal in medalstruct:
+        link = medal["Link"]
+        if not link.startswith(("http://", "https://")):
+            link = f"{OSEKAI_MEDAL_ASSET_BASE_URL}/{link}"
+        medals_urls.append(link)
+        medals_ids.append(medal["Medal_ID"])
 
-    raw = await download_medal_async(medals_urls,medals_ids)
+    await download_medal_async(medals_urls,medals_ids)
 
-    return raw
+    return f"updated {len(medalstruct)} medals"

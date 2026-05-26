@@ -36,8 +36,8 @@ logo_path = Path('./assets/logo')
 
 medal_path = Path('./assets/medal/')
 medal_template_file_path = Path('./assets/customPanels/medal.svg')
+medal_html_template_file_path = Path('./assets/templates/medal.html')
 medal_result_path = Path('./data/tmp/medal')
 
 medal_pr_template_file_path = Path('./assets/customPanels/medal_pr.svg')
 medal_pr_result_path = Path('./data/tmp/medal_pr')
-

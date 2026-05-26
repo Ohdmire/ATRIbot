@@ -1,45 +1,8 @@
 from ATRIlib.DB.Mongodb import db_medal,db_user
 
 def get_medal_list_from_db(medalid):
-
-    pipeline = [
-
-        {
-            "$match": {
-                "medalid": {"$eq": medalid}
-            }
-        },
-
-        {
-            "$lookup": {
-                "from": "solution",
-                "localField": "medalid",
-                "foreignField": "medalid",
-                "as": "solution_data"
-            }  # 合并medal_solution表
-        },
-
-        {
-            "$unwind": "$solution_data"  # 解构表
-        },
-
-        {
-            "$lookup": {
-                "from": "rarity",
-                "localField": "medalid",
-                "foreignField": "id",
-                "as": "rarity_data"
-            }  # 合并medal_solution表
-        },
-
-        {
-            "$unwind": "$rarity_data"  # 解构表
-        },
-    ]
-
-    result = list(db_medal.aggregate(pipeline))
-
-    return result
+    medal = db_medal.find_one({"Medal_ID": medalid})
+    return [medal] if medal else []
 
 def get_user_medal_list_from_db(user_id):
 
