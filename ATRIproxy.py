@@ -463,7 +463,7 @@ async def format_avgtth(qq_id, osuname, tth_range):
 
     diff_top5_total = diff_bp1 + diff_bp2 + diff_bp3 + diff_bp4 + diff_bp5
 
-    result_text = f"根据亚托莉的数据库(#{count})\n{username}对比平均总打击数\nTTH段:{mytth}(±{tth_range})w"
+    result_text = f"根据亚托莉的数据库(#{count})\n{username}对比平均总打击数\nTTH段:{mytth}(±{tth_range})k"
     result_text += f"\nPP:{mypp}pp -- {avgpp}pp({diff_pp})"
     result_text += f"\nbp1:{mybp1}pp -- {avgbp1}pp({diff_bp1})"
     result_text += f"\nbp2:{mybp2}pp -- {avgbp2}pp({diff_bp2})"
@@ -670,7 +670,9 @@ async def format_medal_pr(qq_id, osuname, index=1, cache=True):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
     achievements = userstruct.get("user_achievements") or []
     if not achievements:
-        raise ValueError(f"{userstruct.get('username', userstruct.get('id'))} 没有可读取的奖牌解锁记录")
+        raise ValueError(
+            f"{userstruct.get('username', userstruct.get('id'))} 没有可读取的奖牌解锁记录"
+        )
 
     index = int(index or 1)
     if index == 0:
@@ -682,7 +684,9 @@ async def format_medal_pr(qq_id, osuname, index=1, cache=True):
         reverse=True,
     )
     if abs(index) > len(achievements):
-        raise ValueError(f"index 超出范围，该用户共有 {len(achievements)} 个奖牌解锁记录")
+        raise ValueError(
+            f"index 超出范围，该用户共有 {len(achievements)} 个奖牌解锁记录"
+        )
 
     achievement = achievements[index - 1] if index > 0 else achievements[index]
     medalid = achievement["achievement_id"]

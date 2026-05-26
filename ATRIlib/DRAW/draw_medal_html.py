@@ -76,7 +76,7 @@ def _frequency_text(medal):
     frequency = medal.get("Frequency")
     if frequency is None:
         return None
-    return f"{float(frequency):.2f}% achieved"
+    return f"{float(frequency) * 100:.2f}% achieved"
 
 
 def draw_medal_html(medal, output_path=None):
