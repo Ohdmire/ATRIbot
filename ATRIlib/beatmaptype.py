@@ -3,6 +3,25 @@ from ATRIlib.API.Customapi import get_beatmap_type
 from ATRIlib.Manager.BeatmapTypeManager import update_beatmap_attributes
 
 
+def _add_beatmap_type(raw, beatmap_type):
+    if "aim" in beatmap_type:
+        raw["aim_total"] += beatmap_type["aim"]
+        if beatmap_type["aim"] > 0.5:
+            raw["aim_count"] += 1
+    if "stream" in beatmap_type:
+        raw["stream_total"] += beatmap_type["stream"]
+        if beatmap_type["stream"] > 0.5:
+            raw["stream_count"] += 1
+    if "tech" in beatmap_type:
+        raw["tech_total"] += beatmap_type["tech"]
+        if beatmap_type["tech"] > 0.5:
+            raw["tech_count"] += 1
+    if "alt" in beatmap_type:
+        raw["alt_total"] += beatmap_type["alt"]
+        if beatmap_type["alt"] > 0.5:
+            raw["alt_count"] += 1
+
+
 async def calculate_beatmap_type_ba(user_id):
 
     count_bp = 0
@@ -28,22 +47,7 @@ async def calculate_beatmap_type_ba(user_id):
         beatmap_type = db_beatmaptype.find_one({"id": bps_beatmap_id})
         if beatmap_type:
             count_bp += 1
-            if "aim" in beatmap_type:
-                raw["aim_total"] += beatmap_type["aim"]
-                if beatmap_type["aim"] >0.5:
-                    raw["aim_count"] += 1
-            if "stream" in beatmap_type:
-                raw["stream_total"] += beatmap_type["stream"]
-                if beatmap_type["stream"] >0.5:
-                    raw["stream_count"] += 1
-            if "tech" in beatmap_type:
-                raw["tech_total"] += beatmap_type["tech"]
-                if beatmap_type["tech"] >0.5:
-                    raw["tech_count"] += 1
-            if "alt" in beatmap_type:
-                raw["alt_total"] += beatmap_type["alt"]
-                if beatmap_type["alt"] >0.5:
-                    raw["alt_count"] += 1
+            _add_beatmap_type(raw, beatmap_type)
         else:
             lack_beatmap_id_list.append(bps_beatmap_id)
 
@@ -51,24 +55,9 @@ async def calculate_beatmap_type_ba(user_id):
         for beatmap_id in lack_beatmap_id_list:
             beatmap_type = await get_beatmap_type(beatmap_id)
             if beatmap_type is None:
-                raise ValueError("mba超时")
+                break
             update_beatmap_attributes(beatmap_id, beatmap_type)
             count_bp += 1
-            if "aim" in beatmap_type:
-                raw["aim_total"] += beatmap_type["aim"]
-                if beatmap_type["aim"] >0.5:
-                    raw["aim_count"] += 1
-            if "stream" in beatmap_type:
-                raw["stream_total"] += beatmap_type["stream"]
-                if beatmap_type["stream"] >0.5:
-                    raw["stream_count"] += 1
-            if "tech" in beatmap_type:
-                raw["tech_total"] += beatmap_type["tech"]
-                if beatmap_type["tech"] >0.5:
-                    raw["tech_count"] += 1
-            if "alt" in beatmap_type:
-                raw["alt_total"] += beatmap_type["alt"]
-                if beatmap_type["alt"] >0.5:
-                    raw["alt_count"] += 1
+            _add_beatmap_type(raw, beatmap_type)
 
     return raw,count_bp
