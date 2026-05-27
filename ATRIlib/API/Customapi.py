@@ -6,8 +6,8 @@ async def get_beatmap_type(beatmap_id):
     url = "http://172.17.0.1:7777/predict"
     data = {"beatmap_ids": [beatmap_id]}
 
-    # 设置总超时为 5 秒
-    timeout = ClientTimeout(total=5)
+    # 设置总超时为 30 秒
+    timeout = ClientTimeout(total=30)
 
     try:
         async with aiohttp.ClientSession(timeout=timeout) as session:
