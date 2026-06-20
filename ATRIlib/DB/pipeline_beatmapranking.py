@@ -1,4 +1,46 @@
 from .Mongodb import db_bind,db_group
+from ATRIlib.TOOLS.osu_mod_multiplier import mod_multiplier
+
+
+def _mods_to_acronyms(mods):
+    if not mods:
+        return []
+
+    acronyms = []
+    for mod in mods:
+        if isinstance(mod, str):
+            acronyms.append(mod)
+        elif isinstance(mod, dict):
+            acronym = mod.get("acronym")
+            if acronym:
+                acronyms.append(acronym)
+    return acronyms
+
+
+def _display_score(score):
+    base_score = score.get("total_score_without_mods", score.get("total_score", 0))
+    try:
+        return int(round(base_score * mod_multiplier(_mods_to_acronyms(score.get("mods", [])))))
+    except Exception:
+        return int(base_score)
+
+
+def _sort_by_display_score(records):
+    result = []
+
+    for record in records:
+        scores = record.get("top_score", [])
+        if not scores:
+            continue
+
+        for score in scores:
+            score["display_score"] = _display_score(score)
+
+        record["top_score"] = max(scores, key=lambda score: score["display_score"])
+        result.append(record)
+
+    result.sort(key=lambda record: record["top_score"].get("display_score", 0), reverse=True)
+    return result
 
 def get_beatmapranking_up_list_from_db(group_id):
 
@@ -70,18 +112,11 @@ def get_beatmapranking_list_from_unrankscore_db(base_user_id, beatmap_id, group_
                                         }
                                     }
                                 ] if modslist is not None else []
-                            ) + [
-                                {"$sort": {"total_score": -1}},
-                                {"$limit": 1}
-                            ],
+                            ),
                 "as": "top_score"
             }
         },
-        # 5. 展开top_score字段
-        {
-            "$unwind": "$top_score"
-        },
-        # 6. 投影出需要的字段
+        # 5. 投影出需要的字段
         {
             "$project": {
                 "id": 1,
@@ -90,16 +125,10 @@ def get_beatmapranking_list_from_unrankscore_db(base_user_id, beatmap_id, group_
                 "user_info.avatar_url": 1,
                 "top_score": 1
             }
-        },
-        # 7. 按照 top_score 中的 score 字段排序
-        {
-            "$sort": {
-                "top_score.total_score": -1  # -1 表示降序排序
-            }
         }
     ]
 
-    result = list(db_bind.aggregate(pipeline))
+    result = _sort_by_display_score(list(db_bind.aggregate(pipeline)))
 
     return result
 
@@ -239,18 +268,11 @@ def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist
                                     }
                                 }
                             ] if modslist is not None else []
-                        ) + [
-                            {"$sort": {"total_score": -1}},
-                            {"$limit": 1}
-                        ],
+                        ),
                 "as": "top_score"
             }
         },
-        # 5. 展开top_score字段
-        {
-            "$unwind": "$top_score"
-        },
-        # 6. 投影出需要的字段
+        # 5. 投影出需要的字段
         {
             "$project": {
                 "id": 1,
@@ -259,16 +281,10 @@ def get_beatmapranking_list_from_db(base_user_id, beatmap_id, group_id, modslist
                 "user_info.avatar_url": 1,
                 "top_score": 1
             }
-        },
-        # 7. 按照 top_score 中的 score 字段排序
-        {
-            "$sort": {
-                "top_score.total_score": -1  # -1 表示降序排序
-            }
         }
     ]
 
-    result = list(db_bind.aggregate(pipeline))
+    result = _sort_by_display_score(list(db_bind.aggregate(pipeline)))
 
     return result
 

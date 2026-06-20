@@ -5,6 +5,7 @@ import subprocess
 from copy import deepcopy
 
 from ATRIlib.TOOLS.CommonTools import calc_diff_color,get_relative_path
+from ATRIlib.TOOLS.osu_mod_multiplier import mod_multiplier
 from ATRIlib.TOOLS import Download
 from ATRIlib.Config import path_config
 import os
@@ -29,6 +30,36 @@ with open(beatmap_rank_template_file_path, 'rb') as f:
     svg_data = f.read()
     parser = etree.XMLParser()
     beatmap_rank_svg_tree = etree.fromstring(svg_data, parser)
+
+
+def _mods_to_acronyms(mods):
+    if not mods:
+        return []
+
+    acronyms = []
+    for mod in mods:
+        if isinstance(mod, str):
+            acronyms.append(mod)
+        elif isinstance(mod, dict):
+            acronym = mod.get("acronym")
+            if acronym:
+                acronyms.append(acronym)
+    return acronyms
+
+
+def _display_score(score_data, mods_list, is_old):
+    if is_old:
+        return int(score_data.get("legacy_total_score", 0))
+
+    if "display_score" in score_data:
+        return int(score_data["display_score"])
+
+    base_score = score_data.get("total_score_without_mods", score_data.get("total_score", 0))
+    try:
+        multiplier = mod_multiplier(_mods_to_acronyms(mods_list or score_data.get("mods", [])))
+    except Exception:
+        multiplier = 1.0
+    return int(round(base_score * multiplier))
 
 
 async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_list,is_old):
@@ -267,7 +298,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
 
             if j.attrib['id'] == '$score_my' and is_old==False:  # 渲染score
                 j.getchildren()[
-                    0].text = f'Score:{player["top_score"]["total_score"]:,}'
+                    0].text = f'Score:{_display_score(player["top_score"], mods_list, is_old):,}'
 
             if j.attrib['id'] == '$score_my' and is_old==True:  # 渲染score
                 j.getchildren()[
@@ -414,7 +445,7 @@ async def draw_beatmap_rank_screen(player, other_players, beatmap_info, mods_lis
 
             if j.attrib['id'] == f'$score_{i}' and is_old==False:  # 渲染score
                 j.getchildren()[
-                    0].text = f'Score:{other_players[i - 1]["top_score"]["total_score"]:,}'
+                    0].text = f'Score:{_display_score(other_players[i - 1]["top_score"], mods_list, is_old):,}'
 
             if j.attrib['id'] == f'$score_{i}' and is_old==True:  # 渲染score
                 j.getchildren()[
