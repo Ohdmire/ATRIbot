@@ -53,12 +53,17 @@ async def async_translate(text: str) -> str:
             messages=[
                 {
                     "role": "system",
-                    "content": """你是一个专业的翻译助手，你将翻译一个名为osu!的音乐节奏游戏的更新日志，其中beatmap翻译为谱面，游戏一共有4个模式，
+                    "content": """你是一个专业的翻译助手，你将翻译一个名为osu!的音乐节奏游戏的更新日志，游戏一共有4个模式
     osu!
     osu!taiko
     osu!catch
     osu!mania
-保持原文不翻译。lazer/tachyon为游戏发布流，保持原文。如果遇到markdown格式，保持markdown格式不变。段落之间用'---SEP---'分隔，请你严格按照此分隔。""",
+保持原文不翻译。stable/lazer/tachyon为游戏发布版本，请保持原文。如果遇到markdown格式，保持markdown格式不变。
+beatmap翻译为谱面
+Ranked play翻译为排位模式
+daily challenge翻译为每日挑战
+段落之间用'---SEP---'分隔，请你严格按照此分隔。
+并且使用pangu格式""",
                 },
                 {"role": "user", "content": text},
             ],
