@@ -32,7 +32,7 @@ async def html_to_image(title, content, max_body_width=1000):
 
             body {
                 color: #f0f6fc;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                font-family: 'Noto Sans CJK', "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             }
 
             .markdown-body {
