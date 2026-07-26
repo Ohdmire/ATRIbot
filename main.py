@@ -284,12 +284,6 @@ def job_fetch_token():
     return str(result)
 
 
-@app.api_route("/job/token/ppp", methods=["GET", "POST"])
-def job_fetch_token_ppp():
-    result = ATRIproxy.format_token_ppp()
-    return str(result)
-
-
 @app.api_route("/job/shift", methods=["GET", "POST"])
 def job_shift_database():
     result = ATRIproxy.format_job_shift_database()
@@ -358,20 +352,6 @@ async def fetch_rctpp(item: IName):
 @app.api_route("/qq/rctpp2", methods=["GET", "POST"])
 async def fetch_rctpp2(item: IName):
     result = await ATRIproxy.format_rctpp2(item.qq_id, item.osuname, item.index)
-    return str(result)
-
-
-@app.api_route("/qq/skill", methods=["GET", "POST"])
-async def fetch_skill(item: IName):
-    result = await ATRIproxy.format_skill(item.qq_id, item.osuname)
-    return str(result)
-
-
-@app.api_route("/qq/skill/vs", methods=["GET", "POST"])
-async def fetch_skill(item: IName):
-    result = await ATRIproxy.format_skill_vs(
-        item.qq_id, item.vs_qq_id, item.osuname, item.vsname
-    )
     return str(result)
 
 

@@ -6,7 +6,6 @@ from io import BytesIO
 
 from ATRIlib.activity import get_activity
 from ATRIlib.addpp import calculate_if_get_pp
-from ATRIlib.API.PPPapi import get_token_ppp, get_user_ppp_info
 from ATRIlib.API.PPYapiv2 import (
     get_beatmap_info,
     get_token,
@@ -95,12 +94,6 @@ def format_help():
     return raw
 
 
-def format_token_ppp():
-
-    get_token_ppp()
-
-    return "success"
-
 
 def format_token():
 
@@ -127,41 +120,6 @@ async def format_test2(qq_id, osuname):
     raw = check2(userstruct)
 
     return raw
-
-
-async def format_skill(qq_id, osuname):
-    userstruct = await get_userstruct_automatically(qq_id, osuname)
-    user_id = userstruct["id"]
-    username = userstruct["username"]
-    ppp_data = await get_user_ppp_info(user_id)
-
-    raw = skill(username, ppp_data["data"]["performances"])
-
-    return raw
-
-
-async def format_skill_vs(qq_id, vs_qq_id, osuname, vsname):
-    userstruct1 = await get_userstruct_automatically(qq_id, osuname)
-    userstruct2 = await get_userstruct_automatically(vs_qq_id, vsname, isOther=True)
-    user1_id = userstruct1["id"]
-    user1name = userstruct1["username"]
-
-    user2_id = userstruct2["id"]
-    user2name = userstruct2["username"]
-
-    ppp_data1 = await get_user_ppp_info(user1_id)
-
-    ppp_data2 = await get_user_ppp_info(user2_id)
-
-    raw = skillvs(
-        user1name,
-        ppp_data1["data"]["performances"],
-        user2name,
-        ppp_data2["data"]["performances"],
-    )
-
-    return raw
-
 
 async def format_rctpp(qq_id, osuname, index):
     userstruct = await get_userstruct_automatically(qq_id, osuname)
