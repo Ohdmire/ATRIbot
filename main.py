@@ -95,9 +95,6 @@ async def app_lifespan(app: FastAPI):
     scheduler.add_job(
         job_fetch_token, trigger="interval", seconds=3600
     )  # 定时获取token
-    scheduler.add_job(
-        job_fetch_token_ppp, trigger="interval", seconds=3600
-    )  # 定时获取ppptoken
     scheduler.add_job(job_shift_database, trigger="cron", hour=4)  # 定时转移数据库
     scheduler.add_job(
         job_update_bind_all, trigger="cron", hour=4, minute=2
