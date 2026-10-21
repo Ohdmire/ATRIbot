@@ -43,7 +43,7 @@ def draw_grouppp(players, user_id, median_pp):
             linewidth=2.4,
             label=f"PP分布密度 (N={total})",
         )
-        ax.set_ylim(0, ax.get_ylim()[1] * 1.18)
+        ax.set_ylim(0, ax.get_ylim()[1] * 1.25)
     else:
         # 人数太少或PP全部相同时无法拟合密度曲线
         ax.axvline(
@@ -75,6 +75,67 @@ def draw_grouppp(players, user_id, median_pp):
         color="#D62728",
         linewidth=2.2,
         label=f"{username} #{user_rank} {user_pp:.0f}pp",
+    )
+
+    # 图上的简易数值说明
+    y_top = ax.get_ylim()[1]
+    label_box = dict(boxstyle="round,pad=0.25", fc="white", alpha=0.9)
+
+    if total >= 2:
+        ax.text(
+            q25 - pp_span * 0.012,
+            y_top * 0.985,
+            f"25% {q25:.0f}pp",
+            ha="right",
+            va="top",
+            fontsize=10.5,
+            color="#666666",
+            bbox={**label_box, "ec": "#BBBBBB"},
+            zorder=7,
+        )
+        ax.text(
+            q75 + pp_span * 0.012,
+            y_top * 0.985,
+            f"75% {q75:.0f}pp",
+            ha="left",
+            va="top",
+            fontsize=10.5,
+            color="#666666",
+            bbox={**label_box, "ec": "#BBBBBB"},
+            zorder=7,
+        )
+
+    median_ha = "left"
+    median_offset = pp_span * 0.012
+    if median_pp > max_pp - pp_span * 0.15:
+        median_ha = "right"
+        median_offset = -pp_span * 0.012
+    ax.text(
+        median_pp + median_offset,
+        y_top * 0.905,
+        f"中位数 {median_pp:.0f}pp",
+        ha=median_ha,
+        va="top",
+        fontsize=11,
+        color="#2CA02C",
+        fontweight="bold",
+        bbox={**label_box, "ec": "#2CA02C"},
+        zorder=7,
+    )
+
+    user_ha = "left" if user_pp <= median_pp else "right"
+    user_offset = pp_span * 0.012 if user_ha == "left" else -pp_span * 0.012
+    ax.text(
+        user_pp + user_offset,
+        y_top * 0.805,
+        f"{username} #{user_rank} {user_pp:.0f}pp",
+        ha=user_ha,
+        va="top",
+        fontsize=11,
+        color="#D62728",
+        fontweight="bold",
+        bbox={**label_box, "ec": "#D62728"},
+        zorder=7,
     )
 
     ax.set_title(f"{username}在本群的PP排名", fontsize=22, fontweight="bold", pad=16)
