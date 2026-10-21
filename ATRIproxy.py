@@ -305,9 +305,10 @@ async def format_grouppp(qq_id, group_id, osuname, group_member_list, index=0):
 
     median_pp = round(raw["median"])
 
+    max_page = (total_count + GROUP_PP_PAGE_SIZE - 1) // GROUP_PP_PAGE_SIZE
+
     if index and index > 0:
         # 传入页码时按绝对排名翻页
-        max_page = (total_count + GROUP_PP_PAGE_SIZE - 1) // GROUP_PP_PAGE_SIZE
         if index > max_page:
             return f"本群PP排行只有{max_page}页哦"
 
@@ -319,7 +320,9 @@ async def format_grouppp(qq_id, group_id, osuname, group_member_list, index=0):
         user_index = user_rank - 1
         start_index = max(user_index - 5, 0)
         end_index = min(user_index + 6, total_count)
-        page_text = ""
+        # 没传页码时，按查询者名次计算当前页
+        user_page = (user_rank - 1) // GROUP_PP_PAGE_SIZE + 1
+        page_text = f"\n{user_page}/{max_page}页"
 
     result_text = (
         f"{username}的PP在本群排行\n"
