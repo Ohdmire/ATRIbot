@@ -74,6 +74,7 @@ def draw_grouppp(players, user_id, median_pp):
         user_pp,
         color="#D62728",
         linewidth=2.2,
+        label=f"{username} #{user_rank} {user_pp:.0f}pp",
     )
 
     ax.set_title(f"{username}在本群的PP排名", fontsize=22, fontweight="bold", pad=16)
