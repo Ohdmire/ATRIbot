@@ -4,11 +4,21 @@ from ATRIlib.DB.Mongodb import db_user,db_bp
 from ATRIlib.Manager.UserManager import update_user
 from ATRIlib.info import update_user_info
 
+# 永久拉黑的osu uid，禁止绑定
+blacklist = [7562902]
+
+
+def is_blacklisted(user_id):
+    return str(user_id) in {str(item) for item in blacklist}
+
 
 # 更新bind
 async def update_bind_info(qq_id,osuname):
     userdata = await get_user_info(osuname)
     if 'id' in userdata:
+        if is_blacklisted(userdata["id"]):
+            return ""
+
         update_user(userdata)
         return update_bind(qq_id, userdata)
     else:
