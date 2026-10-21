@@ -502,6 +502,26 @@ async def fetch_joindate(item: IName):
     return str(result)
 
 
+@app.api_route("/qq/grouppp", methods=["GET", "POST"])
+async def fetch_grouppp(item: IName):
+    index = item.index if "index" in item.model_fields_set else 0
+    result = await ATRIproxy.format_grouppp(
+        item.qq_id, item.group_id, item.osuname, item.group_member_list, index
+    )
+    return str(result)
+
+
+@app.api_route("/qq/grouppp/draw", methods=["GET", "POST"])
+async def fetch_grouppp_draw(item: IName):
+    img_bytes = await ATRIproxy.format_grouppp_draw(
+        item.qq_id, item.group_id, item.osuname, item.group_member_list
+    )
+    if type(img_bytes) is BytesIO:
+        return StreamingResponse(img_bytes, media_type="image/png")
+    else:
+        return str(img_bytes)
+
+
 @app.api_route("/qq/avgstar", methods=["GET", "POST"])
 async def fetch_avgstar(item: IName):
     img_bytes = await ATRIproxy.format_avgstar(

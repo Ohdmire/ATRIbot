@@ -26,10 +26,12 @@ from ATRIlib.bpsim import calculate_bpsim
 from ATRIlib.changelog import calculate_changelog_draw, get_changelog_status
 from ATRIlib.choke import calculate_choke_pp
 from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
+from ATRIlib.DRAW.draw_grouppp import draw_grouppp
 from ATRIlib.DRAW.draw_medal import draw_special_medal
 from ATRIlib.finddiff import find_diff, find_diff_details
 from ATRIlib.github import get_commit_content
 from ATRIlib.group import update_group_info
+from ATRIlib.grouppp import calculate_grouppp
 from ATRIlib.help import get_help
 from ATRIlib.interbot_bd import calculate_bd
 from ATRIlib.interbot_pr import calculate_rctpp
@@ -70,6 +72,8 @@ from ATRIlib.TOOLS.CommonTools import sort_dict_by_value
 from ATRIlib.update import update_user_avatar
 from ATRIlib.whatif import calculate_pp, calculate_rank
 from utils import get_bpstruct, get_userstruct_automatically
+
+GROUP_PP_PAGE_SIZE = 10
 
 
 async def cleanup_brk_cache():
@@ -271,6 +275,88 @@ async def format_joindate(qq_id, group_id, osuname, pp_range, group_member_list)
     result_text = result_text1 + result_text2
 
     return result_text
+
+
+async def format_grouppp(qq_id, group_id, osuname, group_member_list, index=0):
+
+    if group_member_list:
+        format_job_update_group_list(group_id, group_member_list)
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+    username = userstruct["username"]
+
+    raw = calculate_grouppp(group_id)
+
+    players = raw["players"]
+    total_count = raw["count"]
+
+    if total_count == 0:
+        return "本群还没有可以排行的PP数据哦"
+
+    user_rank = None
+    for player_index, player in enumerate(players):
+        if player["user_id"] == user_id:
+            user_rank = player_index + 1
+            break
+
+    if user_rank is None:
+        return "没有在本群找到你哦"
+
+    median_pp = round(raw["median"])
+
+    if index and index > 0:
+        # 传入页码时按绝对排名翻页
+        max_page = (total_count + GROUP_PP_PAGE_SIZE - 1) // GROUP_PP_PAGE_SIZE
+        if index > max_page:
+            return f"本群PP排行只有{max_page}页哦"
+
+        start_index = (index - 1) * GROUP_PP_PAGE_SIZE
+        end_index = min(start_index + GROUP_PP_PAGE_SIZE, total_count)
+        page_text = f"\n{index}/{max_page}页"
+    else:
+        # 默认显示查询者前后各5名（不足时截断）
+        user_index = user_rank - 1
+        start_index = max(user_index - 5, 0)
+        end_index = min(user_index + 6, total_count)
+        page_text = ""
+
+    result_text = (
+        f"{username}的PP在本群排行\n"
+        f"你的排名是{user_rank}/{total_count}\n"
+        f"本群PP中位数:{median_pp}pp"
+    )
+
+    for player_index in range(start_index, end_index):
+        player = players[player_index]
+        result_text += f"\n#{player_index + 1} {round(player['pp'])}pp --> {player['username']}"
+        if player["user_id"] == user_id:
+            result_text += " <--你在这里"
+
+    result_text += page_text
+
+    return result_text
+
+
+async def format_grouppp_draw(qq_id, group_id, osuname, group_member_list):
+
+    if group_member_list:
+        format_job_update_group_list(group_id, group_member_list)
+
+    userstruct = await get_userstruct_automatically(qq_id, osuname)
+    user_id = userstruct["id"]
+
+    raw = calculate_grouppp(group_id)
+
+    players = raw["players"]
+
+    if not players:
+        return "本群还没有可以排行的PP数据哦"
+
+    if not any(player["user_id"] == user_id for player in players):
+        return "没有在本群找到你哦"
+
+    return draw_grouppp(players, user_id, raw["median"])
 
 
 async def format_avgstar(qq_id, osuname, pp_range, star_min, star_max):
