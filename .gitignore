@@ -1,5 +1,6 @@
 __pycache__
 *.json
+!assets/help/help.json
 data/
 .idea
 .venv

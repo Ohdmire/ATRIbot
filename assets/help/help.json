@@ -1,0 +1,647 @@
+{
+  "title": "ATRI HELP",
+  "intro": [
+    "目前bot还在开发中......可能存在问题 如遇问题请直接私聊反馈",
+    "更多功能敬请期待"
+  ],
+  "section_title": "功能列表",
+  "notice": "bot只支持群内响应 不支持私聊",
+  "legend": [
+    {
+      "symbol": "/",
+      "desc": "代表无参数传递"
+    },
+    {
+      "symbol": "()",
+      "desc": "表示必须传递的参数"
+    },
+    {
+      "symbol": "(*)",
+      "desc": "表示可选传递参数"
+    }
+  ],
+  "columns": [
+    "命令",
+    "别名",
+    "参数",
+    "说明",
+    "例子",
+    "备注"
+  ],
+  "commands": [
+    {
+      "command": "getbind",
+      "aliases": [],
+      "params": [
+        "(osuname)"
+      ],
+      "description": "绑定",
+      "examples": [
+        "!getbind ATRI1024"
+      ],
+      "note": [
+        "解绑请联系ATRI1024"
+      ]
+    },
+    {
+      "command": "mp",
+      "aliases": [],
+      "params": [
+        "/"
+      ],
+      "description": "获取多人mp房间状态",
+      "examples": [
+        "!mp"
+      ],
+      "note": [
+        "如果没有找到mp房间请联系ATRI1024"
+      ]
+    },
+    {
+      "command": "brk",
+      "aliases": [],
+      "params": [
+        "(bid) + (*mod) + (*&)"
+      ],
+      "description": "获取群内排行榜",
+      "examples": [
+        "!brk 221950+HDHR"
+      ],
+      "note": [
+        "只限rank和love谱",
+        "后面加上&可以按照stable的记分方式排序"
+      ]
+    },
+    {
+      "command": "brkpr",
+      "aliases": [],
+      "params": [
+        "(*mod) + (*&)"
+      ],
+      "description": "获取群内排行榜(最近游玩的成绩)",
+      "examples": [
+        "!brkpr"
+      ],
+      "note": [
+        "支持unrank谱面"
+      ]
+    },
+    {
+      "command": "brkup",
+      "aliases": [],
+      "params": [
+        "(bid)"
+      ],
+      "description": "更新群内玩家在该谱面上的成绩",
+      "examples": [
+        "!brkup 221950"
+      ],
+      "note": [
+        "brk是beatmap ranking update的缩写"
+      ]
+    },
+    {
+      "command": "check",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "根据bp1计算你的总pp",
+      "examples": [
+        "!check ATRI1024"
+      ],
+      "note": [
+        "要是数据库内没有第二个同分段的就会报错"
+      ]
+    },
+    {
+      "command": "avgpp",
+      "aliases": [],
+      "params": [
+        "/"
+      ],
+      "description": "获取数据库内相近pp玩家的平均bp数据",
+      "examples": [
+        "!avgpp"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "avgstar",
+      "aliases": [],
+      "params": [
+        "(*star_range)",
+        "(*#pp_range)"
+      ],
+      "description": "获取这个星数下数据库里的人打了多少pp",
+      "examples": [
+        "!avgstar 5*-6* #1000"
+      ],
+      "note": [
+        "全部按原始星数计算"
+      ]
+    },
+    {
+      "command": "avgtth",
+      "aliases": [],
+      "params": [
+        "(*#tth_range)"
+      ],
+      "description": "同avgpp只是把pp缓存tth",
+      "examples": [
+        "!avgtth #1000"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "avgpt",
+      "aliases": [],
+      "params": [
+        "(*#pt_range)"
+      ],
+      "description": "同avgpp只是把pp缓存pt",
+      "examples": [
+        "!avgpt #1000"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "sim",
+      "aliases": [],
+      "params": [
+        "(*#pp_range)"
+      ],
+      "description": "获取数据库内bp和你bp有同一张图的玩家",
+      "examples": [
+        "!sim #1000"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "tdba",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "以24小时的格式呈现bp分布",
+      "examples": [
+        "!tdba ATRI1024"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "medal",
+      "aliases": [],
+      "params": [
+        "(medal_id)"
+      ],
+      "description": "根据奖牌的id查询详情",
+      "examples": [
+        "!medal 1"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "medals",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "按时间返回该玩家所解锁的奖牌",
+      "examples": [
+        "!medals ATRI1024"
+      ],
+      "note": [
+        "渲染不出来的是因为数据库没有"
+      ]
+    },
+    {
+      "command": "whatif",
+      "aliases": [
+        "wif/wi"
+      ],
+      "params": [
+        "(pp) / (#rank)"
+      ],
+      "description": "查询pp和rank之间的关系",
+      "examples": [
+        "!whatif 3kpp/!whatif #30w"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "choke",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "查询bp中miss≤1的成绩并返回如果不miss的总pp",
+      "examples": [
+        "!choke ATRI1024"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "addpp",
+      "aliases": [],
+      "params": [
+        "(pp)"
+      ],
+      "description": "如果刷出单个pp后的总pp和排名",
+      "examples": [
+        "!addpp 200*10"
+      ],
+      "note": [
+        "也可以用，隔开创建一个列表如 220,210,180"
+      ]
+    },
+    {
+      "command": "apr",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "查询最近游玩并pass成绩",
+      "examples": [
+        "!apr ATRI1024"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "rctpp",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "查询最近游玩的成绩",
+      "examples": [
+        "!rctpp ATRI1024"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "rctpp2",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "查询最近游玩的成绩(图片)",
+      "examples": [
+        "!rctpp2 ATRI1024"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "bd",
+      "aliases": [],
+      "params": [
+        "(bid) + (*mod)"
+      ],
+      "description": "只有stable的成绩的榜单",
+      "examples": [
+        "!bd 221950+HDHR"
+      ],
+      "note": [
+        "榜单"
+      ]
+    },
+    {
+      "command": "test",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "interbot",
+      "examples": [
+        "!test ATRI1024"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "test2",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "interbot",
+      "examples": [
+        "!test2 ATRI1024"
+      ],
+      "note": [
+        "已移植"
+      ]
+    },
+    {
+      "command": "getgroups",
+      "aliases": [],
+      "params": [
+        "(*groupid)"
+      ],
+      "description": "手动更新群成员",
+      "examples": [
+        "!getgroups 580894972"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "群同期",
+      "aliases": [
+        "群老登"
+      ],
+      "params": [
+        "(*pp_range)"
+      ],
+      "description": "查看群内玩家的注册时间",
+      "examples": [
+        "!群老登 #1000"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "mypp",
+      "aliases": [],
+      "params": [
+        "(*page)"
+      ],
+      "description": "查看本群PP排行（文字版）",
+      "examples": [
+        "!mypp",
+        "!mypp 2"
+      ],
+      "note": [
+        "默认显示自己前后各5名",
+        "不传页码时末尾显示当前页"
+      ]
+    },
+    {
+      "command": "gpp",
+      "aliases": [
+        "群pp"
+      ],
+      "params": [
+        "/"
+      ],
+      "description": "查看本群PP分布图",
+      "examples": [
+        "!gpp",
+        "!群pp"
+      ],
+      "note": [
+        "横轴为PP，纵轴为分布密度",
+        "标出中位数和自己的位置"
+      ]
+    },
+    {
+      "command": "daily",
+      "aliases": [],
+      "params": [
+        "/"
+      ],
+      "description": "获取本群今日详情",
+      "examples": [
+        "!daily"
+      ],
+      "note": [
+        "每天4点更新,暂时有点bug"
+      ]
+    },
+    {
+      "command": "profile",
+      "aliases": [],
+      "params": [
+        "(*username) + (*&)"
+      ],
+      "description": "渲染一张玩家的简介图",
+      "examples": [
+        "!profile ATRI1024"
+      ],
+      "note": [
+        "后面加上&可查看昨天内容"
+      ]
+    },
+    {
+      "command": "lazer",
+      "aliases": [],
+      "params": [
+        "/"
+      ],
+      "description": "获取lazer镜像下载地址",
+      "examples": [
+        "!lazer"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "m",
+      "aliases": [],
+      "params": [
+        "(beatmap_id)"
+      ],
+      "description": "查看谱面类型",
+      "examples": [
+        "!m 221950"
+      ],
+      "note": [
+        "结果仅供参考",
+        "模型跑出来的我也不会修"
+      ]
+    },
+    {
+      "command": "mba",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "查看该玩家bp1-100的谱面类型",
+      "examples": [
+        "!mba ATRI1024"
+      ],
+      "note": [
+        "单图超过概率50%则算一张",
+        "总的概率是加起来的"
+      ]
+    },
+    {
+      "command": "uum",
+      "aliases": [
+        "uumedal"
+      ],
+      "params": [
+        "(*username)"
+      ],
+      "description": "查看该玩家部分medal(文字版)",
+      "examples": [
+        "!uum ATRI1024"
+      ],
+      "note": [
+        "怎么有大人先拿的10*pass啊"
+      ]
+    },
+    {
+      "command": "um",
+      "aliases": [
+        "umedal"
+      ],
+      "params": [
+        "(*username)"
+      ],
+      "description": "查看该玩家部分medal(图片版)",
+      "examples": [
+        "!um ATRI1024"
+      ],
+      "note": [
+        "读图不能者福利"
+      ]
+    },
+    {
+      "command": "monitor",
+      "aliases": [
+        "👀"
+      ],
+      "params": [
+        "/"
+      ],
+      "description": "监视群内玩家profile变化",
+      "examples": [
+        "!👀"
+      ],
+      "note": [
+        "我会一直监视你👀"
+      ]
+    },
+    {
+      "command": "changelog",
+      "aliases": [
+        "cl"
+      ],
+      "params": [
+        "(*stream) index"
+      ],
+      "description": "获取osu!更新日志",
+      "examples": [
+        "!changelog lazer 1"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "subchangelog",
+      "aliases": [],
+      "params": [
+        "(stream)"
+      ],
+      "description": "主动订阅更新日志推送",
+      "examples": [
+        "!subchangelog stable"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "unsubchangelog",
+      "aliases": [],
+      "params": [
+        "stream"
+      ],
+      "description": "取消订阅更新日志推送",
+      "examples": [
+        "!unsubchangelog stable"
+      ],
+      "note": [
+        "/"
+      ]
+    },
+    {
+      "command": "finddiff",
+      "aliases": [
+        "今日杂鱼"
+      ],
+      "params": [
+        "/"
+      ],
+      "description": "查看今天倒刷pp的玩家",
+      "examples": [
+        "!今日杂鱼"
+      ],
+      "note": [
+        "已经没有倒刷了"
+      ]
+    },
+    {
+      "command": "finddiff_details",
+      "aliases": [
+        "杂鱼"
+      ],
+      "params": [
+        "(*username)"
+      ],
+      "description": "获取今日倒刷玩家的详情",
+      "examples": [
+        "!杂鱼 ATRI1024"
+      ],
+      "note": [
+        "已经没有倒刷了"
+      ]
+    },
+    {
+      "command": "skill",
+      "aliases": [],
+      "params": [
+        "(*username)"
+      ],
+      "description": "interbot",
+      "examples": [
+        "!skill ATRI1024"
+      ],
+      "note": [
+        "已废弃"
+      ]
+    },
+    {
+      "command": "news",
+      "aliases": [],
+      "params": [
+        "(*index)"
+      ],
+      "description": "机翻新闻",
+      "examples": [
+        "!news 1"
+      ],
+      "note": [
+        "deepseek友情出演"
+      ]
+    }
+  ]
+}

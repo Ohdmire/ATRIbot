@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 1600px;
+      background: #1b1b1b;
+      color: #e8e8e8;
+      font-family: "Noto Sans CJK JP", "Noto Sans CJK SC", "Torus", "DejaVu Sans", sans-serif;
+    }
+
+    .page {
+      padding: 36px 40px 44px;
+    }
+
+    .header {
+      position: relative;
+      min-height: 400px;
+      padding-right: 360px;
+    }
+
+    .atri {
+      position: absolute;
+      top: -8px;
+      right: 0;
+      width: 320px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      color: #ff5a5f;
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .intro {
+      color: #cfcfcf;
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .section-title {
+      margin: 28px 0 10px;
+      color: #ff5a5f;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .notice {
+      margin-bottom: 12px;
+      color: #bdbdbd;
+      font-size: 16px;
+    }
+
+    .legend {
+      margin: 10px 0 24px;
+      padding: 6px 0 6px 16px;
+      border-left: 3px solid #ff5a5f;
+      color: #cfcfcf;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .legend .symbol {
+      display: inline-block;
+      min-width: 44px;
+      color: #f0f0f0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 15px;
+    }
+
+    col.command-col { width: 13%; }
+    col.alias-col { width: 9%; }
+    col.param-col { width: 20%; }
+    col.desc-col { width: 23%; }
+    col.example-col { width: 18%; }
+    col.note-col { width: 17%; }
+
+    th {
+      padding: 10px 12px;
+      border: 1px solid #3a3a3a;
+      background: #2b2b2b;
+      color: #f0f0f0;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px 12px;
+      border: 1px solid #333;
+      vertical-align: top;
+      line-height: 1.45;
+      overflow-wrap: break-word;
+    }
+
+    tbody tr:nth-child(odd) td {
+      background: #1f1f1f;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #232323;
+    }
+
+    .command {
+      color: #f4f4f4;
+      font-weight: 600;
+    }
+
+    .muted {
+      color: #777;
+    }
+
+    .code {
+      display: inline-block;
+      margin: 1px 0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #2e2e3a;
+      color: #d9d9ff;
+      font-family: "DejaVu Sans Mono", "Noto Sans Mono CJK JP", monospace;
+      font-size: 13.5px;
+      white-space: pre-wrap;
+    }
+
+    .note {
+      color: #bdbdbd;
+    }
+
+    .note .line {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <img class="atri" src="{{ atri_uri }}" alt="">
+      <h1>{{ title }}</h1>
+      {% for line in intro %}
+      <div class="intro">{{ line }}</div>
+      {% endfor %}
+
+      <div class="section-title">{{ section_title }}</div>
+      <div class="notice">{{ notice }}</div>
+
+      <div class="legend">
+        {% for item in legend %}
+        <div><span class="symbol">{{ item.symbol }}</span>{{ item.desc }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <table>
+      <colgroup>
+        <col class="command-col">
+        <col class="alias-col">
+        <col class="param-col">
+        <col class="desc-col">
+        <col class="example-col">
+        <col class="note-col">
+      </colgroup>
+      <thead>
+        <tr>
+          {% for column in columns %}
+          <th>{{ column }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in commands %}
+        <tr>
+          <td><span class="command">{{ row.command }}</span></td>
+          <td>
+            {% if row.aliases %}
+              {{ row.aliases | join(' / ') }}
+            {% else %}
+              <span class="muted">/</span>
+            {% endif %}
+          </td>
+          <td>
+            {% for param in row.params %}
+              {% if param == "/" %}
+                <span class="muted">/</span>
+              {% else %}
+                <div class="code">{{ param }}</div>
+              {% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ row.description }}</td>
+          <td>
+            {% for example in row.examples %}
+              <div class="code">{{ example }}</div>
+            {% endfor %}
+          </td>
+          <td class="note">
+            {% for line in row.note %}
+              {% if line == "/" %}
+                <span class="muted">/</span>
+              {% else %}
+                <div class="line">{{ line }}</div>
+              {% endif %}
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

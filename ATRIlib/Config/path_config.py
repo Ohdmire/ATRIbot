@@ -1,6 +1,8 @@
 from pathlib import Path
 
-help_file_path = Path('./assets/help/help.png')
+help_json_file_path = Path('./assets/help/help.json')
+help_template_file_path = Path('./assets/templates/help.html')
+help_atri_file_path = Path('./assets/help/Img_atri.webp')
 css_file_path = Path('./assets/css/')
 
 # 模板
