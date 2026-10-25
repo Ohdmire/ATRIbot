@@ -29,7 +29,6 @@ from ATRIlib.DB.pipeline_medal import get_user_special_medal_list_from_db
 from ATRIlib.DRAW.draw_grouppp import draw_grouppp
 from ATRIlib.DRAW.draw_medal import draw_special_medal
 from ATRIlib.finddiff import find_diff, find_diff_details
-from ATRIlib.github import get_commit_content
 from ATRIlib.group import update_group_info
 from ATRIlib.grouppp import calculate_grouppp
 from ATRIlib.help import get_help
@@ -991,11 +990,6 @@ async def format_lazer_update():
         result_text += f"\n{i}"
 
     return result_text
-
-
-async def format_pprework_progress():
-    raw = await get_commit_content()
-    return raw
 
 
 async def format_activity(group_id, group_member_list):

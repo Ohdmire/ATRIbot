@@ -55,7 +55,7 @@ class ItemN(BaseModel):
     news_index: Optional[int] = 0
     index: Optional[int] = 1
     cache: Optional[bool] = True
-    is_raw_news: Optional[bool] = True
+    is_raw_news: Optional[bool] = False
 
 
 scheduler = AsyncIOScheduler()
@@ -207,15 +207,6 @@ async def fetch_profile_monitor(item: ItemN):
 async def fetch_lazer_update():
     result = await ATRIproxy.format_lazer_update()
     return str(result)
-
-
-@app.api_route("/pprework/progress", methods=["GET", "POST"])
-async def fetch_pprework_progress():
-    img_bytes = await ATRIproxy.format_pprework_progress()
-    if type(img_bytes) is BytesIO:
-        return StreamingResponse(img_bytes, media_type="image/jpeg")
-    else:
-        return str(img_bytes)
 
 
 @app.api_route("/qq/medal", methods=["GET", "POST"])

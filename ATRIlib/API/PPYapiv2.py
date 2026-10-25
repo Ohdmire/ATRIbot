@@ -192,3 +192,22 @@ async def get_tachyon_changelog():
         async with session.get(url, headers=headers) as response:
             data = await response.json()
             return data
+
+
+@rate_limited()
+async def get_news_list(params=None):
+    url = 'https://osu.ppy.sh/api/v2/news'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers, params=params) as response:
+            data = await response.json()
+            return data
+
+@rate_limited()
+async def get_news_post(slug):
+    url = f'https://osu.ppy.sh/api/v2/news/{slug}'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            data = await response.json()
+            return data

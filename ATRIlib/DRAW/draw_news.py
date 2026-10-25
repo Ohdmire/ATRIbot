@@ -22,7 +22,6 @@ async def html_to_image(title,translated_content,max_body_width=800):
         <meta name="color-scheme" content="dark">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="github-markdown-dark.css">
         
         """
     css_style = """
